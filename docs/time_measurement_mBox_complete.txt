@@ -1,0 +1,63 @@
+writeDAC
+time clear [ms]= 0.00449144
+time write [ms]= 0.0136155
+time send  [ms]= 0.000924361
+time rec.  [ms]= 0.402678
+time [ms]0.555189
+readADC
+time clear [ms]= 0.00404693
+time read  [ms]= 0.100963
+time send  [ms]= 0.00104303
+calc corr
+time calc all [ms]= 0.024046
+writeDAC
+time clear [ms]= 0.00400561
+time write [ms]= 0.0134716
+time send  [ms]= 0.000930494
+time rec.  [ms]= 0.407115
+time [ms]0.558915
+readADC
+time clear [ms]= 0.00402886
+time read  [ms]= 0.101433
+time send  [ms]= 0.00102978
+calc corr
+time calc all [ms]= 0.0236779
+writeDAC
+time clear [ms]= 0.00401002
+time write [ms]= 0.0134747
+time send  [ms]= 0.000924154
+time rec.  [ms]= 0.403954
+time [ms]0.55585
+readADC
+time clear [ms]= 0.00403673
+time read  [ms]= 0.101453
+time send  [ms]= 0.00103205
+calc corr
+time calc all [ms]= 0.0239838
+writeDAC
+time clear [ms]= 0.00399323
+time write [ms]= 0.0134698
+time send  [ms]= 0.000919932
+time rec.  [ms]= 0.404518
+time [ms]0.556616
+readADC
+time clear [ms]= 0.00403663
+time read  [ms]= 0.100996
+time send  [ms]= 0.00102743
+calc corr
+time calc all [ms]= 0.023603
+writeDAC
+time clear [ms]= 0.00399352
+time write [ms]= 0.0134722
+time send  [ms]= 0.00092144
+time rec.  [ms]= 0.406931
+time [ms]0.558368
+^C
+Quit mBox....
+Init ADC
+  ADC stop sampling
+  ADC should be stopped
+
+stopping DACs ....
+  IOCS8G        : successful
+

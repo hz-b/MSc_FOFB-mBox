@@ -1,0 +1,120 @@
+readADC
+time clear [ms]= 0.00403228
+time read  [ms]= 0.101046
+time send  [ms]= 0.00107862
+writeDAC
+time clear [ms]= 0.00387661
+time write [ms]= 0.0315182
+time send  [ms]= 0.000934447
+time rec.  [ms]= 0.42176
+time [ms]0.000480291
+
+readADC
+time clear [ms]= 0.00402868
+time read  [ms]= 0.101548
+time send  [ms]= 0.00106852
+writeDAC
+time clear [ms]= 0.00387208
+time write [ms]= 0.0310094
+time send  [ms]= 0.000933364
+time rec.  [ms]= 0.418949
+time [ms]0.000483212
+
+readADC
+time clear [ms]= 0.00404048
+time read  [ms]= 0.101575
+time send  [ms]= 0.00113021
+writeDAC
+time clear [ms]= 0.00387465
+time write [ms]= 0.0314406
+time send  [ms]= 0.000933565
+time rec.  [ms]= 0.41932
+time [ms]0.000481158
+
+readADC
+time clear [ms]= 0.00451469
+time read  [ms]= 0.100993
+time send  [ms]= 0.00107085
+writeDAC
+time clear [ms]= 0.00388182
+time write [ms]= 0.0309971
+time send  [ms]= 0.000934196
+time rec.  [ms]= 0.423779
+time [ms]0.000485317
+
+readADC
+time clear [ms]= 0.00404415
+time read  [ms]= 0.10147
+time send  [ms]= 0.00108061
+writeDAC
+time clear [ms]= 0.00393306
+time write [ms]= 0.0315039
+time send  [ms]= 0.000939729
+time rec.  [ms]= 0.420926
+time [ms]0.000479956
+
+readADC
+time clear [ms]= 0.00402275
+time read  [ms]= 0.10099
+time send  [ms]= 0.00106851
+writeDAC
+time clear [ms]= 0.00389261
+time write [ms]= 0.0314578
+time send  [ms]= 0.0009389
+time rec.  [ms]= 0.416203
+time [ms]0.000478635
+
+readADC
+time clear [ms]= 0.00400872
+time read  [ms]= 0.101447
+time send  [ms]= 0.00105565
+writeDAC
+time clear [ms]= 0.00387198
+time write [ms]= 0.0309916
+time send  [ms]= 0.00093472
+time rec.  [ms]= 0.421402
+time [ms]0.00048248
+
+readADC
+time clear [ms]= 0.00401984
+time read  [ms]= 0.100986
+time send  [ms]= 0.0010716
+writeDAC
+time clear [ms]= 0.00388336
+time write [ms]= 0.0315124
+time send  [ms]= 0.000932155
+time rec.  [ms]= 0.418917
+time [ms]0.000481937
+
+readADC
+time clear [ms]= 0.00400888
+time read  [ms]= 0.101909
+time send  [ms]= 0.00106939
+writeDAC
+time clear [ms]= 0.00386241
+time write [ms]= 0.030993
+time send  [ms]= 0.000931358
+time rec.  [ms]= 0.419104
+time [ms]0.000482392
+
+readADC
+time clear [ms]= 0.00404849
+time read  [ms]= 0.101468
+time send  [ms]= 0.00107237
+writeDAC
+time clear [ms]= 0.00386134
+time write [ms]= 0.0314124
+time send  [ms]= 0.000928122
+time rec.  [ms]= 0.420407
+time [ms]0.000488432
+
+readADC
+time clear [ms]= 0.00400143
+time read  [ms]= 0.101018
+time send  [ms]= 0.00105706
+writeDAC
+time clear [ms]= 0.00385415
+time write [ms]= 0.0309952
+time send  [ms]= 0.000925813
+time rec.  [ms]= 0.41797
+
