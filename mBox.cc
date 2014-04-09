@@ -190,10 +190,22 @@ const double cf           = 0.3051758e-3;
 const double halfDigits   = 1<<23;
 double plane           = 0;
 double P, I , D        = 0;
+double P_soll          = 0;
 char   result          = 0;
 char   numBPMx,numBPMy = 0;
 char   numCORx,numCORy = 0;
 char   totalnumCORx, totalnumCORy = 0;
+int  
+    idxHBP2D6R, 
+    idxBPMZ6D6R, 
+    idxHBP1D5R, 
+    idxBPMZ3D5R, 
+    idxBPMZ4D5R, 
+    idxBPMZ5D5R, 
+    idxBPMZ6D5R; 
+int injectionCnt = 0;
+int injectionStopCnt  = 0;
+int injectionStartCnt = 0;
 
 struct t_status {
     unsigned short loopPos   ;
@@ -554,6 +566,19 @@ void readStruct(const char * structname, T & field, char tartype = 0) {
     }
     cout << "    WARNING : " << structname << " not found !!!" << endl; 
 }
+
+int getidx(char numBPMs, double * ADC_BPMIndex_Pos, double DeviceWaveIndex) { 
+    char res = numBPMs + 1;
+    char i;
+    for (i = 0; i < numBPMx; i++) {
+	  if (ADC_BPMIndex_Pos[i] == DeviceWaveIndex)
+		return i;
+    }
+    return res;
+}
+
+
+
 #define readStructtype_pchar 0
 #define readStructtype_mat 1
 #define readStructtype_vec 2
@@ -571,8 +596,8 @@ void read_RFMStruct() {
     numBPMy = SmatY.n_rows;
     numCORy = SmatY.n_cols;
 
-    diffX      = vec(numBPMx); 
-    diffY      = vec(numBPMy);
+    diffX      = vec(numBPMx+1); // Last is a dummy Channel
+    diffY      = vec(numBPMy+1); // Last is a dummy Channel
     readStruct( "GainX" ,GainX,readStructtype_vec);
     readStruct( "GainY", GainY,readStructtype_vec);
     readStruct( "BPMoffsetX", BPMoffsetX,readStructtype_vec);
@@ -580,10 +605,13 @@ void read_RFMStruct() {
     rADCdataX  = vec(numBPMx);  // Reshape X Data of ADC_Data
     rADCdataY  = vec(numBPMy);  // Reshape Y Data of ADC_Data
 
-    readStruct( "P", P,readStructtype_double);
+    P = 0;
+    double Frequency;
+    readStruct( "P", P_soll,readStructtype_double);
     readStruct( "I", I,readStructtype_double);
     readStruct( "D", D,readStructtype_double);
     readStruct( "plane", plane,readStructtype_double);
+    readStruct( "Frequency",Frequency,readStructtype_double);
     readStruct( "SingularValueX", IvecX,readStructtype_double);
     readStruct( "SingularValueY", IvecY,readStructtype_double);
     
@@ -592,7 +620,6 @@ void read_RFMStruct() {
     readStruct( "CMy", CMy);
     SmatInvX   = mat(numBPMx,numCORx); 
     SmatInvY   = mat(numBPMy,numCORy); 
-    dCORx      = vec(numCORx); 
     dCORy      = vec(numCORy);
     readStruct( "scaleDigitsH", scaleDigitsX,readStructtype_vec);
     readStruct( "scaleDigitsV", scaleDigitsY,readStructtype_vec);
@@ -606,7 +633,23 @@ void read_RFMStruct() {
     Ysum       = zeros<vec>(numCORy);
     Data_CMx   = vec(totalnumCORx);
     Data_CMy   = vec(totalnumCORy);
+    //FS BUMP
+    idxHBP2D6R  = (2 * 81) -1;
+    idxBPMZ6D6R = getidx(numBPMx,ADC_WaveIndexX,82);
+    //ARTOF
+    idxHBP1D5R  = (2 * 72) -1;    
+    idxBPMZ3D5R = getidx(numBPMx,ADC_WaveIndexX,62);
+    idxBPMZ4D5R = getidx(numBPMx,ADC_WaveIndexX,63);
+    idxBPMZ5D5R = getidx(numBPMx,ADC_WaveIndexX,65);
+    idxBPMZ6D5R = getidx(numBPMx,ADC_WaveIndexX,66);
+
+    injectionCnt = 0;
+    injectionStartCnt = (int) Frequency/1000;
+    injectionStopCnt  = (int) Frequency*60/1000;
+
 }
+
+
 
 
 void calcSmat() {
@@ -625,8 +668,6 @@ void calcSmat() {
         IvecX = SmatX.n_rows;
     }
     
-
-   
     cout << "      calc SVD" << endl;
     svd(U,s,V,SmatX);
     cout << "      reduce U to Ivec" << endl;
@@ -794,6 +835,17 @@ unsigned char readADC() {
     diffX = (rADCdataX % GainX * cf * -1) - BPMoffsetX;
     diffY = (rADCdataY % GainY * cf * -1) - BPMoffsetY; 
 
+    //FS BUMP
+    double HBP2D6R = ADC_Buffer[idxHBP2D6R] * cf * 0.8;
+    diffX(idxBPMZ6D6R) -= (0.325 * HBP2D6R);
+    //ARTOF
+    double HBP1D5R = ADC_Buffer[idxHBP1D5R] * cf * 0.8;
+    diffX(idxBPMZ3D5R) -= (-0.42 * HBP1D5R); 
+    diffX(idxBPMZ4D5R) -= (-0.84 * HBP1D5R); 
+    diffX(idxBPMZ5D5R) -= (+0.84 * HBP1D5R); 
+    diffX(idxBPMZ6D5R) -= (+0.42 * HBP1D5R); 
+
+
     t_adc_stop.clock();
 
     return 0;
@@ -826,9 +878,18 @@ unsigned char make_cor() {
     //cout << "make cor" << endl;
     //cout << "  prove beam" << endl;
     if (sum(diffX) < -10.5) {
-         //cout << " No Beam" << endl;
-         //return FOFB_ERROR_NoBeam;
+         cout << " ERROR: No Beam" << endl;
+         return FOFB_ERROR_NoBeam;
     }
+
+    if (ADC_Buffer[110] > 1000) {
+       injectionCnt += 1;
+       if ((injectionCnt >= injectionStopCnt) && (injectionCnt <= injectionStartCnt))
+   	  return 0;
+    }
+    injectionCnt = 0;
+    
+
     //cout << "  prove rms" << endl;
     double rmsX = (diffX.n_elem-1) * stddev(diffX) / diffX.n_elem;
     double rmsY = (diffY.n_elem-1) * stddev(diffY) / diffY.n_elem;
@@ -849,11 +910,12 @@ unsigned char make_cor() {
     dCORy = SmatInvY * diffY;
 
     //cout << "  Check dCOR size" << endl;
-    //if ((max(dCORx) > 0.100) || (max(dCORy) > 0.100))
-    //    return FOFB_ERROR_CM100;
+    if ((max(dCORx) > 0.100) || (max(dCORy) > 0.100))
+        return FOFB_ERROR_CM100;
 
 
     //cout << "  calc PID" << endl;
+    if (P < P_soll) P += 0.1;
     dCORxPID  = (dCORx * P) + (I*Xsum)  + (D*(dCORx-dCORlastX));
     dCORyPID  = (dCORy * P) + (I*Ysum)  + (D*(dCORy-dCORlastY));
     dCORlastX = dCORx;
@@ -1043,6 +1105,8 @@ int main() {
             if (readADC()) { 
               Post_error(FOFB_ERROR_ADC);
             }
+		
+	   
             t_start.clock();
             errornr = make_cor();
             if (errornr) {
