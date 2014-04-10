@@ -14,7 +14,6 @@ Author: Dennis Engel
 #include "rfm2g_api.h"
 #include <time.h>
 #include <unistd.h>
-#include <openBLAS.h>
 
 using namespace arma;
 using namespace std;
@@ -372,11 +371,11 @@ template <class T>
 void prepareField(T& field, unsigned long pos, short dim1, short dim2) {
     RFM2gRead(RFM_Handle,pos,(void*)&field, sizeof(field));
 
-  //  cout << "Got: sizeof: " << sizeof(field) << " [ " << flush ;
- //   for (int i=0; i < dim1*dim2; ++i) {
-// 	cout << field[i] << " ";
-    //}
-    //cout << " ] " << endl;
+    //cout << "Got: sizeof: " << sizeof(field) << " [ " << flush ;
+    //for (int i=0; i < dim1*dim2; ++i) {
+ //	cout << field[i] << " ";
+//    }
+//    cout << " ] " << endl;
 }
 
 template <>
@@ -395,7 +394,7 @@ void prepareField(double *& field, unsigned long pos, short dim1, short dim2) {
 template <>
 void prepareField(double& field, unsigned long pos, short dim1, short dim2) {
     RFM2gRead(RFM_Handle,pos,(void*)&field, dim1*dim2*8);
-    cout << "d5 Got: " << field << endl;
+    //cout << "d5 Got: " << field << endl;
 }
 
 void dumpMemory(void* data, int len) {
@@ -433,8 +432,8 @@ void prepareField(vec& field, unsigned long pos, short dim1, short dim2) {
         field=vec((const double *)pDmaMemory,dim1*dim2);    
     }
     //cout << "v5" << field << endl;
-    cout<<"read vec at pos "<<pos<<" len:"<<data_size<<endl;
-    //char* p=(char*)field.memptr();
+    //cout<<"read vec at pos "<<pos<<" raw len:"<<data_size<<" eff. len: " << data_size/8 << endl;
+    char* p=(char*)field.memptr();
     //printf("'%x'\n",(RFM2G_UINT64)(*(pDmaMemory+pos)));
     //cout<<field<<endl;
 
@@ -501,12 +500,15 @@ void readStruct(const char * structname, T & field, char tartype = 0) {
 }
 
 int getidx(char numBPMs, double * ADC_BPMIndex_Pos, double DeviceWaveIndex) { 
-    char res = numBPMs + 1;
-    char i;
-    for (i = 0; i < numBPMx; i++) {
+    int res = numBPMs;
+    int i;
+    //cout << DeviceWaveIndex << endl;
+    for (i = 0; i < numBPMs; i++) {
+         // cout << ADC_BPMIndex_Pos[i] << " ";
 	  if (ADC_BPMIndex_Pos[i] == DeviceWaveIndex)
 		return i;
     }
+    //cout << endl;
     return res;
 }
 
@@ -529,8 +531,8 @@ void read_RFMStruct() {
     numBPMy = SmatY.n_rows;
     numCORy = SmatY.n_cols;
 
-    diffX      = vec(numBPMx);
-    diffY      = vec(numBPMy); 
+    diffX      = vec(numBPMx+2);
+    diffY      = vec(numBPMy+2); 
     readStruct( "GainX" ,GainX,readStructtype_vec);
     readStruct( "GainY", GainY,readStructtype_vec);
     readStruct( "BPMoffsetX", BPMoffsetX,readStructtype_vec);
@@ -567,14 +569,19 @@ void read_RFMStruct() {
     Data_CMx   = vec(totalnumCORx);
     Data_CMy   = vec(totalnumCORy);
     //FS BUMP
-    idxHBP2D6R  = (2 * 81) -1;
-    idxBPMZ6D6R = getidx(numBPMx,ADC_WaveIndexX,82);
+    idxHBP2D6R  = 160; //(2*81)-1(X) -1(C)
+    idxBPMZ6D6R = getidx(numBPMx,ADC_WaveIndexX,163);
+    cout << "idx 6D6 : " << idxBPMZ6D6R << endl;
     //ARTOF
-    idxHBP1D5R  = (2 * 72) -1;    
-    idxBPMZ3D5R = getidx(numBPMx,ADC_WaveIndexX,62);
-    idxBPMZ4D5R = getidx(numBPMx,ADC_WaveIndexX,63);
-    idxBPMZ5D5R = getidx(numBPMx,ADC_WaveIndexX,65);
-    idxBPMZ6D5R = getidx(numBPMx,ADC_WaveIndexX,66);
+    idxHBP1D5R  = 142; //(2*72)-1(x) -1(C)   
+    idxBPMZ3D5R = getidx(numBPMx,ADC_WaveIndexX,123);
+    cout << "idx 3Z5 : " << idxBPMZ3D5R << endl;
+    idxBPMZ4D5R = getidx(numBPMx,ADC_WaveIndexX,125);
+    cout << "idx 4Z5 : " << idxBPMZ4D5R << endl;
+    idxBPMZ5D5R = getidx(numBPMx,ADC_WaveIndexX,129);
+    cout << "idx 5Z5 : " << idxBPMZ5D5R << endl;
+    idxBPMZ6D5R = getidx(numBPMx,ADC_WaveIndexX,131);
+    cout << "idx 6Z5 : " << idxBPMZ6D5R << endl;
 
     injectionCnt = 0;
     injectionStartCnt = (int) Frequency/1000;
@@ -666,6 +673,8 @@ unsigned char readADC() {
     RFM2gGetDMAThreshold( RFM_Handle, &threshold );
 
     int data_size=ADC_BUFFER_SIZE  *sizeof( RFM2G_INT16 );
+//    cout << "ADC BUFFER SIZE :  " << ADC_BUFFER_SIZE << endl;
+//    cout << "data_size :  " << data_size << endl;
     if (data_size<threshold) {
          // use PIO transfer
        if (RFM2gRead( RFM_Handle, ADC_MEMPOS + (status.loopPos * data_size), 
@@ -679,34 +688,45 @@ unsigned char readADC() {
            ADC_Buffer[i]=src[i];
        }
     }
+
     /* --- stop timer --- */
     t_adc_read.clock();
 
     //clock_gettime(CLOCK_MODE, &t_adc_stop);
     //t_sum_send+=delta(t_adc_read,t_adc_stop);
     
-    for (char i = 0; i < numBPMx; i++) {
-        char lADCPos = ADC_WaveIndexX[i];
+    for (unsigned int i = 0; i < numBPMx; i++) {
+        unsigned int  lADCPos = ADC_WaveIndexX[i]-1;
         rADCdataX(i) =  ADC_Buffer[lADCPos];
     }
 
-    for (char i = 0; i < numBPMy; i++) {
-        char lADCPos = ADC_WaveIndexY[i];
+    for (unsigned int i = 0; i < numBPMy; i++) {
+        unsigned int lADCPos = ADC_WaveIndexY[i]-1;
         rADCdataY(i) =  ADC_Buffer[lADCPos];
     }
-    
-    diffX = (rADCdataX % GainX * cf * -1) - BPMoffsetX;
-    diffY = (rADCdataY % GainY * cf * -1) - BPMoffsetY; 
+   
 
+   // cout << "RawOrbit X: " << rADCdataX << endl;
+   // cout << "RawOrbit Y: " << rADCdataY << endl;
+ 
+    diffX = (rADCdataX % GainX * cf * -1 ) - BPMoffsetX;
+    diffY = (rADCdataY % GainY * cf      ) - BPMoffsetY; 
+
+    
     //FS BUMP
     double HBP2D6R = ADC_Buffer[idxHBP2D6R] * cf * 0.8;
-    //diffX(idxBPMZ6D6R) -= (0.325 * HBP2D6R);
+    cout << "FS HB : " << HBP2D6R << endl;
+    diffX[idxBPMZ6D6R] -= (-0.325 * HBP2D6R);
     //ARTOF
     double HBP1D5R = ADC_Buffer[idxHBP1D5R] * cf * 0.8;
-    //diffX(idxBPMZ3D5R) -= (-0.42 * HBP1D5R); 
-    //diffX(idxBPMZ4D5R) -= (-0.84 * HBP1D5R); 
-    //diffX(idxBPMZ5D5R) -= (+0.84 * HBP1D5R); 
-    //diffX(idxBPMZ6D5R) -= (+0.42 * HBP1D5R); 
+    cout << "ARTOF HB : " << HBP1D5R << endl;
+    diffX[idxBPMZ3D5R] -= (-0.42 * HBP1D5R); 
+    diffX[idxBPMZ4D5R] -= (-0.84 * HBP1D5R); 
+    diffX[idxBPMZ5D5R] -= (+0.84 * HBP1D5R); 
+    diffX[idxBPMZ6D5R] -= (+0.42 * HBP1D5R); 
+
+    cout << "Orbit X: " << diffX << endl;
+    cout << "Orbit Y: " << diffY << endl;
 
 
     t_adc_stop.clock();
@@ -740,17 +760,17 @@ unsigned char make_cor() {
     char   rmsErrorCnt = 0;
     //cout << "make cor" << endl;
     //cout << "  prove beam" << endl;
-    /*if (sum(diffX) < -10.5) {
+    if (sum(diffX) < -10.5) {
          cout << " ERROR: No Beam" << endl;
          return FOFB_ERROR_NoBeam;
-    }*/
+    }
 
-    /*if (ADC_Buffer[110] > 1000) {
+    if (ADC_Buffer[110] > 1000) {
        injectionCnt += 1;
        if ((injectionCnt >= injectionStopCnt) && (injectionCnt <= injectionStartCnt))
    	  return 0;
     }
-    injectionCnt = 0; */
+    injectionCnt = 0;
     
 
     //cout << "  prove rms" << endl;
@@ -773,8 +793,10 @@ unsigned char make_cor() {
     dCORy = SmatInvY * diffY;
 
     //cout << "  Check dCOR size" << endl;
-    //if ((max(dCORx) > 0.100) || (max(dCORy) > 0.100))
-    //    return FOFB_ERROR_CM100;
+    cout << "dCORx" << dCORx << endl;
+    cout << "dCORy" << dCORy << endl;
+    if ((max(dCORx) > 0.100) || (max(dCORy) > 0.100))
+        return FOFB_ERROR_CM100;
 
 
     //cout << "  calc PID" << endl;
@@ -841,13 +863,18 @@ void SIGINT_handler(int signum)
 }
 
 
+extern "C" void openblas_set_num_threads(int num_threads);
+
 int main() {
     unsigned char errornr;
     cout << "starting MBox " <<  endl << "---------------------" << endl;
-    openblas_set_num_threads(1);
+    //openblas_set_num_threads(1);
+    //goto_set_num_threads(1);
     init_rfm();
-    if (init_DMA() != 0) 
-       exit(1);
+    if (init_DMA() != 0) {
+	cout << "DMA Error .... Quit" << endl;
+        exit(1);
+    }
     signal(SIGINT, SIGINT_handler);
     cout << "Wait for start" << endl;
     char f_run = 0;     // 0 = IDLE,    1 = RUNNING
@@ -876,7 +903,7 @@ int main() {
 
     int count=1;
 
-    while(count < 1001) {
+    while(count < 2) {
        result = RFM2gRead( RFM_Handle, CTRL_MEMPOS , &f_run , 1 );
        // CHECK IOC 
        if (f_run == 33) {

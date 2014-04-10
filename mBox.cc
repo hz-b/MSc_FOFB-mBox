@@ -12,7 +12,7 @@ Author: Dennis Engel
 #include <iomanip>
 #include <signal.h>
 #include "rfm2g_api.h"
-
+#include <time.h>
 #include <unistd.h>
 
 using namespace arma;
@@ -31,8 +31,9 @@ class SingleTimer {
     void clock() { 
        clock_gettime(CLOCK_MODE, &t_start);
     }
-    void wait(long ns) {
+    static void wait(long ns) {
        struct timespec t_stop;
+       /*
        t_stop.tv_sec=t_start.tv_sec;
        t_stop.tv_nsec=t_start.tv_nsec+ns;
        const long onesec=1000000000;
@@ -40,7 +41,10 @@ class SingleTimer {
           t_stop.tv_sec+=1;
           t_stop.tv_nsec-=onesec;
        }
-       clock_nanosleep(CLOCK_MODE,TIMER_ABSTIME,&t_stop,0);
+       */
+       t_stop.tv_sec=0;
+       t_stop.tv_nsec=ns;
+       clock_nanosleep(CLOCK_MODE,0,&t_stop,0);
     }
     const timespec getTime() { return t_start; }
     const string & getName() { return name; }
@@ -439,11 +443,11 @@ template <class T>
 void prepareField(T& field, unsigned long pos, short dim1, short dim2) {
     RFM2gRead(RFM_Handle,pos,(void*)&field, sizeof(field));
 
-  //  cout << "Got: sizeof: " << sizeof(field) << " [ " << flush ;
- //   for (int i=0; i < dim1*dim2; ++i) {
-// 	cout << field[i] << " ";
-    //}
-    //cout << " ] " << endl;
+    //cout << "Got: sizeof: " << sizeof(field) << " [ " << flush ;
+    //for (int i=0; i < dim1*dim2; ++i) {
+ //	cout << field[i] << " ";
+//    }
+//    cout << " ] " << endl;
 }
 
 template <>
@@ -462,7 +466,7 @@ void prepareField(double *& field, unsigned long pos, short dim1, short dim2) {
 template <>
 void prepareField(double& field, unsigned long pos, short dim1, short dim2) {
     RFM2gRead(RFM_Handle,pos,(void*)&field, dim1*dim2*8);
-    cout << "d5 Got: " << field << endl;
+    //cout << "d5 Got: " << field << endl;
 }
 
 void dumpMemory(void* data, int len) {
@@ -500,8 +504,8 @@ void prepareField(vec& field, unsigned long pos, short dim1, short dim2) {
         field=vec((const double *)pDmaMemory,dim1*dim2);    
     }
     //cout << "v5" << field << endl;
-    cout<<"read vec at pos "<<pos<<" len:"<<data_size<<endl;
-    //char* p=(char*)field.memptr();
+    //cout<<"read vec at pos "<<pos<<" raw len:"<<data_size<<" eff. len: " << data_size/8 << endl;
+    char* p=(char*)field.memptr();
     //printf("'%x'\n",(RFM2G_UINT64)(*(pDmaMemory+pos)));
     //cout<<field<<endl;
 
@@ -568,12 +572,15 @@ void readStruct(const char * structname, T & field, char tartype = 0) {
 }
 
 int getidx(char numBPMs, double * ADC_BPMIndex_Pos, double DeviceWaveIndex) { 
-    char res = numBPMs + 1;
-    char i;
-    for (i = 0; i < numBPMx; i++) {
+    int res = numBPMs;
+    int i;
+    //cout << DeviceWaveIndex << endl;
+    for (i = 0; i < numBPMs; i++) {
+         // cout << ADC_BPMIndex_Pos[i] << " ";
 	  if (ADC_BPMIndex_Pos[i] == DeviceWaveIndex)
 		return i;
     }
+    //cout << endl;
     return res;
 }
 
@@ -596,8 +603,8 @@ void read_RFMStruct() {
     numBPMy = SmatY.n_rows;
     numCORy = SmatY.n_cols;
 
-    diffX      = vec(numBPMx+1); // Last is a dummy Channel
-    diffY      = vec(numBPMy+1); // Last is a dummy Channel
+    diffX      = vec(numBPMx+2);
+    diffY      = vec(numBPMy+2); 
     readStruct( "GainX" ,GainX,readStructtype_vec);
     readStruct( "GainY", GainY,readStructtype_vec);
     readStruct( "BPMoffsetX", BPMoffsetX,readStructtype_vec);
@@ -634,14 +641,19 @@ void read_RFMStruct() {
     Data_CMx   = vec(totalnumCORx);
     Data_CMy   = vec(totalnumCORy);
     //FS BUMP
-    idxHBP2D6R  = (2 * 81) -1;
-    idxBPMZ6D6R = getidx(numBPMx,ADC_WaveIndexX,82);
+    idxHBP2D6R  = 160; //(2*81)-1(X) -1(C)
+    idxBPMZ6D6R = getidx(numBPMx,ADC_WaveIndexX,163);
+    cout << "idx 6D6 : " << idxBPMZ6D6R << endl;
     //ARTOF
-    idxHBP1D5R  = (2 * 72) -1;    
-    idxBPMZ3D5R = getidx(numBPMx,ADC_WaveIndexX,62);
-    idxBPMZ4D5R = getidx(numBPMx,ADC_WaveIndexX,63);
-    idxBPMZ5D5R = getidx(numBPMx,ADC_WaveIndexX,65);
-    idxBPMZ6D5R = getidx(numBPMx,ADC_WaveIndexX,66);
+    idxHBP1D5R  = 142; //(2*72)-1(x) -1(C)   
+    idxBPMZ3D5R = getidx(numBPMx,ADC_WaveIndexX,123);
+    cout << "idx 3Z5 : " << idxBPMZ3D5R << endl;
+    idxBPMZ4D5R = getidx(numBPMx,ADC_WaveIndexX,125);
+    cout << "idx 4Z5 : " << idxBPMZ4D5R << endl;
+    idxBPMZ5D5R = getidx(numBPMx,ADC_WaveIndexX,129);
+    cout << "idx 5Z5 : " << idxBPMZ5D5R << endl;
+    idxBPMZ6D5R = getidx(numBPMx,ADC_WaveIndexX,131);
+    cout << "idx 6Z5 : " << idxBPMZ6D5R << endl;
 
     injectionCnt = 0;
     injectionStartCnt = (int) Frequency/1000;
@@ -799,6 +811,8 @@ unsigned char readADC() {
     RFM2gGetDMAThreshold( RFM_Handle, &threshold );
 
     int data_size=ADC_BUFFER_SIZE  *sizeof( RFM2G_INT16 );
+//    cout << "ADC BUFFER SIZE :  " << ADC_BUFFER_SIZE << endl;
+//    cout << "data_size :  " << data_size << endl;
     if (data_size<threshold) {
          // use PIO transfer
        if (RFM2gRead( RFM_Handle, ADC_MEMPOS + (status.loopPos * data_size), 
@@ -812,6 +826,7 @@ unsigned char readADC() {
            ADC_Buffer[i]=src[i];
        }
     }
+
     /* --- stop timer --- */
     t_adc_read.clock();
 
@@ -822,28 +837,38 @@ unsigned char readADC() {
     //clock_gettime(CLOCK_MODE, &t_adc_stop);
     //t_sum_send+=delta(t_adc_read,t_adc_stop);
     
-    for (char i = 0; i < numBPMx; i++) {
-        char lADCPos = ADC_WaveIndexX[i];
+    for (unsigned int i = 0; i < numBPMx; i++) {
+        unsigned int  lADCPos = ADC_WaveIndexX[i]-1;
         rADCdataX(i) =  ADC_Buffer[lADCPos];
     }
 
-    for (char i = 0; i < numBPMy; i++) {
-        char lADCPos = ADC_WaveIndexY[i];
+    for (unsigned int i = 0; i < numBPMy; i++) {
+        unsigned int lADCPos = ADC_WaveIndexY[i]-1;
         rADCdataY(i) =  ADC_Buffer[lADCPos];
     }
-    
-    diffX = (rADCdataX % GainX * cf * -1) - BPMoffsetX;
-    diffY = (rADCdataY % GainY * cf * -1) - BPMoffsetY; 
+   
 
+   // cout << "RawOrbit X: " << rADCdataX << endl;
+   // cout << "RawOrbit Y: " << rADCdataY << endl;
+ 
+    diffX = (rADCdataX % GainX * cf * -1 ) - BPMoffsetX;
+    diffY = (rADCdataY % GainY * cf      ) - BPMoffsetY; 
+
+    
     //FS BUMP
     double HBP2D6R = ADC_Buffer[idxHBP2D6R] * cf * 0.8;
-    diffX(idxBPMZ6D6R) -= (0.325 * HBP2D6R);
+    cout << "FS HB : " << HBP2D6R << endl;
+    diffX[idxBPMZ6D6R] -= (-0.325 * HBP2D6R);
     //ARTOF
     double HBP1D5R = ADC_Buffer[idxHBP1D5R] * cf * 0.8;
-    diffX(idxBPMZ3D5R) -= (-0.42 * HBP1D5R); 
-    diffX(idxBPMZ4D5R) -= (-0.84 * HBP1D5R); 
-    diffX(idxBPMZ5D5R) -= (+0.84 * HBP1D5R); 
-    diffX(idxBPMZ6D5R) -= (+0.42 * HBP1D5R); 
+    cout << "ARTOF HB : " << HBP1D5R << endl;
+    diffX[idxBPMZ3D5R] -= (-0.42 * HBP1D5R); 
+    diffX[idxBPMZ4D5R] -= (-0.84 * HBP1D5R); 
+    diffX[idxBPMZ5D5R] -= (+0.84 * HBP1D5R); 
+    diffX[idxBPMZ6D5R] -= (+0.42 * HBP1D5R); 
+
+    cout << "Orbit X: " << diffX << endl;
+    cout << "Orbit Y: " << diffY << endl;
 
 
     t_adc_stop.clock();
@@ -910,6 +935,8 @@ unsigned char make_cor() {
     dCORy = SmatInvY * diffY;
 
     //cout << "  Check dCOR size" << endl;
+    cout << "dCORx" << dCORx << endl;
+    cout << "dCORy" << dCORy << endl;
     if ((max(dCORx) > 0.100) || (max(dCORy) > 0.100))
         return FOFB_ERROR_CM100;
 
@@ -985,7 +1012,7 @@ void sendMessage(const char* Message,const char *error) {
    result = RFM2gWrite( RFM_Handle, pos , &mymem, thesize);
    //free(mymem);
 }
-    
+
 void Post_error(unsigned char errornr) {
     switch (errornr) {
         case 0: return; break;
@@ -1007,46 +1034,19 @@ void SIGINT_handler(int signum)
     exit(0); 
 }
 
-void testDAC() {
-    double t_sum=0., t_sum_loop=0., t_sum_all=0.;
-    struct timespec t_start, t_stop;
 
-    for (int i = 0; i < (48+64); i++) {
-	    DACout[i] = halfDigits;
-    }
-    ctrl_DAC(1);
-    double  loopDir = 1;
-    for (int i = 0; i < 15000; i++) {
-        if (i%1000==0) {
-           cout<<"\n";
-           cout<<"time [ms]"<<t_sum<<"\n";
-           cout<<"time loop [ms]"<<t_sum_loop<<"\n";
-           cout<<"time all [ms]"<<t_sum_all<<endl;
-           t_sum_all=t_sum_loop=t_sum=0.;
-        }
-     	if (readADC()) { cout << " Cant't read ADC Data" << endl; }
-        clock_gettime(CLOCK_MODE, &t_start);
-    	DACout[112] = (loopDir*2500000) + halfDigits;
-	DACout[113] = (loopDir*2500000) + halfDigits;
-	DACout[114] = (loopDir*2500000) + halfDigits;
-        //cout << DACout[114] << " ";
-        loopDir *= -1;
-        clock_gettime(CLOCK_MODE, &t_stop);
-	result = writeDAC(0 + 0x1C0000);
-	if (result) { cout << "Can't write to DAC" << endl; } 	
-
-
-	usleep(7000);
-     }
-}
-
+extern "C" void openblas_set_num_threads(int num_threads);
 
 int main() {
     unsigned char errornr;
     cout << "starting MBox " <<  endl << "---------------------" << endl;
+    //openblas_set_num_threads(1);
+    //goto_set_num_threads(1);
     init_rfm();
-    if (init_DMA() != 0) 
-       exit(1);
+    if (init_DMA() != 0) {
+	cout << "DMA Error .... Quit" << endl;
+        exit(1);
+    }
     signal(SIGINT, SIGINT_handler);
     cout << "Wait for start" << endl;
     char f_run = 0;     // 0 = IDLE,    1 = RUNNING
@@ -1132,6 +1132,11 @@ int main() {
             cout << "Stopped  ....." << endl << flush;
             f_runstate = 0;
        }
+       struct timespec t_stop;
+       t_stop.tv_sec=0;
+       t_stop.tv_nsec=1000000;
+       //clock_nanosleep(CLOCK_MODE,0,&t_stop,0);
+
     }
     return 0;
 }
