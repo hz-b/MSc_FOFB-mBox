@@ -801,30 +801,31 @@ unsigned char make_cor() {
 
     //cout << "  calc PID" << endl;
     if (P < P_soll) P += 0.1;
-    dCORxPID  = (dCORx * P) + (I*Xsum)  + (D*(dCORx-dCORlastX));
-    dCORyPID  = (dCORy * P) + (I*Ysum)  + (D*(dCORy-dCORlastY));
-    dCORlastX = dCORx;
-    dCORlastY = dCORy;
-    Xsum      = Xsum+dCORx;
-    Ysum      = Ysum+dCORy;
 
-    if ((plane == 0) || (plane == 1)) 
+    if ((plane == 0) || (plane == 1) || ((plane == 3) && (loopDir > 0))) {
+	dCORxPID  = (dCORx * P) + (I*Xsum)  + (D*(dCORx-dCORlastX));
+	dCORlastX = dCORx;
+    	Xsum      = Xsum+dCORx;
         CMx = CMx - dCORxPID;
-    
-    if ((plane == 0) || (plane == 2)) 
-        CMy = CMy - dCORyPID;
-    
-    Data_CMx = (CMx % scaleDigitsX) + halfDigits;
-    Data_CMy = (CMy % scaleDigitsY) + halfDigits;
+        Data_CMx = (CMx % scaleDigitsX) + halfDigits;
+        for (char i = 0; i< numCORx; i++) {
+            char corPos = DAC_WaveIndexX[i];
+            DACout[corPos] = Data_CMx(i);
+        }
+    } 
 
-    for (char i = 0; i< numCORx; i++) {
-        char corPos = DAC_WaveIndexX[i];
-        DACout[corPos] = Data_CMx(i);
+    if ((plane == 0) || (plane == 2) || ((plane == 3) && (loopDir < 0))) {
+        dCORyPID  = (dCORy * P) + (I*Ysum)  + (D*(dCORy-dCORlastY));
+        dCORlastY = dCORy;
+        Ysum      = Ysum+dCORy;
+        CMy = CMy - dCORyPID;
+        Data_CMy = (CMy % scaleDigitsY) + halfDigits;
+        for (char i = 0; i< numCORy; i++) {
+           char corPos = DAC_WaveIndexY[i];
+           DACout[corPos] = Data_CMy(i);
+        }
     }
-    for (char i = 0; i< numCORy; i++) {
-        char corPos = DAC_WaveIndexY[i];
-        DACout[corPos] = Data_CMy(i);
-    }
+
     
     DACout[112] = (loopDir*2500000) + halfDigits;
     DACout[113] = (loopDir*2500000) + halfDigits;

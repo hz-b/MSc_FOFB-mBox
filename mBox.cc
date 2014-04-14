@@ -141,14 +141,14 @@ void TimingModule::addTimer(SingleTimer* timer) {
   size_t id = all_timer.size();
   all_timer.push_back(timer);
   timer_map[timer->getName()]=id;
-  cout<<"add Timer "<<timer->getName()<<" "<<id<<endl;
+  //cout<<"add Timer "<<timer->getName()<<" "<<id<<endl;
 }
 
 void TimingModule::addDiff(const string & name, const string &t_start, const string &t_stop) {
   int a = timer_map[t_start];
   int b = timer_map[t_stop];
   all_diffs.push_back(new TimeDiff(name,a,b,this));
-  cout<<"add Diff ("<<a<<","<<b<<")"<<endl;
+  //cout<<"add Diff ("<<a<<","<<b<<")"<<endl;
 }
 
 void TimingModule::eval() {
@@ -210,10 +210,11 @@ int
 int injectionCnt = 0;
 int injectionStopCnt  = 0;
 int injectionStartCnt = 0;
+double loopDir  = 1;
 
 struct t_status {
-    unsigned short loopPos   ;
-    unsigned short errornr   ;
+    double loopPos   ;
+    double errornr   ;
 } status ;
 
 struct t_message {
@@ -237,6 +238,9 @@ RFM2GHANDLE    RFM_Handle = 0;
 RFM2G_NODE     NodeId;
 RFM2GEVENTTYPE ADC_DAC_EVENT = RFM2GEVENT_INTR2;
 #define CTRL_MEMPOS       0x03000000
+#define STATUS_MEMPOS     CTRL_MEMPOS + 50
+#define MESSAGE_MEMPOS       CTRL_MEMPOS + 100
+#define CONFIG_MEMPOS        CTRL_MEMPOS + 1000
 
 // ADC
 #define ADC_BUFFER_SIZE 256
@@ -256,7 +260,7 @@ RFM2G_UINT32   DACout[DAC_BUFFER_SIZE];
 
 const char *DAC_IOCs[]  = {"IOCS15G","IOCS2G","IOCS4G","IOCS6G","IOCS8G","IOCS10G","IOCS12G","IOCS14G","IOCS16G","IOC3S16G" };
 char DAC_nodeIds[]     = {0x02     , 0x12   , 0x14   , 0x16   , 0x18   , 0x1A    , 0x1C    , 0x1E    , 0x20    , 0x21 };
-char Act_DAC_nodeIds[] = {0        , 0      , 0      , 1      , 1      , 0       , 0       , 0       , 0       , 0 };
+char Act_DAC_nodeIds[] = {1        , 1      , 1      , 1      , 1      , 1       , 1       , 1       , 1       , 1 };
 char num_DAC_nodeIds   = 10;
 
 
@@ -857,18 +861,18 @@ unsigned char readADC() {
     
     //FS BUMP
     double HBP2D6R = ADC_Buffer[idxHBP2D6R] * cf * 0.8;
-    cout << "FS HB : " << HBP2D6R << endl;
+    //cout << "FS HB : " << HBP2D6R << endl;
     diffX[idxBPMZ6D6R] -= (-0.325 * HBP2D6R);
     //ARTOF
     double HBP1D5R = ADC_Buffer[idxHBP1D5R] * cf * 0.8;
-    cout << "ARTOF HB : " << HBP1D5R << endl;
+    //cout << "ARTOF HB : " << HBP1D5R << endl;
     diffX[idxBPMZ3D5R] -= (-0.42 * HBP1D5R); 
     diffX[idxBPMZ4D5R] -= (-0.84 * HBP1D5R); 
     diffX[idxBPMZ5D5R] -= (+0.84 * HBP1D5R); 
     diffX[idxBPMZ6D5R] -= (+0.42 * HBP1D5R); 
 
-    cout << "Orbit X: " << diffX << endl;
-    cout << "Orbit Y: " << diffY << endl;
+    //cout << "Orbit X: " << diffX << endl;
+    //cout << "Orbit Y: " << diffY << endl;
 
 
     t_adc_stop.clock();
@@ -898,7 +902,6 @@ unsigned char make_cor() {
 
     static double lastrmsX = 999;
     static double lastrmsY = 999;
-    static double loopDir  = 1;
     char   rmsErrorCnt = 0;
     //cout << "make cor" << endl;
     //cout << "  prove beam" << endl;
@@ -935,41 +938,42 @@ unsigned char make_cor() {
     dCORy = SmatInvY * diffY;
 
     //cout << "  Check dCOR size" << endl;
-    cout << "dCORx" << dCORx << endl;
-    cout << "dCORy" << dCORy << endl;
+    //cout << "dCORx" << dCORx << endl;
+    //cout << "dCORy" << dCORy << endl;
     if ((max(dCORx) > 0.100) || (max(dCORy) > 0.100))
         return FOFB_ERROR_CM100;
 
 
     //cout << "  calc PID" << endl;
     if (P < P_soll) P += 0.1;
-    dCORxPID  = (dCORx * P) + (I*Xsum)  + (D*(dCORx-dCORlastX));
-    dCORyPID  = (dCORy * P) + (I*Ysum)  + (D*(dCORy-dCORlastY));
-    dCORlastX = dCORx;
-    dCORlastY = dCORy;
-    Xsum      = Xsum+dCORx;
-    Ysum      = Ysum+dCORy;
 
-    if ((plane == 0) || (plane == 1)) 
+    if ((plane == 0) || (plane == 1) || ((plane == 3) && (loopDir > 0))) {
+        dCORxPID  = (dCORx * P) + (I*Xsum)  + (D*(dCORx-dCORlastX));
+        dCORlastX = dCORx;
+        Xsum      = Xsum+dCORx;
         CMx = CMx - dCORxPID;
-    
-    if ((plane == 0) || (plane == 2)) 
-        CMy = CMy - dCORyPID;
-    
-    Data_CMx = (CMx % scaleDigitsX) + halfDigits;
-    Data_CMy = (CMy % scaleDigitsY) + halfDigits;
+        Data_CMx = (CMx % scaleDigitsX) + halfDigits;
+        for (char i = 0; i< numCORx; i++) {
+           char corPos = DAC_WaveIndexX[i];
+           DACout[corPos] = Data_CMx(i);
+        }
+    } 
 
-    for (char i = 0; i< numCORx; i++) {
-        char corPos = DAC_WaveIndexX[i];
-        DACout[corPos] = Data_CMx(i);
+    if ((plane == 0) || (plane == 2) || ((plane == 3) && (loopDir < 0))) {
+        dCORyPID  = (dCORy * P) + (I*Ysum)  + (D*(dCORy-dCORlastY));
+        dCORlastY = dCORy;
+        Ysum      = Ysum+dCORy;
+        CMy = CMy - dCORyPID;
+        Data_CMy = (CMy % scaleDigitsY) + halfDigits;
+
+        for (char i = 0; i< numCORy; i++) {
+           char corPos = DAC_WaveIndexY[i];
+           DACout[corPos] = Data_CMy(i);
+        }
     }
-    for (char i = 0; i< numCORy; i++) {
-        char corPos = DAC_WaveIndexY[i];
-        DACout[corPos] = Data_CMy(i);
-    }
-    
+
     DACout[112] = (loopDir*2500000) + halfDigits;
-    DACout[113] = (loopDir*2500000) + halfDigits;
+    DACout[113] = (loopDir* (-1) * 2500000) + halfDigits;
     DACout[114] = (loopDir*2500000) + halfDigits;
     loopDir *= -1;
 
@@ -981,36 +985,44 @@ unsigned char make_cor() {
     return 0;
 }
 
+void writeStatus() {
+   unsigned long pos = STATUS_MEMPOS;
+   result = RFM2gWrite(RFM_Handle,pos, &status, sizeof(t_status));
+}
+
 void sendMessage(const char* Message,const char *error) {
    cout << "Send Messag: " << Message << " Error: " << error << endl;
    return;
-   unsigned long pos = CTRL_MEMPOS+100;
+   unsigned long pos = MESSAGE_MEMPOS;
    struct t_header { 
-        double namesize;
-        double sizex;
-        double sizey;
-        double type;
+        unsigned short namesize;
+        unsigned short sizey;
+        unsigned short sizex;
+        unsigned short type;
    } header;
-   int thesize = strlen(Message) + strlen(error)+ sizeof(header)*2 + 2;
+   int thesize = 2 + sizeof(header)+ 6 + strlen(Message) + 
+                     sizeof(header)+ 5 + strlen(error) ;
    unsigned short * mymem = (unsigned short *) malloc(thesize);
    unsigned long structpos = 0;
-   mymem[0]=2;  
-   header.namesize=7;
+
+   mymem[0]=2; mymem[1] = 0;  structpos += 2;// number of Elements (message, error)
+   
+   header.namesize=6; 
    header.sizex = strlen(Message);
-   header.sizey = 0;
-   header.type = 0; 
+   header.sizey = 1;
+   header.type = 2; 
    memcpy(mymem+structpos,&header,sizeof(header)); structpos += sizeof(header);
-   memcpy(mymem+structpos,"message",7); structpos += 7;
+   memcpy(mymem+structpos,"status",6); structpos += 6;
    memcpy(mymem+structpos,Message,strlen(Message)); structpos += strlen(Message);
    header.namesize=5;
    header.sizex = strlen(error);
-   header.sizey = 0;
-   header.type = 0; 
+   header.sizey = 1;
+   header.type = 2; 
    memcpy(mymem+structpos,&header,sizeof(header)); structpos += sizeof(header);
    memcpy(mymem+structpos,"error",5); structpos += 5;
    memcpy(mymem+structpos,error,strlen(error)); structpos += strlen(error);
-   result = RFM2gWrite( RFM_Handle, pos , &mymem, thesize);
-   //free(mymem);
+   result = RFM2gWrite( RFM_Handle, pos , mymem, thesize);
+   free(mymem);
 }
 
 void Post_error(unsigned char errornr) {
@@ -1052,10 +1064,12 @@ int main() {
     char f_run = 0;     // 0 = IDLE,    1 = RUNNING
     char f_runstate= 0; // 0 = PREINIT; 1 = INITIALIZED; 2 = ERROR
 
-    init_ADC(150,600);
+    //init_ADC(150,600);
     //read_RFMStruct();
     //testDAC();
 
+
+    init_ADC(0,0);
     /* timing stats */
     TimingModule * tm=TimingModule::getTimingModule();
     SingleTimer t_start("t_start"), t_stop("t_stop");
@@ -1096,6 +1110,7 @@ int main() {
             read_RFMStruct();
             calcSmat(); 
             f_runstate = 1;
+    	    init_ADC(150,600);
             ctrl_DAC(1);
             cout << "RUN RUN RUN .... " << endl << flush;
        }
@@ -1114,9 +1129,31 @@ int main() {
               f_runstate = 2;
             }
             t_stop.clock();
-	    if (writeDAC(status.loopPos + 0x1c0000) > 0) {
+
+            int writeflag = 0;   
+	    //plane = 4;
+            switch((int) plane) {
+		case 0: writeflag = (1<<16) | (1<<17) ; break;
+                case 1: writeflag = 1<<16; break;
+                case 2: writeflag = 1<<17; break;
+                case 3: if (loopDir > 0) writeflag = (1<<16); else writeflag= (1<<17); break;
+	    }
+	    writeflag |= (1<<19) | (1<<20); //dummy channel dazu
+            
+
+    //   struct timespec t_stop;
+    //   t_stop.tv_sec=0;
+    //   t_stop.tv_nsec=5000000;
+    //clock_nanosleep(CLOCK_MODE,0,&t_stop,0);
+     usleep(500);
+
+	    // if (writeDAC(status.loopPos + 0x1c0000) > 0) {
+	    if (writeDAC(status.loopPos + writeflag) > 0) {
                Post_error(FOFB_ERROR_DAC);
             }
+
+	    writeStatus();
+
         tm->eval();
         if (count%1000==0) {
            cout<<"timing summary\n";
@@ -1129,6 +1166,7 @@ int main() {
        // STOP CORRECTION
        if ((f_run == 0) && (f_runstate >= 1)) {
             ctrl_DAC(false);
+	    init_ADC(0,0);
             cout << "Stopped  ....." << endl << flush;
             f_runstate = 0;
        }
