@@ -1,6 +1,6 @@
 all:
 	echo "No Fully testet"
-#	g++ mBox.cc -o mBox -O2 -larmadillo -Irfm2g/include -Lrfm2g/lib -lrfm2g -lpthread -lrt
+	echo g++ mBox_dummy.cc -o mBox -O2 -larmadillo -Irfm2g/include -Lrfm2g/lib -lrfm2g -lpthread -lrt
 RO:
 	g++ mBox_RO.cc -g -o mBox_RO -O2 -larmadillo -Irfm2g/include -Lrfm2g/lib -lrfm2g -lpthread -lrt
 send:

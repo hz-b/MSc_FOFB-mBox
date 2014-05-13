@@ -765,11 +765,7 @@ unsigned char writeDAC(unsigned int loopPos) {
     t_adc_start.wait(450000); // sleep 450 us
     //cout << " write "<< t_dac_write.tv_sec << ","<<t_dac_write.tv_nsec <<" \n";
 
-    //   struct timespec t_stop;
-    //   t_stop.tv_sec=0;
-    //   t_stop.tv_nsec=300000000;
-    //clock_nanosleep(CLOCK_MODE,0,&t_stop,0);
-     //usleep(300);
+    usleep(300);
 
     /* tell IOC to work */
     if (RFM2gSendEvent( RFM_Handle, RFM2G_NODE_ALL, RFM2GEVENT_INTR3, 
@@ -951,10 +947,10 @@ unsigned char make_cor() {
         dCORxPID  = (dCORx * P) + (I*Xsum)  + (D*(dCORx-dCORlastX));
         dCORlastX = dCORx;
         Xsum      = Xsum+dCORx;
-        CMx = CMx - dCORxPID;
-        Data_CMx = (CMx % scaleDigitsX) + halfDigits;
+        CMx       = CMx - dCORxPID;
+        Data_CMx  = (CMx % scaleDigitsX) + halfDigits;
         for (char i = 0; i< numCORx; i++) {
-           char corPos = DAC_WaveIndexX[i];
+           char corPos = DAC_WaveIndexX[i]-1;
            DACout[corPos] = Data_CMx(i);
         }
     } 
@@ -963,11 +959,11 @@ unsigned char make_cor() {
         dCORyPID  = (dCORy * P) + (I*Ysum)  + (D*(dCORy-dCORlastY));
         dCORlastY = dCORy;
         Ysum      = Ysum+dCORy;
-        CMy = CMy - dCORyPID;
-        Data_CMy = (CMy % scaleDigitsY) + halfDigits;
+        CMy       = CMy - dCORyPID;
+        Data_CMy  = (CMy % scaleDigitsY) + halfDigits;
 
         for (char i = 0; i< numCORy; i++) {
-           char corPos = DAC_WaveIndexY[i];
+           char corPos = DAC_WaveIndexY[i]-1;
            DACout[corPos] = Data_CMy(i);
         }
     }
@@ -1121,7 +1117,7 @@ int main() {
               Post_error(FOFB_ERROR_ADC);
             }
 		
-	   
+	    // CALC CORRECTION 
             t_start.clock();
             errornr = make_cor();
             if (errornr) {
@@ -1131,7 +1127,7 @@ int main() {
             t_stop.clock();
 
             int writeflag = 0;   
-	    //plane = 4;
+	    plane = 4;
             switch((int) plane) {
 		case 0: writeflag = (1<<16) | (1<<17) ; break;
                 case 1: writeflag = 1<<16; break;
@@ -1141,13 +1137,9 @@ int main() {
 	    writeflag |= (1<<19) | (1<<20); //dummy channel dazu
             
 
-    //   struct timespec t_stop;
-    //   t_stop.tv_sec=0;
-    //   t_stop.tv_nsec=5000000;
-    //clock_nanosleep(CLOCK_MODE,0,&t_stop,0);
-     usleep(500);
+     	    usleep(500);
 
-	    // if (writeDAC(status.loopPos + 0x1c0000) > 0) {
+	    //WRITE CORRECTION
 	    if (writeDAC(status.loopPos + writeflag) > 0) {
                Post_error(FOFB_ERROR_DAC);
             }

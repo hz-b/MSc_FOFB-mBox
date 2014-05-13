@@ -141,14 +141,14 @@ void TimingModule::addTimer(SingleTimer* timer) {
   size_t id = all_timer.size();
   all_timer.push_back(timer);
   timer_map[timer->getName()]=id;
-  cout<<"add Timer "<<timer->getName()<<" "<<id<<endl;
+  //cout<<"add Timer "<<timer->getName()<<" "<<id<<endl;
 }
 
 void TimingModule::addDiff(const string & name, const string &t_start, const string &t_stop) {
   int a = timer_map[t_start];
   int b = timer_map[t_stop];
   all_diffs.push_back(new TimeDiff(name,a,b,this));
-  cout<<"add Diff ("<<a<<","<<b<<")"<<endl;
+  //cout<<"add Diff ("<<a<<","<<b<<")"<<endl;
 }
 
 void TimingModule::eval() {
@@ -210,10 +210,11 @@ int
 int injectionCnt = 0;
 int injectionStopCnt  = 0;
 int injectionStartCnt = 0;
+double loopDir  = 1;
 
 struct t_status {
-    unsigned short loopPos   ;
-    unsigned short errornr   ;
+    double loopPos   ;
+    double errornr   ;
 } status ;
 
 struct t_message {
@@ -253,14 +254,13 @@ char           ADC_Node = 0x01;
 // DAC
 #define DAC_BUFFER_SIZE 128
 #define DAC_MEMPOS        0x02000000
-#define DAC_TIMEOUT       60000   /* milliseconds */
+#define DAC_TIMEOUT       3000   /* milliseconds */
 RFM2G_UINT32   DACout[DAC_BUFFER_SIZE];
 //RFM2G_UINT32  * DACout;
-RFM2G_UINT32   DAC_Buffer[DAC_BUFFER_SIZE];
 
 const char *DAC_IOCs[]  = {"IOCS15G","IOCS2G","IOCS4G","IOCS6G","IOCS8G","IOCS10G","IOCS12G","IOCS14G","IOCS16G","IOC3S16G" };
 char DAC_nodeIds[]     = {0x02     , 0x12   , 0x14   , 0x16   , 0x18   , 0x1A    , 0x1C    , 0x1E    , 0x20    , 0x21 };
-char Act_DAC_nodeIds[] = {0        , 0      , 0      , 1      , 1      , 0       , 0       , 0       , 0       , 0 };
+char Act_DAC_nodeIds[] = {0        , 0      , 0      , 1      , 0      , 0       , 0       , 0       , 0       , 0 };
 char num_DAC_nodeIds   = 10;
 
 
@@ -369,6 +369,78 @@ int init_DMA() {
 
      return 0;
 }
+
+void init_ADC(unsigned int freq, unsigned int DACfreq) {
+    cout << "Init ADC" << endl << flush; 
+    RFM2G_INT32 ctrl_buffer[128];
+    short Navr = DACfreq/freq;
+    ctrl_buffer[0] = 512; // RFM2G_LOOP_MAX
+    ctrl_buffer[1] = 0;
+    ctrl_buffer[2] = 0;
+    ctrl_buffer[3] = 2;          // Navr
+    //Stop  ADC Sampling (if running)
+    if ((freq == 0) || (DACfreq == 0)) {
+        cout << "  ADC stop sampling" << endl;
+	result = RFM2gSendEvent(RFM_Handle,ADC_Node,ADC_DAC_EVENT,1);
+        if (result) { cout << "  Can't stop ADC" << endl; exit(1); }
+	cout << "  ADC should be stopped\n" << endl;
+	return;
+    }
+    sleep(2);
+    //Write ADC CTRL
+    cout << "  ADC write sampling config" << endl;
+
+    RFM2G_UINT32 threshold = 0;
+    /* see if DMA threshold and buffer are intialized */
+    RFM2gGetDMAThreshold( RFM_Handle, &threshold );
+
+    int data_size = 512;
+    if (data_size<threshold) {
+         // use PIO transfer
+       result = RFM2gWrite( RFM_Handle, 0, &ctrl_buffer,512);
+    }
+    else {
+       RFM2G_INT32 * dst = (RFM2G_INT32*)pDmaMemory; 
+       for (int i=0;i<128;++i) {
+           dst[i]=ctrl_buffer[i];
+       }
+       result = RFM2gWrite( RFM_Handle, 0, (void*)pDmaMemory, data_size);
+    }
+    if (result) { cout << "  Can't write ADC config" << endl; exit(1); }
+    //Enable ADC
+    cout << "  ADC enable sampling" << endl;
+    result = RFM2gSendEvent(RFM_Handle,ADC_Node,ADC_DAC_EVENT,3);
+    if (result) { cout << "  Can't enable ADC" << endl; exit(1); }
+    //Start Sampling
+    cout << "  ADC start sampling" << endl;
+    result = RFM2gSendEvent(RFM_Handle,ADC_Node,ADC_DAC_EVENT,2);
+    sleep(2);
+    if (result) { cout << "  Can't start sampling" << endl; exit(1); }
+    cout << "  ADC should be started" << endl;
+}
+
+
+void ctrl_DAC(bool start_stop) {
+    char ctrl_date = 0;
+    if (start_stop) {
+        cout << "starting DACs ... " << endl << flush;
+        ctrl_date = 2; //start
+    } else {
+        cout << "stopping DACs ...." << endl << flush;
+        ctrl_date = 1; //stop
+    }
+    for (int i = 0; i < num_DAC_nodeIds; i++) {
+        char nodenr = DAC_nodeIds[i];
+	if (Act_DAC_nodeIds[i]) {
+	  cout << "  " << DAC_IOCs[i] << "\t: ";
+          result = RFM2gSendEvent(RFM_Handle, nodenr, ADC_DAC_EVENT, ctrl_date);
+	  if (result) { cout << "Error " << endl; }
+	  else        { cout << "successful" << endl; }
+        }
+
+    }
+}
+
 
 
 template <class T>
@@ -649,6 +721,68 @@ void calcSmat() {
 }
 
 
+
+unsigned char writeDAC(unsigned int loopPos) {
+    RFM2GEVENTINFO EventInfo;           /* Info about received interrupts    */
+    RFM2G_UINT32    rfm2gCtrlSeq   = loopPos;
+    RFM2G_UINT32    rfm2gMemNumber = loopPos & 0x000ffff;
+    // cout << setw(3) << rfm2gMemNumber << " "<< DACout[113] <<"\n";
+
+
+    /* --- start timer --- */
+    t_dac_start.clock();    
+
+    if (RFM2gClearEvent( RFM_Handle, RFM2GEVENT_INTR3)) return 1;
+    if (RFM2gEnableEvent( RFM_Handle,  RFM2GEVENT_INTR3)) return 1;
+    t_dac_clear.clock();
+
+
+    /* fill DAC to RFM */
+    RFM2G_UINT32 threshold = 0;
+    /* see if DMA threshold and buffer are intialized */
+    RFM2gGetDMAThreshold( RFM_Handle, &threshold );
+
+
+    int data_size = DAC_BUFFER_SIZE*sizeof(RFM2G_UINT32);
+    if (data_size<threshold) {
+         // use PIO transfer
+       if (RFM2gWrite( RFM_Handle, DAC_MEMPOS+(rfm2gMemNumber*data_size),
+                          &DACout, data_size)) return 1;
+    }
+    else {
+       RFM2G_INT32 * dst = (RFM2G_INT32*)pDmaMemory; 
+       for (int i=0;i<DAC_BUFFER_SIZE;++i) {
+           dst[i]=DACout[i];
+       }
+ 
+       if (RFM2gWrite( RFM_Handle, DAC_MEMPOS+(rfm2gMemNumber*data_size),
+                          (void*)pDmaMemory, data_size)) return 1;
+ 
+    }
+
+    t_dac_write.clock();
+
+    //t_adc_start.wait(450000); // sleep 450 us
+    //cout << " write "<< t_dac_write.tv_sec << ","<<t_dac_write.tv_nsec <<" \n";
+
+    //usleep(300);
+
+    /* tell IOC to work */
+    if (RFM2gSendEvent( RFM_Handle, RFM2G_NODE_ALL, RFM2GEVENT_INTR3, 
+                            (RFM2G_INT32) rfm2gCtrlSeq)) return 1;
+    t_dac_send.clock();    
+
+    /* wait for atleast one ack. */
+    EventInfo.Event   = RFM2GEVENT_INTR3;  /* We'll wait on this interrupt */
+    EventInfo.Timeout = DAC_TIMEOUT;       /* We'll wait this many milliseconds */
+    if (RFM2gWaitForEvent( RFM_Handle, &EventInfo )) return 1;
+
+    // stop timer
+    t_dac_stop.clock();    
+
+    return 0;
+}
+
 unsigned char readADC() {
 
     RFM2GEVENTINFO EventInfo;           /* Info about received interrupts    */
@@ -696,6 +830,10 @@ unsigned char readADC() {
     /* --- stop timer --- */
     t_adc_read.clock();
 
+
+    /* Send an interrupt to the other Reflective Memory board */
+    if (RFM2gSendEvent( RFM_Handle, otherNodeId, RFM2GEVENT_INTR1, 0)) return 1;
+    
     //clock_gettime(CLOCK_MODE, &t_adc_stop);
     //t_sum_send+=delta(t_adc_read,t_adc_stop);
     
@@ -747,7 +885,7 @@ unsigned char make_cor() {
     ++count;
     if (count%15000==0) {
       count_test+=20;
-      //cout<<"delay="<<count_test<<endl;
+      cout<<"delay="<<count_test<<endl;
       count=0;
     }
 
@@ -760,15 +898,14 @@ unsigned char make_cor() {
 
     static double lastrmsX = 999;
     static double lastrmsY = 999;
-    static double loopDir  = 1;
     char   rmsErrorCnt = 0;
     //cout << "make cor" << endl;
     //cout << "  prove beam" << endl;
-    if (sum(diffX) < -10.5) {
+    /*if (sum(diffX) < -10.5) {
          cout << " ERROR: No Beam" << endl;
          return FOFB_ERROR_NoBeam;
     }
-
+    */
     if (ADC_Buffer[110] > 1000) {
        injectionCnt += 1;
        if ((injectionCnt >= injectionStopCnt) && (injectionCnt <= injectionStartCnt))
@@ -778,6 +915,7 @@ unsigned char make_cor() {
     
 
     //cout << "  prove rms" << endl;
+    /*
     double rmsX = (diffX.n_elem-1) * stddev(diffX) / diffX.n_elem;
     double rmsY = (diffY.n_elem-1) * stddev(diffY) / diffY.n_elem;
     if ((rmsX > lastrmsX*1.1) || (rmsY > lastrmsY*1.1)) {
@@ -790,7 +928,7 @@ unsigned char make_cor() {
     }
     lastrmsX = rmsX;
     lastrmsY = rmsY;
-    
+    */
 
     //cout << "  calc dCOR" << endl;
     dCORx = SmatInvX * diffX;
@@ -799,9 +937,9 @@ unsigned char make_cor() {
     //cout << "  Check dCOR size" << endl;
     //cout << "dCORx" << dCORx << endl;
     //cout << "dCORy" << dCORy << endl;
-    if ((max(dCORx) > 0.100) || (max(dCORy) > 0.100))
+    /*if ((max(dCORx) > 0.100) || (max(dCORy) > 0.100))
         return FOFB_ERROR_CM100;
-
+    */
 
     //cout << "  calc PID" << endl;
     if (P < P_soll) P += 0.1;
@@ -844,81 +982,55 @@ unsigned char make_cor() {
     return 0;
 }
 
-unsigned char check_cor() {
-
-    /* --- start timer --- */
-    t_dac_start.clock();    
-
-    RFM2GEVENTINFO EventInfo;           /* Info about received interrupts    */
-    RFM2G_NODE     otherNodeId;         /* Node ID of the other RFM board    */
-
-    /* Wait on an interrupt from the other Reflective Memory board */
-    if (RFM2gClearEvent( RFM_Handle, RFM2GEVENT_INTR3 )) return 1;
-    if (RFM2gEnableEvent( RFM_Handle, RFM2GEVENT_INTR3 )) return 1;
-
-    EventInfo.Event    = RFM2GEVENT_INTR3;  /* We'll wait on this interrupt */
-    EventInfo.Timeout  = DAC_TIMEOUT;       /* We'll wait this many milliseconds */
-    if (RFM2gWaitForEvent( RFM_Handle, &EventInfo )) return 1;
-    otherNodeId       = EventInfo.NodeId;
-    RFM2G_UINT32    rfm2gCtrlSeq   = EventInfo.ExtendedInfo;
-    RFM2G_UINT32    rfm2gMemNumber = rfm2gCtrlSeq & 0x000ffff;
-
-
-    t_dac_write.clock();
-
-    /* Now read data from other mBox */
-    RFM2G_UINT32 threshold = 0;
-    /* see if DMA threshold and buffer are intialized */
-    RFM2gGetDMAThreshold( RFM_Handle, &threshold );
-
-    int data_size = DAC_BUFFER_SIZE*sizeof(RFM2G_UINT32);
-    if (data_size<threshold) {
-         // use PIO transfer
-       if (RFM2gRead( RFM_Handle, DAC_MEMPOS + (rfm2gMemNumber * data_size), 
-                           (void *)DAC_Buffer, data_size )) return 1;
-    }
-    else {
-       if (RFM2gRead( RFM_Handle, DAC_MEMPOS + (rfm2gMemNumber * data_size), 
-                           (void *)pDmaMemory, data_size )) return 1;
-       RFM2G_INT32 * src = (RFM2G_INT32*)pDmaMemory; 
-       for (int i=0;i<DAC_BUFFER_SIZE;++i) {
-           DAC_Buffer[i]=src[i];
-       }
-    }
-
-    t_dac_stop.clock();    
-
-    for (int i=0;i<6;++i) {
-      //char corPos = DAC_WaveIndexX[0];
-      cout << setw(12) << i;
-    }
-    cout<<"\n";
-    for (int i=0;i<6;++i) {
-      cout << setw(12) << DAC_Buffer[i]-halfDigits;
-    }
-    cout<<"\n";
-    for (int i=0;i<6;++i) {
-      cout << setw(12) << DACout[i]-halfDigits;
-    }
-    cout<<"\n";
-
-    return 0;
-
+void writeStatus() {
+   unsigned long pos = STATUS_MEMPOS;
+   result = RFM2gWrite(RFM_Handle,pos, &status, sizeof(t_status));
 }
 
-void sendCMessage(const char * title, const char *message) {
-	cout << title << endl << message << endl;
+void sendMessage(const char* Message,const char *error) {
+   cout << "Send Messag: " << Message << " Error: " << error << endl;
+   return;
+   unsigned long pos = MESSAGE_MEMPOS;
+   struct t_header { 
+        unsigned short namesize;
+        unsigned short sizey;
+        unsigned short sizex;
+        unsigned short type;
+   } header;
+   int thesize = 2 + sizeof(header)+ 6 + strlen(Message) + 
+                     sizeof(header)+ 5 + strlen(error) ;
+   unsigned short * mymem = (unsigned short *) malloc(thesize);
+   unsigned long structpos = 0;
+
+   mymem[0]=2; mymem[1] = 0;  structpos += 2;// number of Elements (message, error)
+   
+   header.namesize=6; 
+   header.sizex = strlen(Message);
+   header.sizey = 1;
+   header.type = 2; 
+   memcpy(mymem+structpos,&header,sizeof(header)); structpos += sizeof(header);
+   memcpy(mymem+structpos,"status",6); structpos += 6;
+   memcpy(mymem+structpos,Message,strlen(Message)); structpos += strlen(Message);
+   header.namesize=5;
+   header.sizex = strlen(error);
+   header.sizey = 1;
+   header.type = 2; 
+   memcpy(mymem+structpos,&header,sizeof(header)); structpos += sizeof(header);
+   memcpy(mymem+structpos,"error",5); structpos += 5;
+   memcpy(mymem+structpos,error,strlen(error)); structpos += strlen(error);
+   result = RFM2gWrite( RFM_Handle, pos , mymem, thesize);
+   free(mymem);
 }
 
 void Post_error(unsigned char errornr) {
     switch (errornr) {
         case 0: return; break;
-        case FOFB_ERROR_ADC   : sendCMessage( "FOFB error", "ADC Timeout"); break;
-        case FOFB_ERROR_DAC   : sendCMessage( "FOFB error", "DAC Problem"); break;
-        case FOFB_ERROR_CM100 : sendCMessage( "FOFB error", "To much to correct");break;
-        case FOFB_ERROR_NoBeam: sendCMessage( "FOFB error", "No Current");break;
-        case FOFB_ERROR_RMS   : sendCMessage( "FOFB error", "Bad RMS");break;
-        default               : sendCMessage( "FOFB error", "Unknown Problem"); break;
+        case FOFB_ERROR_ADC   : sendMessage( "FOFB error", "ADC Timeout"); break;
+        case FOFB_ERROR_DAC   : sendMessage( "FOFB error", "DAC Problem"); break;
+        case FOFB_ERROR_CM100 : sendMessage( "FOFB error", "To much to correct");break;
+        case FOFB_ERROR_NoBeam: sendMessage( "FOFB error", "No Current");break;
+        case FOFB_ERROR_RMS   : sendMessage( "FOFB error", "Bad RMS");break;
+        default               : sendMessage( "FOFB error", "Unknown Problem"); break;
     }
 }
 
@@ -926,6 +1038,8 @@ void Post_error(unsigned char errornr) {
 void SIGINT_handler(int signum)
 {
     cout << endl << "Quit mBox...." << endl;
+    init_ADC(0,0);
+    ctrl_DAC(0);
     exit(0); 
 }
 
@@ -947,34 +1061,35 @@ int main() {
     char f_run = 0;     // 0 = IDLE,    1 = RUNNING
     char f_runstate= 0; // 0 = PREINIT; 1 = INITIALIZED; 2 = ERROR
 
+    //init_ADC(150,600);
     //read_RFMStruct();
     //testDAC();
 
+
+    init_ADC(0,0);
     /* timing stats */
     TimingModule * tm=TimingModule::getTimingModule();
     SingleTimer t_start("t_start"), t_stop("t_stop");
     //tm->addDiff("all","t_start","t_stop");
     // all
-    tm->addDiff("all   ","t_adc_start","t_calc_stop");
-    tm->addDiff("local ","t_adc_start","t_calc_stop");
+    tm->addDiff("all   ","t_adc_start","t_dac_stop");
+    tm->addDiff("local ","t_adc_start","t_dac_send");
     // ADC
     tm->addDiff("ADC:read   ","t_adc_start","t_adc_read");
     tm->addDiff("ADC:send+cp","t_adc_read","t_adc_stop");
     // CALC
     tm->addDiff("SVD:calc   ","t_calc_start","t_calc_stop");
     // DAC
-    //tm->addDiff("DAC:enable ","t_dac_start","t_dac_clear");
-    //tm->addDiff("DAC:write  ","t_dac_clear","t_dac_write");
-    //tm->addDiff("DAC:send   ","t_dac_write","t_dac_send");
-    //tm->addDiff("DAC:wait   ","t_dac_send","t_dac_stop");
-
-    tm->addDiff("DAC:read   ","t_dac_write","t_dac_stop");
-    tm->addDiff("DAC:total ","t_dac_start","t_dac_stop");
+    tm->addDiff("DAC:enable ","t_dac_start","t_dac_clear");
+    tm->addDiff("DAC:write  ","t_dac_clear","t_dac_write");
+    tm->addDiff("DAC:send   ","t_dac_write","t_dac_send");
+    tm->addDiff("DAC:wait   ","t_dac_send","t_dac_stop");
 
     int count=1;
-
-    while(count < 20) {
-       result = RFM2gRead( RFM_Handle, CTRL_MEMPOS , &f_run , 1 );
+    f_run = 1;
+    while(1) {
+       //result = RFM2gRead( RFM_Handle, CTRL_MEMPOS , &f_run , 1 );
+       
        // CHECK IOC 
        if (f_run == 33) {
  		cout << "  !!! MDIZ4T4R was restarted !!! ... Wait for initialization " << endl; 
@@ -982,6 +1097,7 @@ int main() {
        		    result = RFM2gRead( RFM_Handle, CTRL_MEMPOS , &f_run , 1 );
 		    sleep(1);
 		}
+		init_ADC(150,600);
                 cout << "Wait for start" << endl;
        }
        // IDLE
@@ -992,6 +1108,8 @@ int main() {
             read_RFMStruct();
             calcSmat(); 
             f_runstate = 1;
+    	    init_ADC(150,600);
+            ctrl_DAC(1);
             cout << "RUN RUN RUN .... " << endl << flush;
        }
 
@@ -1008,8 +1126,34 @@ int main() {
               Post_error(errornr);
               f_runstate = 2;
             }
-	    check_cor();
             t_stop.clock();
+
+            int writeflag = 0;   
+	    plane = 4;
+            switch((int) plane) {
+		case 0: writeflag = (1<<16) | (1<<17) ; break;
+                case 1: writeflag = 1<<16; break;
+                case 2: writeflag = 1<<17; break;
+                case 3: if (loopDir > 0) writeflag = (1<<16); else writeflag= (1<<17); break;
+	    }
+	    writeflag |= (1<<19) | (1<<20); //dummy channel dazu
+            
+
+     	    //usleep(500);
+
+	    //WRITE CORRECTION
+	    if (writeDAC(status.loopPos + writeflag) > 0) {
+               Post_error(FOFB_ERROR_DAC);
+            }
+	    writeStatus();
+
+        /*
+        if (count==100) {
+            cout<<"stopping " <<endl;
+            f_run = 0;
+        };
+        */
+
         tm->eval();
         if (count%1000==0) {
            cout<<"timing summary\n";
@@ -1021,6 +1165,8 @@ int main() {
        } 
        // STOP CORRECTION
        if ((f_run == 0) && (f_runstate >= 1)) {
+            ctrl_DAC(false);
+	    init_ADC(0,0);
             cout << "Stopped  ....." << endl << flush;
             f_runstate = 0;
        }
@@ -1028,7 +1174,7 @@ int main() {
        t_stop.tv_sec=0;
        t_stop.tv_nsec=1000000;
        //clock_nanosleep(CLOCK_MODE,0,&t_stop,0);
-
+       usleep(500);
     }
     return 0;
 }
