@@ -625,6 +625,7 @@ void read_RFMStruct() {
     readStruct( "Frequency",Frequency,readStructtype_double);
     readStruct( "SingularValueX", IvecX,readStructtype_double);
     readStruct( "SingularValueY", IvecY,readStructtype_double);
+    P_soll = P_soll / 100; I = I/100; D = D/100;
     
     //CORData
     readStruct( "CMx", CMx);
@@ -762,10 +763,10 @@ unsigned char writeDAC(unsigned int loopPos) {
 
     t_dac_write.clock();
 
-    t_adc_start.wait(450000); // sleep 450 us
+    //t_adc_start.wait(450000); // sleep 450 us
     //cout << " write "<< t_dac_write.tv_sec << ","<<t_dac_write.tv_nsec <<" \n";
 
-    usleep(300);
+    //usleep(300);
 
     /* tell IOC to work */
     if (RFM2gSendEvent( RFM_Handle, RFM2G_NODE_ALL, RFM2GEVENT_INTR3, 
@@ -934,14 +935,14 @@ unsigned char make_cor() {
     dCORy = SmatInvY * diffY;
 
     //cout << "  Check dCOR size" << endl;
-    //cout << "dCORx" << dCORx << endl;
-    //cout << "dCORy" << dCORy << endl;
-    if ((max(dCORx) > 0.100) || (max(dCORy) > 0.100))
+    if ((max(abs(dCORx)) > 0.100) || (max(abs(dCORy)) > 0.100)) {
+        cout << "dCORx" << dCORx << endl;
+        cout << "dCORy" << dCORy << endl;
         return FOFB_ERROR_CM100;
-
+    }
 
     //cout << "  calc PID" << endl;
-    if (P < P_soll) P += 0.1;
+    if (P < P_soll) P += 0.01;
 
     if ((plane == 0) || (plane == 1) || ((plane == 3) && (loopDir > 0))) {
         dCORxPID  = (dCORx * P) + (I*Xsum)  + (D*(dCORx-dCORlastX));
@@ -949,8 +950,8 @@ unsigned char make_cor() {
         Xsum      = Xsum+dCORx;
         CMx       = CMx - dCORxPID;
         Data_CMx  = (CMx % scaleDigitsX) + halfDigits;
-        for (char i = 0; i< numCORx; i++) {
-           char corPos = DAC_WaveIndexX[i]-1;
+        for (unsigned int  i = 0; i< numCORx; i++) {
+           unsigned int corPos = DAC_WaveIndexX[i]-1;
            DACout[corPos] = Data_CMx(i);
         }
     } 
@@ -962,8 +963,8 @@ unsigned char make_cor() {
         CMy       = CMy - dCORyPID;
         Data_CMy  = (CMy % scaleDigitsY) + halfDigits;
 
-        for (char i = 0; i< numCORy; i++) {
-           char corPos = DAC_WaveIndexY[i]-1;
+        for (unsigned int i = 0; i< numCORy; i++) {
+           unsigned int corPos = DAC_WaveIndexY[i]-1;
            DACout[corPos] = Data_CMy(i);
         }
     }
@@ -1127,7 +1128,7 @@ int main() {
             t_stop.clock();
 
             int writeflag = 0;   
-	    plane = 4;
+	    //plane = 4;
             switch((int) plane) {
 		case 0: writeflag = (1<<16) | (1<<17) ; break;
                 case 1: writeflag = 1<<16; break;
