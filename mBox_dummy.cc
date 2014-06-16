@@ -260,7 +260,7 @@ RFM2G_UINT32   DACout[DAC_BUFFER_SIZE];
 
 const char *DAC_IOCs[]  = {"IOCS15G","IOCS2G","IOCS4G","IOCS6G","IOCS8G","IOCS10G","IOCS12G","IOCS14G","IOCS16G","IOC3S16G" };
 char DAC_nodeIds[]     = {0x02     , 0x12   , 0x14   , 0x16   , 0x18   , 0x1A    , 0x1C    , 0x1E    , 0x20    , 0x21 };
-char Act_DAC_nodeIds[] = {0        , 0      , 0      , 1      , 0      , 0       , 0       , 0       , 0       , 0 };
+char Act_DAC_nodeIds[] = {0        , 0      , 0      , 1      , 1      , 0       , 0       , 0       , 0       , 0 };
 char num_DAC_nodeIds   = 10;
 
 

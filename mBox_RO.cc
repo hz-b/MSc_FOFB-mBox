@@ -648,18 +648,14 @@
 	    svd(U,s,V,SmatX);
 	    cout << "      reduce U to Ivec" << endl;
 	    U = U.cols(0,IvecX-1);
-	    cout << U << endl;
 	    cout << "      Transpose U" << endl;
 	    U = trans(U);
 	    cout << "      Get Diag Matrix of  S" << endl;
 	    S = diagmat(s.subvec(0,IvecX-1)); 
-	    cout << S << endl;
 	    cout << "      reduce V to Ivec" << endl;
 	    V = V.cols(0,IvecX-1);
 	    cout << "       Calc new Matrix" << endl;
 	    SmatInvX = V * inv(S) * U;
-	    cout << V << endl;
-	    cout << SmatInvX << endl;
 
 	    // Vertical Smat
 	    cout << " SVD Ver" << endl;

@@ -1,6 +1,6 @@
 /***********************************************
 Fast mBox
-Author: Dennis Engel
+Author: Dennis Engel & Andreas Schaelicke
 
 ************************************************/
 //#define ARMA_DONT_USE_BLAS
@@ -279,6 +279,10 @@ double DAC_WaveIndexX[128];
 double DAC_WaveIndexY[128];
 vec CMx;
 vec CMy;
+bool use_CMWeight = true;
+vec CMWeightX;
+vec CMWeightY;
+
 mat SmatX;
 mat SmatY;
 mat SmatInvX;
@@ -675,7 +679,7 @@ void calcSmat() {
     vec s;
     mat S;
     mat V;
-    
+    int i; 
     cout << "   Given : " << " SmatY cols: " << SmatY.n_cols << " smatY rows " << SmatY.n_rows<< " smatX cols " <<  SmatX.n_cols << " smatX rows" << SmatX.n_rows << "  IvecX : " << IvecX << " IvecY " << IvecY << endl;
 
     cout << "   SVD Hor" << endl;
@@ -684,7 +688,16 @@ void calcSmat() {
         cout << "IVecX > SmatX.n_rows: Setting IvecX = SmatX.n_rows" << endl;
         IvecX = SmatX.n_rows;
     }
-    
+    if (use_CMWeight) {
+            cout << "      calc CMWeights" << endl;
+	    CMWeightX = 1/(trans(stddev(SmatX)));
+            //cout << CMWeightX << endl;
+	    cout << "      Include CMWeightX in SMat" << endl;
+	    for (i = 0; i < SmatX.n_cols; i++) {
+	            SmatX.col(i)  = SmatX.col(i) * CMWeightX(i);
+            }
+    }
+
     cout << "      calc SVD" << endl;
     svd(U,s,V,SmatX);
     cout << "      reduce U to Ivec" << endl;
@@ -705,6 +718,16 @@ void calcSmat() {
         cout << "IVecY > SmatY.n_rows: Setting IvecY = SmatY.n_rows" << endl;
         IvecY = SmatY.n_rows;
     }
+    if (use_CMWeight) {
+       	    cout << "      calc CMWeights" << endl;
+	    CMWeightY = 1/(trans(stddev(SmatY)));
+            //cout << CMWeightY << endl;
+	    cout << "      Include CMWeightY in SMat" << endl;
+	    for (i = 0; i < SmatY.n_cols; i++) {
+	            SmatY.col(i)  = SmatY.col(i) * CMWeightY(i);
+            }
+    }
+
     cout << "      calc SVD" << endl;
     svd(U,s,V,SmatY);
     cout << "      reduce U to Ivec" << endl;
@@ -934,8 +957,15 @@ unsigned char make_cor() {
     dCORx = SmatInvX * diffX;
     dCORy = SmatInvY * diffY;
 
+    if (use_CMWeight) {
+	dCORx = dCORx % CMWeightX;
+	dCORy = dCORy % CMWeightY;
+    }
+
+    vec abs_dCORx = abs(dCORx);
+    vec abs_dCORy = abs(dCORy);
     //cout << "  Check dCOR size" << endl;
-    if ((max(abs(dCORx)) > 0.100) || (max(abs(dCORy)) > 0.100)) {
+    if ((max(abs_dCORx) > 0.100) || (max(abs_dCORy) > 0.100)) {
         cout << "dCORx" << dCORx << endl;
         cout << "dCORy" << dCORy << endl;
         return FOFB_ERROR_CM100;
@@ -984,43 +1014,51 @@ unsigned char make_cor() {
 
 void writeStatus() {
    unsigned long pos = STATUS_MEMPOS;
-   result = RFM2gWrite(RFM_Handle,pos, &status, sizeof(t_status));
+   unsigned char * ptr = (unsigned char *) &status;
+   result = RFM2gWrite(RFM_Handle,pos,&status, sizeof(t_status));
 }
 
+
 void sendMessage(const char* Message,const char *error) {
-   cout << "Send Messag: " << Message << " Error: " << error << endl;
-   return;
+   //cout << "Send Message: " << Message << " Error: " << error << endl;
    unsigned long pos = MESSAGE_MEMPOS;
-   struct t_header { 
+   //cout << "Send To Pos: " << pos << endl;
+   struct t_header {
         unsigned short namesize;
         unsigned short sizey;
-        unsigned short sizex;
+        unsigned short  sizex;
         unsigned short type;
    } header;
-   int thesize = 2 + sizeof(header)+ 6 + strlen(Message) + 
+   int thesize = 2 + sizeof(header)+ 6 + strlen(Message) +
                      sizeof(header)+ 5 + strlen(error) ;
-   unsigned short * mymem = (unsigned short *) malloc(thesize);
+   unsigned char * mymem = (unsigned char *) malloc(thesize);
    unsigned long structpos = 0;
 
-   mymem[0]=2; mymem[1] = 0;  structpos += 2;// number of Elements (message, error)
-   
-   header.namesize=6; 
+   mymem[0]=2;  mymem[1] = 0; structpos += 2;// number of Elements (message, error)
+
+   header.namesize=6;
    header.sizex = strlen(Message);
    header.sizey = 1;
-   header.type = 2; 
+   header.type = 2;
    memcpy(mymem+structpos,&header,sizeof(header)); structpos += sizeof(header);
    memcpy(mymem+structpos,"status",6); structpos += 6;
    memcpy(mymem+structpos,Message,strlen(Message)); structpos += strlen(Message);
+
    header.namesize=5;
    header.sizex = strlen(error);
    header.sizey = 1;
-   header.type = 2; 
+   header.type = 2;
    memcpy(mymem+structpos,&header,sizeof(header)); structpos += sizeof(header);
    memcpy(mymem+structpos,"error",5); structpos += 5;
    memcpy(mymem+structpos,error,strlen(error)); structpos += strlen(error);
+
    result = RFM2gWrite( RFM_Handle, pos , mymem, thesize);
+   //unsigned short l = 2;
+   //result = RFM2gWrite( RFM_Handle, pos , &l, 2); 
+   //cout << "Result" << result << endl;
    free(mymem);
 }
+
 
 void Post_error(unsigned char errornr) {
     switch (errornr) {
@@ -1048,7 +1086,7 @@ extern "C" void openblas_set_num_threads(int num_threads);
 
 int main() {
     unsigned char errornr;
-    cout << "starting MBox " <<  endl << "---------------------" << endl;
+    cout << "starting mBox " <<  endl << "---------------------" << endl;
     //openblas_set_num_threads(1);
     //goto_set_num_threads(1);
     init_rfm();
@@ -1085,6 +1123,7 @@ int main() {
     tm->addDiff("DAC:send   ","t_dac_write","t_dac_send");
     tm->addDiff("DAC:wait   ","t_dac_send","t_dac_stop");
 
+    sendMessage("mBox++ ready"," ");
     int count=1;
 
     while(1) {
@@ -1107,6 +1146,7 @@ int main() {
             read_RFMStruct();
             calcSmat(); 
             f_runstate = 1;
+	    sendMessage("FOFB mBox++ started"," ");
     	    init_ADC(150,600);
             ctrl_DAC(1);
             cout << "RUN RUN RUN .... " << endl << flush;
@@ -1138,7 +1178,7 @@ int main() {
 	    writeflag |= (1<<19) | (1<<20); //dummy channel dazu
             
 
-     	    usleep(500);
+     	    usleep(300);
 
 	    //WRITE CORRECTION
 	    if (writeDAC(status.loopPos + writeflag) > 0) {
@@ -1162,6 +1202,7 @@ int main() {
 	    init_ADC(0,0);
             cout << "Stopped  ....." << endl << flush;
             f_runstate = 0;
+	    sendMessage("FOFB mBox++ stopped"," ");
        }
        struct timespec t_stop;
        t_stop.tv_sec=0;
