@@ -213,8 +213,8 @@ int injectionStartCnt = 0;
 double loopDir  = 1;
 
 struct t_status {
-    double loopPos   ;
-    double errornr   ;
+    unsigned short loopPos   ;
+    unsigned short errornr   ;
 } status ;
 
 struct t_message {
