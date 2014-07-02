@@ -665,9 +665,8 @@ void read_RFMStruct() {
     cout << "idx 6Z5 : " << idxBPMZ6D5R << endl;
 
     injectionCnt = 0;
-    injectionStartCnt = (int) Frequency/1000;
-    injectionStopCnt  = (int) Frequency*60/1000;
-
+    injectionStopCnt = (int) Frequency/1000;
+    injectionStartCnt  = (int) Frequency*60/1000;
 }
 
 
@@ -934,8 +933,8 @@ unsigned char make_cor() {
        injectionCnt += 1;
        if ((injectionCnt >= injectionStopCnt) && (injectionCnt <= injectionStartCnt))
    	  return 0;
-    }
-    injectionCnt = 0;
+    } else
+	 injectionCnt = 0;
     
 
     //cout << "  prove rms" << endl;
@@ -1178,7 +1177,7 @@ int main() {
 	    writeflag |= (1<<19) | (1<<20); //dummy channel dazu
             
 
-     	    usleep(300);
+     	    //usleep(100);
 
 	    //WRITE CORRECTION
 	    if (writeDAC(status.loopPos + writeflag) > 0) {
