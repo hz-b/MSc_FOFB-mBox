@@ -187,6 +187,7 @@ SingleTimer t_dac_start("t_dac_start"), t_dac_clear("t_dac_clear"),
 #define FOFB_ERROR_CM100   4 
 #define FOFB_ERROR_NoBeam  5 
 #define FOFB_ERROR_RMS     6  
+#define FOFB_ERROR_ADCReset  8
 #define FOFB_ERROR_Unkonwn 7 
 
 char   devicename[] =    "/dev/rfm2g0";
@@ -443,6 +444,7 @@ void ctrl_DAC(bool start_stop) {
         }
 
     }
+    fflush(stdout);
 }
 
 
@@ -1019,55 +1021,59 @@ void writeStatus() {
 
 
 void sendMessage(const char* Message,const char *error) {
-   //cout << "Send Message: " << Message << " Error: " << error << endl;
-   unsigned long pos = MESSAGE_MEMPOS;
-   //cout << "Send To Pos: " << pos << endl;
-   struct t_header {
-        unsigned short namesize;
-        unsigned short sizey;
-        unsigned short  sizex;
-        unsigned short type;
-   } header;
-   int thesize = 2 + sizeof(header)+ 6 + strlen(Message) +
-                     sizeof(header)+ 5 + strlen(error) ;
-   unsigned char * mymem = (unsigned char *) malloc(thesize);
-   unsigned long structpos = 0;
+   #ifdef ReadOnly
+  	cout << "Send Message: " << Message << " Error: " << error << endl;
+   #else
+	unsigned long pos = MESSAGE_MEMPOS;
+	//cout << "Send To Pos: " << pos << endl;
+        struct t_header {
+		unsigned short namesize;
+		unsigned short sizey;
+		unsigned short  sizex;
+		unsigned short type;
+	} header;
+	int thesize = 2 + sizeof(header)+ 6 + strlen(Message) +
+		     sizeof(header)+ 5 + strlen(error) ;
+	unsigned char * mymem = (unsigned char *) malloc(thesize);
+	unsigned long structpos = 0;
+	mymem[0]=2;  mymem[1] = 0; structpos += 2;// number of Elements (message, error)
+	header.namesize=6;
+	header.sizex = strlen(Message);
+        header.sizey = 1;
+        header.type = 2;
+	memcpy(mymem+structpos,&header,sizeof(header)); structpos += sizeof(header);
+	memcpy(mymem+structpos,"status",6); structpos += 6;
+	memcpy(mymem+structpos,Message,strlen(Message)); structpos += strlen(Message);
 
-   mymem[0]=2;  mymem[1] = 0; structpos += 2;// number of Elements (message, error)
+	header.namesize=5;
+	header.sizex = strlen(error);
+	header.sizey = 1;
+	header.type = 2;
+	memcpy(mymem+structpos,&header,sizeof(header)); structpos += sizeof(header);
+	memcpy(mymem+structpos,"error",5); structpos += 5;
+	memcpy(mymem+structpos,error,strlen(error)); structpos += strlen(error);
 
-   header.namesize=6;
-   header.sizex = strlen(Message);
-   header.sizey = 1;
-   header.type = 2;
-   memcpy(mymem+structpos,&header,sizeof(header)); structpos += sizeof(header);
-   memcpy(mymem+structpos,"status",6); structpos += 6;
-   memcpy(mymem+structpos,Message,strlen(Message)); structpos += strlen(Message);
-
-   header.namesize=5;
-   header.sizex = strlen(error);
-   header.sizey = 1;
-   header.type = 2;
-   memcpy(mymem+structpos,&header,sizeof(header)); structpos += sizeof(header);
-   memcpy(mymem+structpos,"error",5); structpos += 5;
-   memcpy(mymem+structpos,error,strlen(error)); structpos += strlen(error);
-
-   result = RFM2gWrite( RFM_Handle, pos , mymem, thesize);
-   //unsigned short l = 2;
-   //result = RFM2gWrite( RFM_Handle, pos , &l, 2); 
-   //cout << "Result" << result << endl;
-   free(mymem);
+	   result = RFM2gWrite( RFM_Handle, pos , mymem, thesize);
+	   //unsigned short l = 2;
+	   //result = RFM2gWrite( RFM_Handle, pos , &l, 2); 
+	   //cout << "Result" << result << endl;
+	   free(mymem);
+   #endif
 }
 
 
-void Post_error(unsigned char errornr) {
-    switch (errornr) {
+void Post_error() {
+    writeStatus();
+    sleep(1);
+    switch (status.errornr) {
         case 0: return; break;
-        case FOFB_ERROR_ADC   : sendMessage( "FOFB error", "ADC Timeout"); break;
-        case FOFB_ERROR_DAC   : sendMessage( "FOFB error", "DAC Problem"); break;
-        case FOFB_ERROR_CM100 : sendMessage( "FOFB error", "To much to correct");break;
-        case FOFB_ERROR_NoBeam: sendMessage( "FOFB error", "No Current");break;
-        case FOFB_ERROR_RMS   : sendMessage( "FOFB error", "Bad RMS");break;
-        default               : sendMessage( "FOFB error", "Unknown Problem"); break;
+        case FOFB_ERROR_ADC        : sendMessage( "MDI error", "ADC Timeout"); break;
+        case FOFB_ERROR_ADCReset   : sendMessage( "MDI error", "MDI was restaret."); break;
+        case FOFB_ERROR_DAC        : sendMessage( "IOC error", "DAC Problem"); break;
+        case FOFB_ERROR_CM100      : sendMessage( "FOFB error", "To much to correct");break;
+        case FOFB_ERROR_NoBeam     : sendMessage( "Error", "No Current");break;
+        case FOFB_ERROR_RMS        : sendMessage( "FOFB error", "Bad RMS");break;
+        default                    : sendMessage( "FOFB error", "Unknown Problem"); break;
     }
 }
 
@@ -1075,8 +1081,10 @@ void Post_error(unsigned char errornr) {
 void SIGINT_handler(int signum)
 {
     cout << endl << "Quit mBox...." << endl;
-    init_ADC(0,0);
-    ctrl_DAC(0);
+    #ifndef ReadOnly
+      init_ADC(0,0);
+      ctrl_DAC(0);
+    #endif
     exit(0); 
 }
 
@@ -1084,8 +1092,11 @@ void SIGINT_handler(int signum)
 extern "C" void openblas_set_num_threads(int num_threads);
 
 int main() {
-    unsigned char errornr;
-    cout << "starting mBox " <<  endl << "---------------------" << endl;
+    cout << "Starting mBox " <<  endl << "---------------------" << endl <<endl;
+    #ifdef ReadOnly
+       cout << "READONLY VERSION" << endl << endl;
+    #endif
+
     //openblas_set_num_threads(1);
     //goto_set_num_threads(1);
     init_rfm();
@@ -1098,12 +1109,14 @@ int main() {
     char f_run = 0;     // 0 = IDLE,    1 = RUNNING
     char f_runstate= 0; // 0 = PREINIT; 1 = INITIALIZED; 2 = ERROR
 
-    //init_ADC(150,600);
-    //read_RFMStruct();
-    //testDAC();
+    #ifndef ReadOnly
+      //init_ADC(150,600);
+      //read_RFMStruct();
+      //testDAC();
+      init_ADC(0,0);
+    #endif
 
 
-    init_ADC(0,0);
     /* timing stats */
     TimingModule * tm=TimingModule::getTimingModule();
     SingleTimer t_start("t_start"), t_stop("t_stop");
@@ -1129,13 +1142,10 @@ int main() {
        result = RFM2gRead( RFM_Handle, CTRL_MEMPOS , &f_run , 1 );
        // CHECK IOC 
        if (f_run == 33) {
- 		cout << "  !!! MDIZ4T4R was restarted !!! ... Wait for initialization " << endl; 
-	        while (f_run != 0) {
-       		    result = RFM2gRead( RFM_Handle, CTRL_MEMPOS , &f_run , 1 );
-		    sleep(1);
-		}
-		init_ADC(150,600);
-                cout << "Wait for start" << endl;
+ 		cout << "  !!! MDIZ4T4R was restarted !!! ... -> Please restart " << endl; 
+ 		status.errornr = FOFB_ERROR_ADCReset;
+		Post_error();
+		f_runstate = 2;
        }
        // IDLE
        if ((f_run == 0) && (f_runstate == 0)) {}
@@ -1146,22 +1156,25 @@ int main() {
             calcSmat(); 
             f_runstate = 1;
 	    sendMessage("FOFB mBox++ started"," ");
-    	    init_ADC(150,600);
-            ctrl_DAC(1);
+	    #ifndef ReadOnly
+    	       init_ADC(150,600);
+               ctrl_DAC(1);
+	    #endif
             cout << "RUN RUN RUN .... " << endl << flush;
        }
 
        // READ AND CORRECT
        if ((f_run == 1) && (f_runstate == 1)) {
             if (readADC()) { 
-              Post_error(FOFB_ERROR_ADC);
+	      status.errornr = FOFB_ERROR_ADC;
+              Post_error();
             }
 		
 	    // CALC CORRECTION 
             t_start.clock();
-            errornr = make_cor();
-            if (errornr) {
-              Post_error(errornr);
+            status.errornr = make_cor();
+            if (status.errornr) {
+              Post_error();
               f_runstate = 2;
             }
             t_stop.clock();
@@ -1180,9 +1193,12 @@ int main() {
      	    //usleep(100);
 
 	    //WRITE CORRECTION
+            #ifndef ReadOnly
 	    if (writeDAC(status.loopPos + writeflag) > 0) {
-               Post_error(FOFB_ERROR_DAC);
+               status.errornr = FOFB_ERROR_DAC;
+               Post_error();
             }
+	    #endif
 
 	    writeStatus();
 
@@ -1197,11 +1213,14 @@ int main() {
        } 
        // STOP CORRECTION
        if ((f_run == 0) && (f_runstate >= 1)) {
-            ctrl_DAC(false);
-	    init_ADC(0,0);
+            #ifndef ReadOnly
+               ctrl_DAC(false);
+	       init_ADC(0,0);
+            #endif
             cout << "Stopped  ....." << endl << flush;
             f_runstate = 0;
 	    sendMessage("FOFB mBox++ stopped"," ");
+	    fflush(stdout);
        }
        struct timespec t_stop;
        t_stop.tv_sec=0;
