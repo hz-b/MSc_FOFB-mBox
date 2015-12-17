@@ -11,7 +11,7 @@ Author: Dennis Engel & Andreas Schaelicke
 #include <map>
 #include <iomanip>
 #include <signal.h>
-#include "rfm2g_api.h"
+#include <rfm2g_api.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -1020,9 +1020,12 @@ void writeStatus() {
 }
 
 
-void sendMessage(const char* Message,const char *error) {
+void sendMessage(const char* Message, const char *error) {
    #ifdef ReadOnly
-  	cout << "Send Message: " << Message << " Error: " << error << endl;
+  	cout << "Send Message: " << Message;
+    if (error)
+        cout << " Error: " << error;
+    cout << endl;
    #else
 	unsigned long pos = MESSAGE_MEMPOS;
 	//cout << "Send To Pos: " << pos << endl;

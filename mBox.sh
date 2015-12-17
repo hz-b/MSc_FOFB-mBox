@@ -1,2 +1,0 @@
-export OPENBLAS_NUM_THREADS=1
-./mBox
