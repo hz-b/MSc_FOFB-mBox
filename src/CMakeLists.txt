@@ -1,16 +1,19 @@
-
 set(SOURCES main.cpp
             adc.cpp
             dac.cpp
             dma.cpp
             mbox.cpp
-            correctionhandler.cpp
             rfm_helper.cpp
+            logger.cpp
+            handlers/handler.cpp
+            handlers/correction/correctionhandler.cpp
+            handlers/correction/correctionprocessor.cpp
+            handlers/measures/measurehandler.cpp
     )
 
-if (${DUMMY_RFM_DRIVER})
-    set(SOURCES ${SOURCES} rfmdriver_dummy.cpp)
-endif()
+#if (${DUMMY_RFM_DRIVER})
+ #   set(SOURCES ${SOURCES} rfmdriver_dummy.cpp)
+#endif()
 
 
 add_executable(mbox ${SOURCES})

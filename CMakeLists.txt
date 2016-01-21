@@ -35,4 +35,5 @@ endif()
 
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/cmake/config.h.cmake ${CMAKE_SOURCE_DIR}/src/config.h )
 
+include_directories(src)
 add_subdirectory(src)

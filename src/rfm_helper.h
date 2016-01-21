@@ -47,7 +47,7 @@ public:
             unsigned long datasize2;
             unsigned long datasize;
             this->searchField(name, pos, datasize1, datasize2, datasize);
-            if (strcmp(structname, name) == 0) {          
+            if (strcmp(structname, name) == 0) {
                 std::cout << "   Found Name: " << name << std::endl;
                 this->prepareField(field, pos, datasize1, datasize2);
 

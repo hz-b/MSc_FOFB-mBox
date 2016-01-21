@@ -30,7 +30,6 @@ void startError()
 
 int main(int argc, char *argv[])
 {
-    bool readOnly;
     std::string startflag = "";
 
     if (argc == 2) {
@@ -45,10 +44,10 @@ int main(int argc, char *argv[])
 
             return 0;
         } else if (!std::strcmp(argv[1], "--ro")) {
-            readOnly = true;
+            READONLY = true;
             startflag = " [READ-ONLY VERSION]";
         } else if (!std::strcmp(argv[1], "--rw")) {
-            readOnly = false;
+            READONLY = false;
         } else {
             startError();
         }
@@ -62,7 +61,7 @@ int main(int argc, char *argv[])
 
     char devicename[] = "/dev/rfm2g0";
     bool weigthedCorr = true;
-    mBox mbox(devicename, weigthedCorr, readOnly);
+    mBox mbox(devicename, weigthedCorr);
     std::cout << "mBox ready" << std::endl;
 
     signal(SIGINT, SIGINT_handler);
