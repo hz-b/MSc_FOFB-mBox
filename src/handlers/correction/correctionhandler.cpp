@@ -71,6 +71,7 @@ int CorrectionHandler::make()
     if (!READONLY) {
         this->writeCorrectors(DACout);
     }
+    return 0;
 }
 
 void CorrectionHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,

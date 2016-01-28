@@ -36,6 +36,8 @@ public:
      */
     void init();
     
+    int status() { return m_status; }
+    
 protected:
     /**
      * @brief Read the data from the cBox.
@@ -89,7 +91,10 @@ protected:
 
     arma::vec m_gainX, m_gainY;
     int m_numBPMx, m_numBPMy;
+    int m_numCMx, m_numCMy;
     arma::vec m_BPMoffsetX, m_BPMoffsetY;
+    
+    int m_status;
 };
 
 #endif // HANDLER_H

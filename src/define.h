@@ -54,4 +54,18 @@ struct t_status {
     unsigned short errornr;
 };
 
+
+enum RunStatus
+{
+    Idle = 0,
+    Running = 1,
+};
+
+enum RunState
+{
+    Preinit = 0,
+    Initialized = 1,
+    Error = 2
+};
+
 #endif

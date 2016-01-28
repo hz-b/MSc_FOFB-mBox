@@ -11,34 +11,18 @@ class ADC;
 class DAC;
 class DMA;
 
-enum RunStatus
-{
-    Idle = 0,
-    Running = 1,
-};
-
-enum RunState
-{
-    Preinit = 0,
-    Initialized = 1,
-    Error = 2
-};
-
 class mBox
 {
 public:
-    explicit mBox(char *deviceName, bool weightedCorr);
+    explicit mBox(char *deviceName, bool weightedCorr,std::string inputFile);
     ~mBox();
     void startLoop();
     void sendMessage(const char* message, const char *error);
 
-
 private:
     void initRFM(char *deviceName);
     void writeCorrection(RFM2G_UINT32* DACout);
-
     void postError(unsigned int errornr);
-
     bool m_readOnly;
     RunState m_runningState;
     RunStatus m_runningStatus;
@@ -46,7 +30,6 @@ private:
     Handler *m_handler;
     RFMDriver *m_driver;
     RFMHelper *m_rfmHelper;
-    //FS BUMP
 
 };
 

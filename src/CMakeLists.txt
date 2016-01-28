@@ -23,4 +23,6 @@ target_link_libraries (mbox ${ARMADILLO_LIBRARIES}
                             ${RFM2G_LIBRARIES}
                             ${CMAKE_THREAD_LIBS_INIT}
                             ${LIBRT_LIBRARIES}
+                            ${PYTHON_LIBRARY}
+                            ${NUMPY_LIBRARY}
                         )

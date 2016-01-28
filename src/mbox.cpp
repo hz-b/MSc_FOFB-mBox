@@ -14,7 +14,7 @@
 
 #include "logger.h"
 
-mBox::mBox(char *deviceName, bool weightedCorr)
+mBox::mBox(char *deviceName, bool weightedCorr, std::string inputFile)
 {
     m_runningState = Preinit;
     m_runningStatus = Idle;
@@ -32,9 +32,14 @@ mBox::mBox(char *deviceName, bool weightedCorr)
     }
     m_rfmHelper = new RFMHelper(m_driver, m_dma);
     Logger::logger.init(m_driver, m_dma);
-//   m_handler = new CorrectionHandler(m_driver, m_dma, weightedCorr);
-    m_handler = new MeasureHandler(m_driver, m_dma, weightedCorr);
+
+    if (!inputFile.empty()) { // inputFile => Experiment mode
+        m_handler = new MeasureHandler(m_driver, m_dma, weightedCorr, inputFile);
+    } else {
+        m_handler = new CorrectionHandler(m_driver, m_dma, weightedCorr);
+    }
 }
+
 
 mBox::~mBox()
 {
@@ -44,24 +49,6 @@ mBox::~mBox()
            m_driver;
 }
 
-void mBox::initRFM(char *deviceName)
-{
-    std::cout << "Init RFM" << std::endl;
-    std::cout << "\tRFM Handle : " << m_driver->handle() << std::endl;
-
-    if (m_driver->open(deviceName)) {
-        std::cout << "\tCan't open " << deviceName << std::endl; 
-        std::cout << "\tExit fron initRFM()" << std::endl; 
-        exit(1); 
-    }
-
-    RFM2G_NODE nodeId;
-    if (m_driver->nodeId(&nodeId)) {
-        std::cout << "\tCan't get Node Id" << std::endl;
-        exit(1);
-    }
-    std::cout << "\tRFM Node Id : " << nodeId << std::endl;
-}
 
 void mBox::startLoop()
 {
@@ -114,4 +101,23 @@ void mBox::startLoop()
         t_stop.tv_nsec=1000000;
         clock_nanosleep(CLOCK_MODE, 0, &t_stop, 0);
     }
+}
+
+void mBox::initRFM(char *deviceName)
+{
+    std::cout << "Init RFM" << std::endl;
+    std::cout << "\tRFM Handle : " << m_driver->handle() << std::endl;
+
+    if (m_driver->open(deviceName)) {
+        std::cout << "\tCan't open " << deviceName << std::endl; 
+        std::cout << "\tExit fron initRFM()" << std::endl; 
+        exit(1); 
+    }
+
+    RFM2G_NODE nodeId;
+    if (m_driver->nodeId(&nodeId)) {
+        std::cout << "\tCan't get Node Id" << std::endl;
+        exit(1);
+    }
+    std::cout << "\tRFM Node Id : " << nodeId << std::endl;
 }
