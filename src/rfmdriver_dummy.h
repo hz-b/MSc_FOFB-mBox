@@ -11,7 +11,7 @@ public:
     /**
      * File Open/Close
      */
-    virtual RFM2G_STATUS open(char *devicePath){ return RFM2G_SUCCESS; };
+    virtual RFM2G_STATUS open(char *devicePath);
     virtual RFM2G_STATUS close(){ return RFM2G_SUCCESS; };
 
     /**
@@ -39,8 +39,8 @@ public:
     /**
      * Data Transferts
      */
-    virtual RFM2G_STATUS read(RFM2G_UINT32 offset, void *buffer, RFM2G_UINT32 length){ return RFM2G_SUCCESS; };
-    virtual RFM2G_STATUS write(RFM2G_UINT32 offset, void *buffer, RFM2G_UINT32 length){ return RFM2G_SUCCESS; };
+    virtual RFM2G_STATUS read(RFM2G_UINT32 offset, void *buffer, RFM2G_UINT32 length);
+    virtual RFM2G_STATUS write(RFM2G_UINT32 offset, void *buffer, RFM2G_UINT32 length);
 
     virtual RFM2G_STATUS peek8(RFM2G_UINT32 offset, RFM2G_UINT8  *value){ return RFM2G_SUCCESS; };
     virtual RFM2G_STATUS peek16(RFM2G_UINT32 offset, RFM2G_UINT16 *value){ return RFM2G_SUCCESS; };

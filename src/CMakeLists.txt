@@ -11,9 +11,10 @@ set(SOURCES main.cpp
             handlers/measures/measurehandler.cpp
     )
 
-#if (${DUMMY_RFM_DRIVER})
- #   set(SOURCES ${SOURCES} rfmdriver_dummy.cpp)
-#endif()
+if (${DUMMY_RFM_DRIVER})
+    set(SOURCES ${SOURCES} rfmdriver_dummy.cpp)
+    
+endif()
 
 
 add_executable(mbox ${SOURCES})

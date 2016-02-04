@@ -42,7 +42,7 @@ void RFMHelper::dumpMemory(void* data, int len) {
     unsigned char* p = (unsigned char*)data;
     std::printf("'%f'\n", *(double*)p);
     for (int i = 0 ; i < len ; ++i) {
-    std::printf("0x%x\n", (unsigned char)*(p+i));
+        std::printf("0x%x\n", (unsigned char)*(p+i));
     }
 }
 
@@ -50,7 +50,7 @@ void RFMHelper::dumpMemory(volatile void* data, int len) {
     unsigned char* p = (unsigned char*)data;
     std::printf("'%f'\n", *(double*)p);
     for (int i = 0 ; i < len ; ++i) {
-    std::printf("0x%x\n", (unsigned char)*(p+i));
+        std::printf("0x%x\n", (unsigned char)*(p+i));
     }
 }
 
@@ -103,32 +103,30 @@ void RFMHelper::prepareField(arma::mat& field, unsigned long pos, unsigned long 
     std::cout << "Size : " << field.n_cols << ":"<< field.n_rows << std::endl;
 }
 
-void RFMHelper::searchField(char* name,
+void RFMHelper::searchField(std::string &name,
                             unsigned long &pos,
                             unsigned long &datasize1,
                             unsigned long &datasize2,
                             unsigned long &datasize
                            )
 {
-            short header[4];
+        short header[4];
+        m_driver->read(pos, &header, 8); // 4 * 16-Bit = 8
+        pos += 8;
 
-            m_driver->read(pos, &header, 8); // 4 * 16-Bit = 8
-            //cout << "2" << endl;
-            pos += 8;
+        unsigned long namesize = header[0];
+        datasize1 = header[1];
+        datasize2 = header[2];
+        datasize  = datasize1 * datasize2;
+        unsigned long type  = header[3];
+        if (type == 1)
+            datasize *= 8;
 
-            unsigned long namesize  = header[0];
-            datasize1 = header[1];
-            datasize2 = header[2];
-            datasize  = datasize1 * datasize2;
-            unsigned long type      = header[3];
-            unsigned long valuenr   = datasize;
-            if (type == 1)
-                datasize *= 8;
+        char name_tmp[namesize];
+        m_driver->read(pos, name_tmp, namesize);
+        name_tmp[namesize] = '\0';
+        name = std::string(name_tmp);
 
-            m_driver->read(pos, &name, namesize);
-            name[namesize] = char(0);
-            std::cout << "3 namesize: " << namesize << " "<< name << std::endl;
-
-            pos += namesize;
-            name[namesize] = 0;
+        pos += namesize;
+        std::cout << "name:" << " "<< name << std::endl;
 }
