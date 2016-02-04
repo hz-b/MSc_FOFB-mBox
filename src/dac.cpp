@@ -21,13 +21,13 @@ DAC::DAC(RFMDriver *driver, DMA *dma)
 void DAC::changeStatus(int status)
 {
     if (status == Start) {
-        std::cout << "starting DACs ... " << std::endl;
+        std::cout << "Starting DACs ... " << std::endl;
     } else if (status == Stop) {
-        std::cout << "stopping DACs ...." << std::endl;
+        std::cout << "Stopping DACs ...." << std::endl;
     }
     for (int i = 0 ; i < 10 ; i++) {
         if (m_IOCs[i].isActive()) {
-            std::cout << "  " << m_IOCs[i].name() << "\t: ";
+            std::cout << "\t" << m_IOCs[i].name() << "\t: ";
             if (m_driver->sendEvent( m_IOCs[i].id(), ADC_DAC_EVENT, status))
             { 
                 std::cout << "Error " << std::endl; 

@@ -36,30 +36,24 @@ public:
         short elementnr(0);
         std::string name;
 
-//        std::cout << "pos:" << pos << std::endl;
-
         m_driver->read(pos, &elementnr, 2); // 4 * 16-Bit = 8
-//        std::cout << "elementnr: " << elementnr << std::endl;
         pos += 2;
 
         for(unsigned int i = 0 ; i < elementnr ; i++) {
-            if (tartype==readStructtype_mat)
-                std::cout << "pos="<< std::setw(12) << pos << std::endl;
             unsigned long datasize1(0);
             unsigned long datasize2(0);
             unsigned long datasize(0);
-            std::cout << "i: " << i << std::endl;
             this->searchField(name, pos, datasize1, datasize2, datasize);
 
             if (name == structname) {
-                std::cout << "   Found Name: " << name << std::endl;
+                std::cout << "\tFound Name: " << name << std::endl;
                 this->prepareField(field, pos, datasize1, datasize2);
 
                 return;
             } 
             pos += datasize;
         }
-        std::cout << "    WARNING : " << structname << " not found !!!" << std::endl;
+        std::cout << "\tWARNING : " << structname << " not found !!!" << std::endl;
     };
 
 private:

@@ -9,20 +9,18 @@ CorrectionProcessor::CorrectionProcessor()
     m_rmsErrorCnt = 0;
 }
 
-void CorrectionProcessor::setCMs(vec CMx, vec CMy)
+void CorrectionProcessor::setCMs(arma::vec CMx, arma::vec CMy)
 {
     m_CMx = CMx;
     m_CMy = CMy;
 
-    m_numCMx = m_CMx.n_elem;
-    m_numCMy = m_CMy.n_elem;
-    m_dCORlastX  = zeros<vec>(m_numCMx); 
-    m_dCORlastY  = zeros<vec>(m_numCMy);
-    m_Xsum       = zeros<vec>(m_numCMx);
-    m_Ysum       = zeros<vec>(m_numCMy);
+    m_dCORlastX  = arma::zeros<arma::vec>(m_CMx.n_elem); 
+    m_dCORlastY  = arma::zeros<arma::vec>(m_CMy.n_elem);
+    m_Xsum       = arma::zeros<arma::vec>(m_CMx.n_elem);
+    m_Ysum       = arma::zeros<arma::vec>(m_CMy.n_elem);
 }
 
-void CorrectionProcessor::setSmat(mat &SmatX, mat &SmatY, double IvecX, double IvecY, bool weightedCorr)
+void CorrectionProcessor::setSmat(arma::mat &SmatX, arma::mat &SmatY, double IvecX, double IvecY, bool weightedCorr)
 {
     m_useCMWeight = weightedCorr;
     this->calcSmat(SmatX, IvecX, m_CMWeightX, m_SmatInvX);
@@ -36,10 +34,10 @@ void CorrectionProcessor::setInjectionCnt(double frequency)
     m_injectionStopCnt  = (int) frequency*60/1000;
 }
 
-int CorrectionProcessor::correct(vec &diffX, vec &diffY,
-                               bool newInjection,
-                               vec &Data_CMx, vec &Data_CMy,
-                               int type)
+int CorrectionProcessor::correct(arma::vec &diffX, arma::vec &diffY,
+                                 bool newInjection,
+                                 arma::vec &Data_CMx, arma::vec &Data_CMy,
+                                 int type)
 {
     static int count_test=0;
     static int count=0;
@@ -78,8 +76,8 @@ int CorrectionProcessor::correct(vec &diffX, vec &diffY,
     m_lastrmsY = rmsY;
 
     //cout << "  calc dCOR" << endl;
-    vec dCMx = m_SmatInvX * diffX;
-    vec dCMy = m_SmatInvY * diffY;
+    arma::vec dCMx = m_SmatInvX * diffX;
+    arma::vec dCMy = m_SmatInvY * diffY;
 
     if (m_useCMWeight) {
         dCMx = dCMx % m_CMWeightX;
@@ -224,47 +222,43 @@ int CorrectionProcessor::checkCorrection()
 	
 
 void CorrectionProcessor::calcSmat(const arma::mat &Smat,
-                                 double Ivec,
-                                 arma::vec &CMWeight,
-                                 arma::mat &SmatInv)
+                                   double Ivec,
+                                   arma::vec &CMWeight,
+                                   arma::mat &SmatInv)
 {
-    cout << "Calculate Smat" << endl;
-    mat U;
-    vec s;
-    mat S;
-    mat V;
-    cout << "   Given : " << " Smat cols: " << Smat.n_cols << " smat rows " << Smat.n_rows << "  Ivec : " << Ivec << endl;
+    std::cout << "Calculate Smat" << std::endl;
+    arma::mat U, S, V;
+    arma::vec s;
+    
+    std::cout << "\tGiven : " << " Smat cols: " << Smat.n_cols << " smat rows " << Smat.n_rows << "  Ivec : " << Ivec << std::endl;
     arma::mat Smat_w = arma::zeros(Smat.n_rows, Smat.n_cols);
-    cout << "   SVD Hor" << endl;
-    cout << "      make Ivec" << endl;
+    std::cout << "\tmake Ivec" << std::endl;
     if (Ivec > Smat.n_rows) {
-        cout << "IVec > Smat.n_rows: Setting Ivec = Smat.n_rows" << endl;
+        std::cout << "\tIVec > Smat.n_rows: Setting Ivec = Smat.n_rows" << std::endl;
         double Ivec = Smat.n_rows;
     }
     if (m_useCMWeight) {
-        cout << "      calc CMWeights" << endl;
-        CMWeight = 1/(trans(stddev(Smat)));
-        //cout << CMWeightX << endl;
-        cout << "      Include CMWeightX in SMat" << endl;
+        std::cout << "\tcalc CMWeights" << std::endl;
+        CMWeight = 1/(arma::trans(stddev(Smat)));
+        std::cout << "\tInclude CMWeightX in SMat" << std::endl;
         for (int i = 0; i < Smat.n_cols; i++) {
             Smat_w.col(i) = Smat.col(i) * CMWeight(i);
         }
     } else {
         Smat_w = Smat;
     }
-
-    cout << "      calc SVD" << endl;
-    svd(U,s,V,Smat_w);
-    cout << "      reduce U to Ivec" << endl;
+    std::cout << "\tcalc SVD" << std::endl;
+    arma::svd(U,s,V,Smat_w);
+    std::cout << "\treduce U to Ivec" << std::endl;
     U = U.cols(0,Ivec-1);
-    cout << "      Transpose U" << endl;
+    std::cout << "\tTranspose U" << std::endl;
     U = trans(U);
-    cout << "      Get Diag Matrix of  S" << endl;
+    std::cout << "\tGet Diag Matrix of  S" << std::endl;
     S = diagmat(s.subvec(0,Ivec-1)); 
-    cout << "      reduce V to Ivec" << endl;
+    std::cout << "\treduce V to Ivec" << std::endl;
     V = V.cols(0,Ivec-1);
-    cout << "       Calc new Matrix" << endl;
-    SmatInv = V * inv(S) * U;
+    std::cout << "\tCalc new Matrix" << std::endl;
+    SmatInv = V * arma::inv(S) * U;
 
-    cout << "   SVD complete ..." << endl;
+    std::cout << "SVD complete ..." << std::endl;
 }

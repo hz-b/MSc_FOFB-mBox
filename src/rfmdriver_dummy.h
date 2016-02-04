@@ -29,8 +29,8 @@ public:
     virtual RFM2G_STATUS deviceName(char *namePtr){ return RFM2G_SUCCESS; };
     virtual RFM2G_STATUS dllVersion(char *versionPtr){ return RFM2G_SUCCESS; };
     virtual RFM2G_STATUS driverVersion(char *versionPtr){ return RFM2G_SUCCESS; };
-    virtual RFM2G_STATUS getDMAThreshold(RFM2G_UINT32 *threshold){ return RFM2G_SUCCESS; };;
-    virtual RFM2G_STATUS setDMAThreshold(RFM2G_UINT32 threshold){ return RFM2G_SUCCESS; };
+    virtual RFM2G_STATUS getDMAThreshold(RFM2G_UINT32 *threshold);
+    virtual RFM2G_STATUS setDMAThreshold(RFM2G_UINT32 threshold);
     virtual RFM2G_STATUS setDMAByteSwap(RFM2G_BOOL byteSwap){ return RFM2G_SUCCESS; };
     virtual RFM2G_STATUS getDMAByteSwap(RFM2G_BOOL *byteSwap){ return RFM2G_SUCCESS; };
     virtual RFM2G_STATUS setPIOByteSwap(RFM2G_BOOL byteSwap){ return RFM2G_SUCCESS; };
@@ -89,7 +89,7 @@ public:
     virtual RFM2G_STATUS setSlidingWindow(RFM2G_UINT32 offset){ return RFM2G_SUCCESS; };
 
 private:
-    RFM2GCONFIG m_config;
+    RFM2G_UINT32 m_DMAthreshold;
 };
 
 #endif // RFMDRIVER_H

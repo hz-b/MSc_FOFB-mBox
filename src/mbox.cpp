@@ -61,7 +61,7 @@ void mBox::startLoop()
                 m_driver->read(CTRL_MEMPOS , &m_runningStatus , 1);
                 sleep(1);
             }
-            std::cout << "Wait for start" << std::endl;
+            std::cout << "...Wait for start..." << std::endl;
         }
 
         // if Idle, don't do anything
@@ -74,7 +74,7 @@ void mBox::startLoop()
             m_handler->init(); 
             m_runningState = Initialized;
  
-            std::cout << "RUN RUN RUN .... " << std::endl << std::flush;
+            std::cout << "RUN RUN RUN .... " << std::endl;
         }
 
         /**
@@ -84,7 +84,7 @@ void mBox::startLoop()
             if (int errornr = m_handler->make()) {
                 Logger::postError(errornr);
                 m_runningState = Error;
-                cout << "error: " << errornr;
+                std::cout << "error: " << errornr << std::endl;
             }
         }
 

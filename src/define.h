@@ -47,7 +47,7 @@ const RFM2GEVENTTYPE ADC_EVENT = RFM2GEVENT_INTR1;
 const RFM2GEVENTTYPE ADC_DAC_EVENT = RFM2GEVENT_INTR2;
 const RFM2GEVENTTYPE DAC_EVENT = RFM2GEVENT_INTR3;
 
-static bool READONLY;
+extern bool READONLY;
 
 struct t_status {
     unsigned short loopPos;

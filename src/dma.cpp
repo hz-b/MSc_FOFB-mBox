@@ -31,7 +31,7 @@ int DMA::init()
     RFM2GCONFIG rfm2gConfig;
     if(m_driver->getConfig(&rfm2gConfig) == RFM2G_SUCCESS) {
         pPioCard = (char*)rfm2gConfig.PciConfig.rfm2gBase;
-        rfm2gSize = rfm2gConfig.PciConfig.rfm2gWindowSize;      
+        rfm2gSize = rfm2gConfig.PciConfig.rfm2gWindowSize;
     }
 
     int pageSize = getpagesize();
@@ -45,10 +45,10 @@ int DMA::init()
 
     //numPagesDMA = 100;
 
-    std::cout << "   pPioCard : " << pPioCard << std::endl;
-    std::cout << "   rfm2gSize : " << rfm2gSize << std::endl;
-    std::cout << "   pageSize  : " << pageSize << std::endl;
-    std::cout << "   numPages DMA/PIO : " << numPagesDMA << std::endl;
+    std::cout << "\tpPioCard : " << pPioCard << std::endl;
+    std::cout << "\trfm2gSize : " << rfm2gSize << std::endl;
+    std::cout << "\tpageSize  : " << pageSize << std::endl;
+    std::cout << "\tnumPages DMA/PIO : " << numPagesDMA << std::endl;
 
     RFM2G_STATUS rfmReturnStatus = m_driver->userMemory(
                                         (volatile void **) (&pDmaCard),

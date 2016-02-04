@@ -78,7 +78,7 @@ void Handler::init()
     // ADC/DAC
     rfmHelper.readStruct("ADC_BPMIndex_PosX", ADC_WaveIndexX, readStructtype_pchar);
     rfmHelper.readStruct("ADC_BPMIndex_PosY", ADC_WaveIndexY, readStructtype_pchar);
-    std::cout <<  ADC_WaveIndexX[1];
+
     rfmHelper.readStruct("DAC_HCMIndex", DAC_WaveIndexX, readStructtype_pchar);
     rfmHelper.readStruct("DAC_VCMIndex", DAC_WaveIndexY, readStructtype_pchar);
     // Smatrix
@@ -104,6 +104,9 @@ void Handler::init()
     rfmHelper.readStruct( "CMx", CMx, readStructtype_vec);
     rfmHelper.readStruct( "CMy", CMy, readStructtype_vec);
 
+    
+    m_dac->setWaveIndexX(DAC_WaveIndexX);
+    m_dac->setWaveIndexY(DAC_WaveIndexY);
     m_adc->setWaveIndexX(ADC_WaveIndexX);
     m_adc->setWaveIndexY(ADC_WaveIndexY);
 
@@ -114,6 +117,7 @@ void Handler::init()
 
     this->initIndexes(ADC_WaveIndexX);
     
+    std::cout << READONLY << std::endl;
     if (!READONLY) {
         m_dac->changeStatus(DAC::Start);
     }
@@ -121,20 +125,21 @@ void Handler::init()
 
 void Handler::initIndexes(double *ADC_WaveIndexX)
 {
+    std::cout << "Init Indexes" << std:: endl;
     //FS BUMP
     m_idxHBP2D6R  = 160; //(2*81)-1(X) -1(C)
     m_idxBPMZ6D6R = getIdx(m_numBPMx, ADC_WaveIndexX, 163);
-    std::cout << "idx 6D6 : " << m_idxBPMZ6D6R << std::endl;
+    std::cout << "\tidx 6D6 : " << m_idxBPMZ6D6R << std::endl;
     //ARTOF
     m_idxHBP1D5R  = 142; //(2*72)-1(x) -1(C)   
     m_idxBPMZ3D5R = getIdx(m_numBPMx, ADC_WaveIndexX, 123);
-    std::cout << "idx 3Z5 : " << m_idxBPMZ3D5R << std::endl;
+    std::cout << "\tidx 3Z5 : " << m_idxBPMZ3D5R << std::endl;
     m_idxBPMZ4D5R = getIdx(m_numBPMx, ADC_WaveIndexX, 125);
-    std::cout << "idx 4Z5 : " << m_idxBPMZ4D5R << std::endl;
+    std::cout << "\tidx 4Z5 : " << m_idxBPMZ4D5R << std::endl;
     m_idxBPMZ5D5R = getIdx(m_numBPMx, ADC_WaveIndexX, 129);
-    std::cout << "idx 5Z5 : " << m_idxBPMZ5D5R << std::endl;
+    std::cout << "\tidx 5Z5 : " << m_idxBPMZ5D5R << std::endl;
     m_idxBPMZ6D5R = getIdx(m_numBPMx, ADC_WaveIndexX, 131);
-    std::cout << "idx 6Z5 : " << m_idxBPMZ6D5R << std::endl;
+    std::cout << "\tidx 6Z5 : " << m_idxBPMZ6D5R << std::endl;
 }
 
 int Handler::getIdx(char numBPMs, double* ADC_BPMIndex_Pos, double DeviceWaveIndex)

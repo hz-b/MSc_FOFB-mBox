@@ -13,7 +13,7 @@ public:
     int init();
     volatile char* memory() const { return m_memory; };
     t_status* status() const { return m_status; };
-    
+
 private:
     /* DMA Buffer pointer */
     volatile char *m_memory;

@@ -2,15 +2,14 @@
 
 #include <iostream>
 #include <csignal> 
-#include <cstdlib>
-#include <cstring>
 #include <string>
 
 #include "define.h"
 #include "mbox.h"
 
-
 extern "C" void openblas_set_num_threads(int num_threads);
+
+bool READONLY;
 
 void SIGINT_handler(int signum)
 {
@@ -68,7 +67,6 @@ int main(int argc, char *argv[])
     std::cout << "=============" << std::endl
               << "starting MBox" << startflag << std::endl
               << "=============" << std::endl;
-
     char devicename[] = "/dev/rfm2g0";
     bool weigthedCorr = true;
     mBox mbox(devicename, weigthedCorr, experimentFile);

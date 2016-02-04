@@ -3,7 +3,8 @@
 
 #include <armadillo>
 
-using namespace arma;
+
+
 
 namespace Correction {
     enum Type {
@@ -21,19 +22,17 @@ class CorrectionProcessor
 {
 public:
     explicit CorrectionProcessor();
-    int correct(vec &diffX, vec &diffY, bool newInjection, vec &Data_CMx, vec &Data_CMy, int type);
+    int correct(arma::vec &diffX, arma::vec &diffY, bool newInjection, arma::vec &Data_CMx, arma::vec &Data_CMy, int type);
     int checkCorrection();
 
     void setPID(double P, double I, double D) { m_P = P; m_I = I; m_D = D;};
-    void setCMs(vec CMx, vec CMy);
-    int numCMx() { m_numCMx; };
-    int numCMy() { m_numCMy; };
+    void setCMs(arma::vec CMx, arma::vec CMy);
+    int numCMx() { return m_CMx.n_elem; };
+    int numCMy() { return m_CMy.n_elem; };
     void setInjectionCnt(double frequency);
-    void setSmat(mat &SmatX, mat &SmatY, double IvecX, double IvecY, bool weightedCorr);
-
+    void setSmat(arma::mat &SmatX, arma::mat &SmatY, double IvecX, double IvecY, bool weightedCorr);
+    arma::vec m_CMx, m_CMy;
 private:
-    void initAttributes();
-    void initIndexes(double *ADC_WaveIndexX);
     void calcSmat(const arma::mat &Smat, double Ivec, arma::vec &CMWeight, arma::mat &SmatInv);
 
     int m_injectionCnt;
@@ -41,19 +40,18 @@ private:
     int m_injectionStartCnt;
 
     bool m_useCMWeight;
-    vec m_CMWeightX, m_CMWeightY;
-    int m_numCMx, m_numCMy;
+    arma::vec m_CMWeightX, m_CMWeightY;
     int m_rmsErrorCnt;
 
     double m_P, m_I, m_D, m_currentP;
     double m_lastrmsX, m_lastrmsY;
 
-    mat m_SmatInvX, m_SmatInvY;
-    vec m_CMx, m_CMy;
-    vec m_dCORxPID, m_dCORyPID;
-    vec m_dCORlastX, m_dCORlastY;
-    vec m_Xsum, m_Ysum;
-    vec m_Data_CMx, m_Data_CMy;
+    arma::mat m_SmatInvX, m_SmatInvY;
+//     vec m_CMx, m_CMy;
+    arma::vec m_dCORxPID, m_dCORyPID;
+    arma::vec m_dCORlastX, m_dCORlastY;
+    arma::vec m_Xsum, m_Ysum;
+    arma::vec m_Data_CMx, m_Data_CMy;
 };
 
 #endif // CORRECTIONPROCESSOR_H

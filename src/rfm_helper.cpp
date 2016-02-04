@@ -63,7 +63,7 @@ void RFMHelper::prepareField(arma::vec& field, unsigned long pos, unsigned long 
         // use PIO  tranfer
         field.set_size(dim1*dim2);
         m_driver->read(pos,(void*)field.memptr(), data_size);
-        dumpMemory(field.memptr(),8);
+        //dumpMemory(field.memptr(),8);
     } else {
         // use DMA transfer
         m_driver->read(pos,(void*)m_dma->memory(), data_size);
@@ -84,8 +84,6 @@ void RFMHelper::prepareField(arma::mat& field, unsigned long pos, unsigned long 
     /* see if DMA threshold and buffer are intialized */
     m_driver->getDMAThreshold( &threshold );
 
-    std::cout << "pos="<<std::setw(12) << pos << std::endl;
-
     if (data_size < threshold) {
         // use PIO transfer
         field.set_size(dim1,dim2);
@@ -99,8 +97,8 @@ void RFMHelper::prepareField(arma::mat& field, unsigned long pos, unsigned long 
 
         field = arma::mat((const double *) m_dma->memory(), dim1, dim2);
     }
-    std::cout << "m5" << field(0,0) << " " << field(0,1) << std::endl;
-    std::cout << "Size : " << field.n_cols << ":"<< field.n_rows << std::endl;
+    std::cout << "\t\tm5; " << field(0,0) << " " << field(0,1) << std::endl;
+    std::cout << "\t\tSize: " << field.n_cols << ":"<< field.n_rows << std::endl;
 }
 
 void RFMHelper::searchField(std::string &name,
@@ -128,5 +126,4 @@ void RFMHelper::searchField(std::string &name,
         name = std::string(name_tmp);
 
         pos += namesize;
-        std::cout << "name:" << " "<< name << std::endl;
 }

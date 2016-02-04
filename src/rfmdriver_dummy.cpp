@@ -37,11 +37,33 @@ RFM2G_STATUS RFMDriver::read(RFM2G_UINT32 offset, void* buffer, RFM2G_UINT32 len
 
 RFM2G_STATUS RFMDriver::write(RFM2G_UINT32 offset, void* buffer, RFM2G_UINT32 length)
 {
-     return RFM2G_SUCCESS;
+    std::ofstream outFile;
+    outFile.open( "dump_rmf.dat", std::ios::out | std::ios::binary );
+
+    // Check that it doesn't overflow the file
+    int begin = outFile.tellp();
+    outFile.seekp (0, std::ios::end);
+    int end = outFile.tellp();
+    if ((end - begin) < offset+length) {
+        std::cout << "## ERROR; Size pb ###" << std::endl;
+        return RFM2G_DRIVER_ERROR;
+    }
+
+    // Read file
+    outFile.seekp(offset);
+    outFile.write( (char*)buffer, length );
+    outFile.close();
+
+    return RFM2G_SUCCESS;
 }
 
-/*RFM2G_STATUS RFMDriver::getConfig(RFM2GCONFIG *config)
+RFM2G_STATUS RFMDriver::getDMAThreshold(RFM2G_UINT32 *threshold)
 {
-    config = m_config;
+    *threshold = 1000000;//m_DMAthreshold;
     return RFM2G_SUCCESS;
-};*/
+}
+RFM2G_STATUS RFMDriver::setDMAThreshold(RFM2G_UINT32 threshold)
+{
+    m_DMAthreshold = threshold;
+    return RFM2G_SUCCESS;
+}

@@ -12,8 +12,8 @@ CorrectionHandler::CorrectionHandler(RFMDriver *driver, DMA *dma, bool weightedC
 
 int CorrectionHandler::make()
 {
-    vec diffX, diffY;
-    vec CMx, CMy;
+    arma::vec diffX, diffY;
+    arma::vec CMx, CMy;
     bool newInjection;
     this->getNewData(diffX, diffY, newInjection);
     RFM2G_UINT32 rfm2gMemNumber = m_dma->status()->loopPos;
