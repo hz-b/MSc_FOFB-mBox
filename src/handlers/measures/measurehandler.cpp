@@ -9,8 +9,9 @@
 #include <string>
 #include <math.h>
 #include <Python.h>
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
-
+#include <numpy/npy_common.h> 
 
 MeasureHandler::MeasureHandler(RFMDriver *driver, DMA *dma, bool weightedCorr,
                                 std::string inputFile)
@@ -47,30 +48,6 @@ int MeasureHandler::make()
     
     int error = this->callPythonFunction(diffX, diffY, CMx, CMy);
 
-    RFM2G_UINT32 *DACout;
-    double CM = sin(2*M_PI * m_f * 150e-3*m_sample);
-    DACout[m_CMidx] = CM;
-    if (!READONLY) {
-        this->writeCorrectors(DACout);
-    }
-
-    if (m_CMidx == m_nbCM-1 && m_sample == m_maxSample-1 &&  m_f == m_fmax-1){
-        std::cout << "done" << std::endl;
-        exit(0);
-    }
-
-    if (m_sample < m_maxSample) {
-        m_sample++;
-    } else { // m_sample == m_maxSample
-        if (m_f < m_fmax) {
-            m_f++; // mouveau m_f
-            m_sample = 0;
-        } else { // m_f == m_fmax => change CM
-            m_f = 0; // mouveau m_f
-            m_sample = 0;
-            m_CMidx++;
-        }
-    }
     return 0;
 }
 
@@ -111,6 +88,7 @@ int MeasureHandler::initPython()
     PyObject *pName, *pModule, *pDict;
 
     Py_Initialize();
+    //import_array();
     PyRun_SimpleString("import sys");
     std::string cmd = "sys.path.append(\"" + m_inputPath + "\")";
     PyRun_SimpleString(cmd.c_str());
@@ -122,10 +100,10 @@ int MeasureHandler::initPython()
 
     if (pModule != NULL) {
         m_pFunc = PyObject_GetAttrString(pModule, m_functionName.c_str());
-        /* pFunc is a new reference */
+        // pFunc is a new reference
 
         if (m_pFunc && PyCallable_Check(m_pFunc)) {
-
+            (void)PyImport_ImportModule("numpy");
             return 0;
         } else {
             if (PyErr_Occurred())
@@ -145,20 +123,23 @@ int MeasureHandler::callPythonFunction(const arma::vec &BPMx, const arma::vec &B
                                        arma::vec &CMx, arma::vec &CMy)
 {
     PyObject *pArgs, *pValue;
-    
-    pArgs = PyTuple_New(2);
 
-    npy_intp BPMx_s = m_numBPMx;
-    npy_intp BPMy_s = m_numBPMy;
+    pArgs = PyTuple_New(2);
+import_array()
+    npy_intp *BPMx_s = new npy_intp(m_numBPMx);
+    npy_intp *BPMy_s = new npy_intp(m_numBPMy);
     npy_intp CMx_s = m_numCMx;
     npy_intp CMy_s = m_numCMy;
-    
-    PyObject *pyBPMx = PyArray_SimpleNewFromData(1, &BPMx_s,
-                                                 NPY_DOUBLE, (double *) BPMx.memptr());
-    PyObject *pyBPMy = PyArray_SimpleNewFromData(1, &BPMy_s,
-                                                 NPY_DOUBLE, (double *) BPMy.memptr());
-    
+        PyObject *pyBPMy = PyArray_SimpleNewFromData(0, BPMy_s,
+                                                 NPY_DOUBLE, (void*) BPMy.memptr());
+    PyObject *pyBPMx = PyArray_SimpleNew(0, BPMx_s, NPY_DOUBLE);
+    //memcpy(PyArray_DATA((PyArrayObject *) out), BPMx.memptr(), vector.size());
+    //&((*BPMx)[0]));
+    PyArray_SetBaseObject((PyArrayObject*)pyBPMx, (PyObject*)BPMx.memptr());
 
+    
+    delete BPMx_s, BPMy_s;
+    
     if (!pyBPMx || !pyBPMy) {
         Py_DECREF(pyBPMx);
         Py_DECREF(pyBPMy);

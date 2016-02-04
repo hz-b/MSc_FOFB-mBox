@@ -10,11 +10,6 @@
 #define MESSAGE_MEMPOS    CTRL_MEMPOS + 100
 #define CONFIG_MEMPOS     CTRL_MEMPOS + 1000
 
-#define readStructtype_pchar    0
-#define readStructtype_mat      1
-#define readStructtype_vec      2
-#define readStructtype_double   3
-
 // ADC
 #define ADC_BUFFER_SIZE 256
 #define ADC_MEMPOS        0x01000000
@@ -42,6 +37,11 @@
 #define FOFB_ERROR_Unkonwn  7 
 
 #include "rfm2g_api.h"
+
+#define readStructtype_pchar 0
+#define readStructtype_mat 1
+#define readStructtype_vec 2
+#define readStructtype_double 3
 
 const RFM2GEVENTTYPE ADC_EVENT = RFM2GEVENT_INTR1;
 const RFM2GEVENTTYPE ADC_DAC_EVENT = RFM2GEVENT_INTR2;

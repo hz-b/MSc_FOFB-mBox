@@ -114,7 +114,7 @@ void mBox::initRFM(char *deviceName)
         exit(1); 
     }
 
-    RFM2G_NODE nodeId;
+    RFM2G_NODE nodeId(0);
     if (m_driver->nodeId(&nodeId)) {
         std::cout << "\tCan't get Node Id" << std::endl;
         exit(1);

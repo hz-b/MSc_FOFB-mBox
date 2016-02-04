@@ -3,7 +3,7 @@
 
 #include <armadillo>
 #include <iomanip>
-#include <cstring>
+#include <string>
 #include <iostream>
 
 #include "dma.h"
@@ -24,13 +24,13 @@ public:
     void prepareField(arma::mat& field, unsigned long pos, unsigned long dim1, unsigned long dim2);
 
     template <class T>
-    void prepareField(T& field, unsigned long pos, unsigned long dim1, unsigned long dim2 = 0) 
+    void prepareField(T &field, unsigned long pos, unsigned long dim1, unsigned long dim2 = 0)
     {
         m_driver->read(pos, (void*) &field, sizeof(field));
     };
 
     template <class T>
-    void readStruct(std::string structname, T &field, char tartype)
+    void readStruct(const std::string structname, T &field, const int tartype)
     {
         unsigned long pos = CTRL_MEMPOS + 1000;
         short elementnr(0);

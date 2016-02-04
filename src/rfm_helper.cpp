@@ -7,7 +7,7 @@ void RFMHelper::sendMessage(const char* Message, const char *error)
     struct t_header {
         unsigned short namesize;
         unsigned short sizey;
-        unsigned short  sizex;
+        unsigned short sizex;
         unsigned short type;
     } header;
     int thesize = 2 + sizeof(header)+ 6 + strlen(Message) +

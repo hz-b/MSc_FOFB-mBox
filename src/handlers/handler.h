@@ -54,13 +54,13 @@ protected:
      * @brief Get the index of a given index
      * @return
      */
-    int getIdx(char numBPMs, double *ADC_BPMIndex_Pos, double DeviceWaveIndex);
+    int getIdx(char numBPMs, const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWaveIndex);
     
     /**
      * @brief Get the index of a given index
      * @return
      */
-    void initIndexes(double *ADC_WaveIndexX);
+    void initIndexes(const std::vector<double> &ADC_WaveIndexX);
     
     /**
      * @brief Define the processor and its parameters.

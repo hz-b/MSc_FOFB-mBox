@@ -6,6 +6,8 @@
 #include "rfm_helper.h"
 #include "logger.h"
 #include <iostream>
+#include <string>
+#include <vector>
 
 Handler::Handler(RFMDriver *driver, DMA *dma, bool weightedCorr)
 {
@@ -104,18 +106,17 @@ void Handler::init()
     rfmHelper.readStruct( "CMx", CMx, readStructtype_vec);
     rfmHelper.readStruct( "CMy", CMy, readStructtype_vec);
 
-    
-    m_dac->setWaveIndexX(DAC_WaveIndexX);
-    m_dac->setWaveIndexY(DAC_WaveIndexY);
-    m_adc->setWaveIndexX(ADC_WaveIndexX);
-    m_adc->setWaveIndexY(ADC_WaveIndexY);
-
-    this->setProcessor(SmatX, SmatY, IvecX, IvecY, Frequency, P, I, D, CMx, CMy, m_weightedCorr);
-
     m_numBPMx = SmatX.n_rows;
     m_numBPMy = SmatY.n_rows;
 
-    this->initIndexes(ADC_WaveIndexX);
+    m_dac->setWaveIndexX(std::vector<double>(DAC_WaveIndexX, DAC_WaveIndexX+128));
+    m_dac->setWaveIndexY(std::vector<double>(DAC_WaveIndexY, DAC_WaveIndexY+128));
+    m_adc->setWaveIndexX(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
+    m_adc->setWaveIndexY(std::vector<double>(ADC_WaveIndexY, ADC_WaveIndexY+128));
+
+    this->setProcessor(SmatX, SmatY, IvecX, IvecY, Frequency, P, I, D, CMx, CMy, m_weightedCorr);
+
+    this->initIndexes(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
     
     std::cout << READONLY << std::endl;
     if (!READONLY) {
@@ -123,9 +124,10 @@ void Handler::init()
     }
 }
 
-void Handler::initIndexes(double *ADC_WaveIndexX)
+void Handler::initIndexes(const std::vector<double> &ADC_WaveIndexX)
 {
     std::cout << "Init Indexes" << std:: endl;
+
     //FS BUMP
     m_idxHBP2D6R  = 160; //(2*81)-1(X) -1(C)
     m_idxBPMZ6D6R = getIdx(m_numBPMx, ADC_WaveIndexX, 163);
@@ -142,17 +144,15 @@ void Handler::initIndexes(double *ADC_WaveIndexX)
     std::cout << "\tidx 6Z5 : " << m_idxBPMZ6D5R << std::endl;
 }
 
-int Handler::getIdx(char numBPMs, double* ADC_BPMIndex_Pos, double DeviceWaveIndex)
+int Handler::getIdx(char numBPMs, const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWaveIndex)
 { 
     int res = numBPMs;
     int i;
-    //cout << DeviceWaveIndex << endl;
     for (i = 0; i < numBPMs; i++) {
         // cout << ADC_BPMIndex_Pos[i] << " ";
-        if (ADC_BPMIndex_Pos[i] == DeviceWaveIndex)
+        if (ADC_BPMIndex_Pos.at(i) == DeviceWaveIndex)
             return i;
     }
-    //cout << endl;
     return res;
 }
 
