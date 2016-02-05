@@ -108,6 +108,8 @@ void Handler::init()
 
     m_numBPMx = SmatX.n_rows;
     m_numBPMy = SmatY.n_rows;
+    m_numCMx = SmatX.n_cols;
+    m_numCMy = SmatY.n_cols;
 
     m_dac->setWaveIndexX(std::vector<double>(DAC_WaveIndexX, DAC_WaveIndexX+128));
     m_dac->setWaveIndexY(std::vector<double>(DAC_WaveIndexY, DAC_WaveIndexY+128));

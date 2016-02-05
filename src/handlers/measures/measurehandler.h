@@ -24,17 +24,6 @@ private:
     int callPythonFunction(const arma::vec &BPMx, const arma::vec &BPMy,
                            arma::vec &CMx, arma::vec &CMy);
 
-    int m_sample;
-    int m_maxSample;
-    
-    double m_CM;
-    double m_amp;
-    double m_f;
-    double m_fmax;
-    int m_CMidx;
-    int m_nbCM;
-    
-    int m_timeValue;
     PyObject *m_pFunc;
     std::string m_inputFile;
     std::string m_inputPath;
