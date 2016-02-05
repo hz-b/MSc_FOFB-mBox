@@ -1,5 +1,3 @@
-#include <Python.h> // Should be first to remove warnings
-
 #include "handlers/measures/measurehandler.h"
 
 #include "define.h"
@@ -10,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include <math.h>
+#include <Python.h>
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
@@ -113,13 +112,13 @@ int MeasureHandler::initPython()
         } else {
             if (PyErr_Occurred())
                 PyErr_Print();
-            std::cout << "Cannot find function '"<< m_functionName <<"'" << std::endl;
+            std::cerr << "Cannot find function '"<< m_functionName <<"'" << std::endl;
         }
         Py_DECREF(pModule);
         return 1;
     } else {
         PyErr_Print();
-        std::cout << "Failed to load " << m_inputFile << std::endl;
+        std::cerr << "Failed to load " << m_inputFile << std::endl;
         return 1;
     }
 }
@@ -151,7 +150,7 @@ int MeasureHandler::callPythonFunction(const arma::vec &BPMx, const arma::vec &B
     if (!pyBPMx || !pyBPMy) {
         Py_DECREF(pyBPMx);
         Py_DECREF(pyBPMy);
-        std::cout << "Cannot convert argument" << std::endl;
+        std::cerr << "Cannot convert argument" << std::endl;
         return 1;
     }
     // pValue reference stolen here:
@@ -168,15 +167,14 @@ int MeasureHandler::callPythonFunction(const arma::vec &BPMx, const arma::vec &B
         
         /**
          * use the constructor vec(ptr, nb_elements)
-         * ptr = (double*) PyArray_GetPtr(pyCMx, &CMx_s)
+         * with ptr = (double*) PyArray_DATA(pyCMx)
          */
         CMx = arma::vec((double*) PyArray_DATA(pyCMx), m_numCMx);
         CMy = arma::vec((double*) PyArray_DATA(pyCMx), m_numCMy);
-            std::cout << CMx[20] << std::endl;
+	    
         /**
          * Everything must be unreferenced
          */
-        //Py_DECREF(pValue);
         Py_DECREF(pyCMx);
         Py_DECREF(pyCMy);
         Py_DECREF(pyBPMx);
@@ -186,7 +184,7 @@ int MeasureHandler::callPythonFunction(const arma::vec &BPMx, const arma::vec &B
         
     } else {
         PyErr_Print();
-        std::cout << "Call failed" << std::endl;
+        std::cerr << "Call failed" << std::endl;
         return 1;
     }
 }
