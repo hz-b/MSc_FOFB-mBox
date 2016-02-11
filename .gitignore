@@ -4,6 +4,7 @@ bpmlog/bpm.log
 # Do not send the documentation
 /doc/*
 !/doc/README.md
+!/doc/img/
 
 # Do not send the build files
 *.pyc

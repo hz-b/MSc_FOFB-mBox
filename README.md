@@ -37,6 +37,9 @@ Later I'll add a install command to put the executable somewhere in the system w
 
 ## Class organization
 
+![ ](../img/classDiagram.png "Diagramme")
+![ ](doc/img/classDiagram.png "Diagramme")
+
 ```
 +-----------+   interact   +-----------+    1 +-----------+  1 +----------+
 | rfm2g_api | <----------> | RFMDriver |-+--<>| RFMHelper |--<>|          |

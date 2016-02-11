@@ -8,9 +8,10 @@
 
 /**
  * @class MeasureHandler
- * This class is designed to call a Python functions each time `make()` is called.
+ * @brief This class is designed to call a Python functions each time `make()` is called.
+ *
  * The `inputFile`, MUST follow the following pattern:
- * 
+ *
  * \code{.py}
  * import numpy as np
  * 
