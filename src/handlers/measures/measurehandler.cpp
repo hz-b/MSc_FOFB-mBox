@@ -65,11 +65,11 @@ void MeasureHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
 }
 
 /**
- * Let's say that m_inputFile = /PATH/TO/FILE.py
- * 1) Separate PATH/TO and FILE
- * 2) Set PATH/TO in the path of python
- * 3) Define FILE.py as the module name
- * 4) Remove ".py" from the module name
+ * Let's say that m_inputFile = `/PATH/TO/FILE.py`
+ * 1. Separate `PATH/TO` and `FILE`
+ * 2. Set `PATH/TO` in the path of python
+ * 3. Define `FILE.py` as the module name
+ * 4. Remove `.py` from the module name
  */
 void MeasureHandler::setModule()
 {
@@ -83,7 +83,6 @@ void MeasureHandler::setModule()
 }
 
 /**
- * @errors 0 if success, 1 if failure
  * @see https://docs.python.org/2/extending/embedding.html
  */
 int MeasureHandler::initPython()

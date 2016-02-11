@@ -20,18 +20,24 @@ class Handler
 public:
     /**
      * @brief Constructor
+     * 
+     * @param driver A pointer to a RFMDriver class.
+     * @param dma A pointer to a DMA class.
+     * @param weigthedCorr True if we use a weighted correction. Else False.
      */
     explicit Handler(RFMDriver *driver, DMA *dma, bool weigthedCorr);
     ~Handler();
     
     /**
      * @brief Do what the handler is designed for (correction, setting values..)
+     * 
      * This should call `writeCorrectors()` to write the results on the RFM
      */
     virtual int make() = 0;
     
     /**
      * @brief Initialize the parameters and call `setProcessor()`.
+     * 
      * This will read the RFM to get the parameters from the cBox
      */
     void init();
@@ -40,8 +46,12 @@ public:
     
 protected:
     /**
-     * @brief Read the data from the cBox.
-     * It first wait for the authorization to read.
+     * @brief Read the data given on the RFM.
+     * 
+     * It first wait for the authorization to read. All parameters are filled by the function.
+     * @param diffX Values of the BPMs in the x direction (filled by the function)
+     * @param diffY Values of the BPMs in the y direction (filled by the function)
+     * @param newInjection True if an injection was just sent. Else False.
      */
     void getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection);
     
@@ -52,7 +62,7 @@ protected:
     
     /**
      * @brief Get the index of a given index
-     * @return
+     * @return Error code.
      */
     int getIdx(char numBPMs, const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWaveIndex);
     
@@ -64,6 +74,7 @@ protected:
     
     /**
      * @brief Define the processor and its parameters.
+     * 
      * This is where a processor should be instanciated.
      */
     virtual void setProcessor(arma::mat SmatX, arma::mat SmatY,

@@ -99,7 +99,7 @@ void Handler::init()
     rfmHelper.readStruct( "D", D, readStructtype_double);
     rfmHelper.readStruct( "plane", m_plane, readStructtype_double);
     rfmHelper.readStruct( "Frequency", Frequency, readStructtype_double);
-    // Singular Values  
+    // Singular Values
     rfmHelper.readStruct( "SingularValueX", IvecX, readStructtype_double);
     rfmHelper.readStruct( "SingularValueY", IvecY, readStructtype_double);
     // CM
@@ -119,7 +119,7 @@ void Handler::init()
     this->setProcessor(SmatX, SmatY, IvecX, IvecY, Frequency, P, I, D, CMx, CMy, m_weightedCorr);
 
     this->initIndexes(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
-    
+
     std::cout << READONLY << std::endl;
     if (!READONLY) {
         m_dac->changeStatus(DAC::Start);

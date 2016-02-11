@@ -54,7 +54,6 @@ struct t_status {
     unsigned short errornr;
 };
 
-
 enum RunStatus
 {
     Idle = 0,
