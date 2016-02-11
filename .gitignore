@@ -9,3 +9,6 @@ bpmlog/bpm.log
 # Do not send the build files
 *.pyc
 build
+
+# Do not send calculation results
+*.npy

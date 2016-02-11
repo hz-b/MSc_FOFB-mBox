@@ -37,26 +37,9 @@ Later I'll add a install command to put the executable somewhere in the system w
 
 ## Class organization
 
+<!-- 
+    1st link is for Doxygen
+    2nd for gitlab/github/direct markdown
+--> 
 ![ ](../img/classDiagram.png "Diagramme")
 ![ ](doc/img/classDiagram.png "Diagramme")
-
-```
-+-----------+   interact   +-----------+    1 +-----------+  1 +----------+
-| rfm2g_api | <----------> | RFMDriver |-+--<>| RFMHelper |--<>|          |
-+-----------+              +-----------+ |    +-----------+    |          |
-                                         |  1 +-----------+  1 |          |
-                                         +--<>|    ADC    |--<>|          |
-                                         |    +-----------+    |          |
-                                         |  1 +-----------+  1 |          |
-                                         +--<>|    DAC    |--<>|          |
-                                         |    +-----------+    |   mBox   |
-                                         |  1 +-----------+  1 |          |
-                                         +--<>|    DMA    |--<>|          |
-                                         |    +-----------+    |          |
-                                         |                   1 |          |
-                 +------------+          +-------------------<>|          |
-                 | Correction |                              1 |          |
-                 | Handler    |------------------------------<>|          |
-                 +------------+                                |          |
-                                                               +----------+
-```
