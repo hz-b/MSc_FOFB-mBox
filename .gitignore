@@ -1,0 +1,10 @@
+# Do not send the big `bpm.log` file
+bpmlog/bpm.log
+
+# Do not send the documentation
+/doc/*
+!/doc/README.md
+
+# Do not send the build files
+*.pyc
+build
