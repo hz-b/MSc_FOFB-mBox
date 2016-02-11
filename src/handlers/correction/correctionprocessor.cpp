@@ -14,7 +14,7 @@ void CorrectionProcessor::setCMs(arma::vec CMx, arma::vec CMy)
     m_CMx = CMx;
     m_CMy = CMy;
 
-    m_dCORlastX  = arma::zeros<arma::vec>(m_CMx.n_elem); 
+    m_dCORlastX  = arma::zeros<arma::vec>(m_CMx.n_elem);
     m_dCORlastY  = arma::zeros<arma::vec>(m_CMy.n_elem);
     m_Xsum       = arma::zeros<arma::vec>(m_CMx.n_elem);
     m_Ysum       = arma::zeros<arma::vec>(m_CMy.n_elem);
@@ -114,13 +114,13 @@ int CorrectionProcessor::correct(arma::vec &diffX, arma::vec &diffY,
 int CorrectionProcessor::checkCorrection()
 {
  /* --- start timer --- */
- // t_dac_start.clock();    
+ // t_dac_start.clock();
 /*
-  RFM2GEVENTINFO EventInfo;           // Info about received interrupts  
+  RFM2GEVENTINFO EventInfo;           // Info about received interrupts
   RFM2G_NODE     otherNodeId;         // Node ID of the other RFM board
 
   // Wait on an interrupt from the other Reflective Memory board
-  if (m_adc->rfm()->driver().disableEvent(RFM2GEVENT_INTR3 )) 
+  if (m_adc->rfm()->driver().disableEvent(RFM2GEVENT_INTR3 ))
 	  return 1;
   if (m_adc->rfm()->driver().enableEvent( RFM2GEVENT_INTR3 ))
 	  return 1;
@@ -151,19 +151,19 @@ int CorrectionProcessor::checkCorrection()
 
   if (data_size<threshold) {
     // use PIO transfer
-    if (RFM2gRead( m_adc->rfm()->handle(), DAC_MEMPOS + (rfm2gMemNumber * data_size), 
+    if (RFM2gRead( m_adc->rfm()->handle(), DAC_MEMPOS + (rfm2gMemNumber * data_size),
 		   (void *)dacb, data_size )) return 1;
   }
   else {
-    if (RFM2gRead( m_adc->rfm()->handle(), DAC_MEMPOS + (rfm2gMemNumber * data_size), 
+    if (RFM2gRead( m_adc->rfm()->handle(), DAC_MEMPOS + (rfm2gMemNumber * data_size),
 		   (void *)pDmaMemory, data_size )) return 1;
-    RFM2G_UINT32 * src = (RFM2G_UINT32*)pDmaMemory; 
+    RFM2G_UINT32 * src = (RFM2G_UINT32*)pDmaMemory;
     for (int i=0;i<DAC_BUFFER_SIZE;++i) {
       dacb[i]=src[i];
     }
   }
 */
- // t_dac_stop.clock();    
+ // t_dac_stop.clock();
 
   /*
     cout << "RawOrbit X: "  << "\n";
@@ -197,7 +197,7 @@ int CorrectionProcessor::checkCorrection()
     cout << std::fixed << std::setw( 11 ) << std::setprecision( 6 )<< (DAC_Buffer[i+16*j]-halfDigits)/scaleDigitsX(0);
     }
     cout<<"\n";
-      
+
     for (int i=0;i<16;++i) {
     cout << std::fixed << std::setw( 11 ) << std::setprecision( 6 )<< (DACout[i+16*j]-halfDigits)/scaleDigitsX(0);
     }
@@ -207,7 +207,7 @@ int CorrectionProcessor::checkCorrection()
     cout << std::fixed << std::setw( 11 ) << std::setprecision( 6 ) << (double(DAC_Buffer[i+16*j])-DAC_Buffer2[i+16*j])/scaleDigitsX(0);
     }
     cout<<"\n";
-      
+
 
     for (int i=0;i<16;++i) {
     cout << std::fixed << std::setw( 11 ) << std::setprecision( 6 ) << (double(DACout[i+16*j])-DACout2[i+16*j])/scaleDigitsX(0) ;
@@ -219,7 +219,7 @@ int CorrectionProcessor::checkCorrection()
 
   return 0;
 }
-	
+
 
 void CorrectionProcessor::calcSmat(const arma::mat &Smat,
                                    double Ivec,
@@ -229,7 +229,7 @@ void CorrectionProcessor::calcSmat(const arma::mat &Smat,
     std::cout << "Calculate Smat" << std::endl;
     arma::mat U, S, V;
     arma::vec s;
-    
+
     std::cout << "\tGiven : " << " Smat cols: " << Smat.n_cols << " smat rows " << Smat.n_rows << "  Ivec : " << Ivec << std::endl;
     arma::mat Smat_w = arma::zeros(Smat.n_rows, Smat.n_cols);
     std::cout << "\tmake Ivec" << std::endl;
@@ -254,7 +254,7 @@ void CorrectionProcessor::calcSmat(const arma::mat &Smat,
     std::cout << "\tTranspose U" << std::endl;
     U = trans(U);
     std::cout << "\tGet Diag Matrix of  S" << std::endl;
-    S = diagmat(s.subvec(0,Ivec-1)); 
+    S = diagmat(s.subvec(0,Ivec-1));
     std::cout << "\treduce V to Ivec" << std::endl;
     V = V.cols(0,Ivec-1);
     std::cout << "\tCalc new Matrix" << std::endl;

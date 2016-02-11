@@ -25,16 +25,12 @@ MeasureHandler::MeasureHandler(RFMDriver *driver, DMA *dma, bool weightedCorr,
     int timeValue = 0;
 
     this->setModule();
-    int errorPythonInit = this->initPython();
-    if (errorPythonInit) {
-        std::cout << "error in python Init" << std::endl;
-        m_status = Error;
-    }
 }
 
 
 MeasureHandler::~MeasureHandler()
 {
+    Py_XDECREF(m_pModule);
     Py_XDECREF(m_pFunc);
     Py_Finalize();
 }
@@ -46,9 +42,9 @@ int MeasureHandler::make()
     arma::vec CMx, CMy;
     bool newInjection;
     this->getNewData(diffX, diffY, newInjection);
-    
+
     /// SAVE diffX diffY and get amp
-    
+
     int error = this->callPythonFunction(diffX, diffY, CMx, CMy);
 
     return 0;
@@ -56,12 +52,17 @@ int MeasureHandler::make()
 
 
 void MeasureHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
-                                     double IvecX, double IvecY,
-                                     double Frequency, 
-                                     double P, double I, double D,
-                                     arma::vec CMx, arma::vec CMy,
-                                     bool weightedCorr)
+                                  double IvecX, double IvecY,
+                                  double Frequency,
+                                  double P, double I, double D,
+                                  arma::vec CMx, arma::vec CMy,
+                                  bool weightedCorr)
 {
+    int errorPythonInit = this->initPython();
+    if (errorPythonInit) {
+        std::cout << "error in python Init" << std::endl;
+        m_status = Error;
+    }
 }
 
 /**
@@ -87,7 +88,7 @@ void MeasureHandler::setModule()
  */
 int MeasureHandler::initPython()
 {
-    PyObject *pName, *pModule, *pDict;
+    PyObject *pName = NULL;
 
     Py_SetProgramName("");
     Py_InitializeEx(0);
@@ -98,22 +99,20 @@ int MeasureHandler::initPython()
 
     pName = PyUnicode_FromString(m_inputModule.c_str());
 
-    pModule = PyImport_Import(pName);
+    m_pModule = PyImport_Import(pName);
     Py_DECREF(pName);
 
-    if (pModule != NULL) {
-        m_pFunc = PyObject_GetAttrString(pModule, m_functionName.c_str());
-        // pFunc is a new reference
-        Py_DECREF(pModule);
+    if (m_pModule != NULL) {
+        m_pFunc = PyObject_GetAttrString(m_pModule, m_functionName.c_str());
 
         if (m_pFunc && PyCallable_Check(m_pFunc)) {
-            return 0;
+
+            return callPythonInit();
         } else {
             if (PyErr_Occurred())
                 PyErr_Print();
             std::cerr << "Cannot find function '"<< m_functionName <<"'" << std::endl;
         }
-        Py_DECREF(pModule);
         return 1;
     } else {
         PyErr_Print();
@@ -122,55 +121,103 @@ int MeasureHandler::initPython()
     }
 }
 
+int MeasureHandler::callPythonInit()
+{
+    PyObject *pArgs = NULL;
+    PyObject *pFunc = PyObject_GetAttrString(m_pModule, "init");
+
+    if (pFunc && PyCallable_Check(pFunc)) {
+        PyObject *pyBPMx_nb = PyLong_FromLong(m_numBPMx);
+        PyObject *pyBPMy_nb = PyLong_FromLong(m_numBPMy);
+        PyObject *pyCMx_nb = PyLong_FromLong(m_numCMx);
+        PyObject *pyCMy_nb = PyLong_FromLong(m_numCMy);
+
+        Py_INCREF(pyBPMx_nb);
+        Py_INCREF(pyBPMy_nb);
+        Py_INCREF(pyCMx_nb);
+        Py_INCREF(pyCMy_nb);
+
+        if (!pyBPMx_nb || !pyBPMy_nb || !pyCMx_nb || !pyCMy_nb) {
+            Py_DECREF(pyBPMx_nb);
+            Py_DECREF(pyBPMy_nb);
+            Py_DECREF(pyCMy_nb);
+            Py_DECREF(pyCMy_nb);
+            std::cerr << "[Python init] Cannot convert arguments" << std::endl;
+            return 1;
+        }
+        pArgs = PyTuple_New(4);
+        // pValue reference stolen here:
+        PyTuple_SetItem(pArgs, 0, pyBPMx_nb);
+        PyTuple_SetItem(pArgs, 1, pyBPMy_nb);
+        PyTuple_SetItem(pArgs, 2, pyCMx_nb);
+        PyTuple_SetItem(pArgs, 3, pyCMy_nb);
+
+        PyObject_CallObject(pFunc, pArgs);
+        Py_DECREF(pArgs);
+
+        /**
+        * Everything must be unreferenced
+        */
+        Py_DECREF(pyCMx_nb);
+        Py_DECREF(pyCMy_nb);
+        Py_DECREF(pyBPMx_nb);
+        Py_DECREF(pyBPMy_nb);
+
+        return 0;
+
+    } else {
+        PyErr_Print();
+        std::cerr << "[Python init] Call failed" << std::endl;
+        return 1;
+    }
+}
+
+
 int MeasureHandler::callPythonFunction(const arma::vec &BPMx, const arma::vec &BPMy,
                                        arma::vec &CMx, arma::vec &CMy)
 {
     PyObject *pArgs = NULL, *pValue = NULL;
 
-    pArgs = PyTuple_New(4);
-
     npy_intp BPMx_s[] = {m_numBPMx};
     npy_intp BPMy_s[] = {m_numBPMy};
     npy_intp CMx_s[] = {m_numCMx};
     npy_intp CMy_s[] = {m_numCMy};
-    
+
     PyObject *pyBPMx = PyArray_SimpleNewFromData(1, BPMx_s,
-                                                 NPY_DOUBLE, (void*) BPMx.memptr());
+                                                 NPY_DOUBLE, (double*) BPMx.memptr());
     PyObject *pyBPMy = PyArray_SimpleNewFromData(1, BPMy_s,
-                                                 NPY_DOUBLE, (void*) BPMy.memptr());
-    PyObject *pyCMx_nb = PyLong_FromLong(m_numCMx);
-    PyObject *pyCMy_nb = PyLong_FromLong(m_numCMy);
-    
+                                                 NPY_DOUBLE, (double*) BPMy.memptr());
+
     Py_INCREF(pyBPMx);
     Py_INCREF(pyBPMy);
-    Py_INCREF(pyCMx_nb);
-    Py_INCREF(pyCMy_nb);
-    
+
     if (!pyBPMx || !pyBPMy) {
         Py_DECREF(pyBPMx);
         Py_DECREF(pyBPMy);
-        std::cerr << "Cannot convert argument" << std::endl;
+        std::cerr << "[callPythonFunction] Cannot convert argument" << std::endl;
         return 1;
     }
+
+    pArgs = PyTuple_New(2);
     // pValue reference stolen here:
     PyTuple_SetItem(pArgs, 0, pyBPMx);
     PyTuple_SetItem(pArgs, 1, pyBPMy);
-    PyTuple_SetItem(pArgs, 2, pyCMx_nb);
-    PyTuple_SetItem(pArgs, 3, pyCMy_nb);
 
     pValue = PyObject_CallObject(m_pFunc, pArgs);
+
     Py_DECREF(pArgs);
+
     if (pValue != NULL && PyTuple_Size(pValue) == 2) {
         PyArrayObject *pyCMx = (PyArrayObject*)PyTuple_GetItem(pValue, 0);
         PyArrayObject *pyCMy = (PyArrayObject*)PyTuple_GetItem(pValue, 1);
-        
+
         /**
          * use the constructor vec(ptr, nb_elements)
          * with ptr = (double*) PyArray_DATA(pyCMx)
          */
         CMx = arma::vec((double*) PyArray_DATA(pyCMx), m_numCMx);
         CMy = arma::vec((double*) PyArray_DATA(pyCMx), m_numCMy);
-	    
+
         /**
          * Everything must be unreferenced
          */
@@ -178,12 +225,12 @@ int MeasureHandler::callPythonFunction(const arma::vec &BPMx, const arma::vec &B
         Py_DECREF(pyCMy);
         Py_DECREF(pyBPMx);
         Py_DECREF(pyBPMy);
-        
+
         return 0;
-        
+
     } else {
         PyErr_Print();
-        std::cerr << "Call failed" << std::endl;
+        std::cerr << "[callPythonFunction] Call failed" << std::endl;
         return 1;
     }
 }

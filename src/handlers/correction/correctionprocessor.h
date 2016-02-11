@@ -3,9 +3,6 @@
 
 #include <armadillo>
 
-
-
-
 namespace Correction {
     enum Type {
         None = 0b01,
@@ -31,7 +28,7 @@ public:
     int numCMy() { return m_CMy.n_elem; };
     void setInjectionCnt(double frequency);
     void setSmat(arma::mat &SmatX, arma::mat &SmatY, double IvecX, double IvecY, bool weightedCorr);
-    arma::vec m_CMx, m_CMy;
+
 private:
     void calcSmat(const arma::mat &Smat, double Ivec, arma::vec &CMWeight, arma::mat &SmatInv);
 
@@ -47,7 +44,7 @@ private:
     double m_lastrmsX, m_lastrmsY;
 
     arma::mat m_SmatInvX, m_SmatInvY;
-//     vec m_CMx, m_CMy;
+    arma::vec m_CMx, m_CMy;
     arma::vec m_dCORxPID, m_dCORyPID;
     arma::vec m_dCORlastX, m_dCORlastY;
     arma::vec m_Xsum, m_Ysum;

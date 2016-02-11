@@ -16,7 +16,8 @@ private:
                       double IvecX, double IvecY,
                       double Frequency, 
                       double P, double I, double D,
-                      arma::vec CMx, arma::vec CMy, bool weightedCorr);
+                      arma::vec CMx, arma::vec CMy, 
+                      bool weightedCorr);
 
     CorrectionProcessor m_correctionProcessor;
 
