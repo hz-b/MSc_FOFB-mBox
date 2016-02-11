@@ -1,7 +1,0 @@
-my_project:
-    script:
-        - cd mbox++
-        - mkdir build
-        - cd build
-        - cmake -DCMAKE_BUILD_TYPE=Debug -DDUMMY_DRIVER=ON ..
-        - make
