@@ -10,13 +10,14 @@ f_max = 10
 f = (np.arange(0, f_max*5)/float(5)).tolist()
 t_max = 2
 t = (np.arange(t_max*fs)/fs).tolist()
-filename = "/home/churlaud/Projects/fofb/mBox++/pythonScripts/results"
+filename = "results"
 
 # Indexes
 axis = 0
 CM_id = 0
 f_id = 0
 t_id = 0
+
 
 class Status:
     Idle, Run, Done = range(3)
@@ -144,7 +145,8 @@ def calc_amp_phase(f_id, CM_id, axis):
         ph['yy'][f_id, :, CM_id] = phy
 
     save_to_file()
-
+    print("saved -- (axis={} / CM8_id={} / f={})"
+          .format(axis, CM_id, f[f_id]))
 
 def save_to_file():
     """ Save the 2 dictionaries: delete previous one."""
@@ -152,4 +154,3 @@ def save_to_file():
     global filename
 
     np.save(filename, [{'amplitudes': amp, 'phases': ph, 'freqs': f}])
-    print('save')
