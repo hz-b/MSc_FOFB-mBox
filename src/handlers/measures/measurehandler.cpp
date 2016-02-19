@@ -14,7 +14,8 @@
 
 
 // HACK: using import_array() with Python2 doesn't work... We should definetely move to Python3
-#define my_import_array() {int r =_import_array(); std::cout <<r << std::endl; if (r < 0) {PyErr_Print(); PyErr_SetString(PyExc_ImportError, "numpy.core.multiarray failed to import");} }
+#define my_import_array() {int r =_import_array(); std::cout <<r << std::endl; \
+if (r < 0) {PyErr_Print(); PyErr_SetString(PyExc_ImportError, "numpy.core.multiarray failed to import");} }
 
 MeasureHandler::MeasureHandler(RFMDriver *driver, DMA *dma, bool weightedCorr,
                                 std::string inputFile)
@@ -43,9 +44,9 @@ int MeasureHandler::make()
     bool newInjection;
     this->getNewData(diffX, diffY, newInjection);
 
-    /// SAVE diffX diffY and get amp
-
     int error = this->callPythonFunction(diffX, diffY, CMx, CMy);
+
+    // WRITE CMx and CMy to the DAC !
 
     return 0;
 }
@@ -59,6 +60,7 @@ void MeasureHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
                                   bool weightedCorr)
 {
     int errorPythonInit = this->initPython();
+
     if (errorPythonInit) {
         std::cout << "error in python Init" << std::endl;
         m_status = Error;
@@ -90,9 +92,14 @@ int MeasureHandler::initPython()
 {
     PyObject *pName = NULL;
 
-    Py_SetProgramName("");
     Py_InitializeEx(0);
+
+#if PY_MAJOR_VERSION  ==  2
     my_import_array();
+#elif PY_MAJOR_VERSION  ==  3
+    import_array();
+#endif
+
     PyRun_SimpleString("import sys");
     std::string cmd = "sys.path.append(\"" + m_inputPath + "\")";
     PyRun_SimpleString(cmd.c_str());

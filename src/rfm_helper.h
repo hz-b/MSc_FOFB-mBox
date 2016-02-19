@@ -50,7 +50,7 @@ public:
                 this->prepareField(field, pos, datasize1, datasize2);
 
                 return;
-            } 
+            }
             pos += datasize;
         }
         std::cout << "\tWARNING : " << structname << " not found !!!" << std::endl;

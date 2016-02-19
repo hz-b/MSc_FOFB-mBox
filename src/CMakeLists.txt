@@ -4,7 +4,8 @@ set(SOURCES main.cpp
             dma.cpp
             mbox.cpp
             rfm_helper.cpp
-            logger.cpp
+            logger/logger.cpp
+            logger/zmqext.cpp
             handlers/handler.cpp
             handlers/correction/correctionhandler.cpp
             handlers/correction/correctionprocessor.cpp
@@ -13,7 +14,7 @@ set(SOURCES main.cpp
 
 if (${DUMMY_RFM_DRIVER})
     set(SOURCES ${SOURCES} rfmdriver_dummy.cpp)
-    
+
 endif()
 
 

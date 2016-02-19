@@ -39,14 +39,6 @@ int CorrectionProcessor::correct(arma::vec &diffX, arma::vec &diffY,
                                  arma::vec &Data_CMx, arma::vec &Data_CMy,
                                  int type)
 {
-    static int count_test=0;
-    static int count=0;
-    ++count;
-    if (count%15000==0) {
-        count_test+=20;
-        count=0;
-    }
-
     if (sum(diffX) < -10.5) {
         std::cout << " ERROR: No Beam" << std::endl;
       //  return FOFB_ERROR_NoBeam;
@@ -97,7 +89,7 @@ int CorrectionProcessor::correct(arma::vec &diffX, arma::vec &diffY,
         m_dCORlastX = dCMx;
         m_Xsum      = m_Xsum+dCMx;
         m_CMx       = m_CMx - m_dCORxPID;
-        Data_CMx = m_CMx;
+        Data_CMx    = m_CMx;
     }
 
     if ((type & Correction::Vertical) == Correction::Vertical) {

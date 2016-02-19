@@ -76,11 +76,12 @@ int CorrectionHandler::make()
 
 void CorrectionHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
                                      double IvecX, double IvecY,
-                                     double Frequency, 
+                                     double Frequency,
                                      double P, double I, double D,
-                                     arma::vec CMx, arma::vec CMy, 
+                                     arma::vec CMx, arma::vec CMy,
                                      bool weightedCorr)
 {
+    m_correctionProcessor.setCMs(CMx, CMy);
     m_correctionProcessor.setSmat(SmatX, SmatY, IvecX, IvecY, weightedCorr);
     m_correctionProcessor.setInjectionCnt(Frequency);
     m_correctionProcessor.setPID(P,I,D);

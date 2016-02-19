@@ -2,42 +2,54 @@
 #define LOGGER_H
 
 #include "rfm_helper.h"
+
 #include <string>
 #include <iostream>
+#include <sstream>
 
+#include "logger/zmqext.h"
+
+namespace std { class thread; }
+namespace zmq { class socket_t; }
 class RFMDriver;
 class DMA;
+
+
+// https://savingyoutime.wordpress.com/2009/04/21/using-c-stl-streambufostream-to-create-time-stamped-logging-class/
+// http://www.horstmann.com/cpp/streams.txt
 namespace Logger {
-    
+
 class Logger
 {
 public:
-    Logger() : m_rfmHelper(NULL, NULL) {};
+    Logger(zmq::context_t &context);
+    ~Logger();
     void init(RFMDriver *driver, DMA *dma) { m_rfmHelper = RFMHelper(driver, dma); }
-    static void sendMessage(std::string message)
+    void record(std::string message);
+
+    void sendMessage(std::string message, std::string error="");
+    void sendZmq(std::string message);
+
+    template<typename T>
+    Logger& operator<< (const T& data)
     {
-  //      static ofstream fout("log");
-        std::cout << message << std::endl;;
-    }
-    static void record(std::string message)
-    {
-//static ofstream fout("log");
-        std::cout << message << std::endl;;
-    }
-    
-    void sendMessage(const char* message, const char *error)
-    {
-        if (READONLY) {
-            std::cout << "Message: " << message;
-            if (error)
-                std::cout << " Error: " << error;
-            std::cout << std::endl;
-        } else {
-            m_rfmHelper.sendMessage(message, error);
+  /*      if (data == Logger::end)
+        {
+            std:: cout << m_buffer << std::endl;
+        }*/
+        std::ostringstream stream;
+        stream << data;
+        if (!m_buffer.empty()) {
+            m_buffer.append(" ");
         }
-    }
+        m_buffer.append(stream.str());
+    };
+
 private:
     RFMHelper m_rfmHelper;
+    zmq::socket_t *m_zmqSocket;
+    std::thread *m_thread;
+    std::string m_buffer;
 };
 
 

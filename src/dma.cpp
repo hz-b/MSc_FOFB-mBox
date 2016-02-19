@@ -2,7 +2,6 @@
 
 #include <unistd.h>
 #include <iostream>
-#include <cstdio>
 
 #include "rfmdriver.h"
 
@@ -69,7 +68,7 @@ int DMA::init()
                             rfm2gSize
                             );
     if(rfmReturnStatus != RFM2G_SUCCESS) {
-        std::printf("doDMA: ERROR: Failed to map card PIO; %s\n", 
+        std::printf("doDMA: ERROR: Failed to map card PIO; %s\n",
                     m_driver->errorMsg(rfmReturnStatus));
 
         return -1;

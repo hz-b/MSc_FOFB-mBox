@@ -1,7 +1,6 @@
 #include "mbox.h"
 
 #include <time.h>
-#include <unistd.h>
 #include <iostream>
 
 #include "adc.h"
@@ -12,7 +11,7 @@
 #include "handlers/correction/correctionhandler.h"
 #include "handlers/measures/measurehandler.h"
 
-#include "logger.h"
+#include "logger/logger.h"
 
 mBox::mBox(char *deviceName, bool weightedCorr, std::string inputFile)
 {
@@ -44,7 +43,7 @@ mBox::mBox(char *deviceName, bool weightedCorr, std::string inputFile)
 mBox::~mBox()
 {
     delete m_handler,
-           m_rfmHelper, 
+           m_rfmHelper,
            m_dma,
            m_driver;
 }
@@ -61,7 +60,8 @@ void mBox::startLoop()
                 m_driver->read(CTRL_MEMPOS , &m_runningStatus , 1);
                 sleep(1);
             }
-            std::cout << "...Wait for start..." << std::endl;
+            //std::cout << "...Wait for start..." << std::endl;
+            Logger::logger << "...Wait for start..." /*<< Logger::end */;
         }
 
         // if Idle, don't do anything
@@ -71,9 +71,9 @@ void mBox::startLoop()
          * Initialize correction
          */
         if ((m_runningStatus == Running) && (m_runningState == Preinit)) {
-            m_handler->init(); 
+            m_handler->init();
             m_runningState = Initialized;
- 
+
             std::cout << "RUN RUN RUN .... " << std::endl;
         }
 
@@ -109,9 +109,9 @@ void mBox::initRFM(char *deviceName)
     std::cout << "\tRFM Handle : " << m_driver->handle() << std::endl;
 
     if (m_driver->open(deviceName)) {
-        std::cout << "\tCan't open " << deviceName << std::endl; 
-        std::cout << "\tExit fron initRFM()" << std::endl; 
-        exit(1); 
+        std::cout << "\tCan't open " << deviceName << std::endl;
+        std::cout << "\tExit fron initRFM()" << std::endl;
+        exit(1);
     }
 
     RFM2G_NODE nodeId(0);

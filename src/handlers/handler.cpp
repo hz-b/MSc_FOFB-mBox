@@ -4,7 +4,7 @@
 #include "dac.h"
 #include "dma.h"
 #include "rfm_helper.h"
-#include "logger.h"
+#include "logger/logger.h"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -42,18 +42,18 @@ void Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
           }
 
         diffX = (rADCdataX % m_gainX * numbers::cf * -1 ) - m_BPMoffsetX;
-        diffY = (rADCdataY % m_gainY * numbers::cf      ) - m_BPMoffsetY; 
+        diffY = (rADCdataY % m_gainY * numbers::cf      ) - m_BPMoffsetY;
 
         //FS BUMP
         double HBP2D6R = m_adc->bufferAt(m_idxHBP2D6R) * numbers::cf * 0.8;
         diffX[m_idxBPMZ6D6R] -= (-0.325 * HBP2D6R);
 
         //ARTOF
-        double HBP1D5R = m_adc->bufferAt(m_idxHBP1D5R) * numbers::cf * 0.8;     
-        diffX[m_idxBPMZ3D5R] -= (-0.42 * HBP1D5R); 
-        diffX[m_idxBPMZ4D5R] -= (-0.84 * HBP1D5R); 
-        diffX[m_idxBPMZ5D5R] -= (+0.84 * HBP1D5R); 
-        diffX[m_idxBPMZ6D5R] -= (+0.42 * HBP1D5R); 
+        double HBP1D5R = m_adc->bufferAt(m_idxHBP1D5R) * numbers::cf * 0.8;
+        diffX[m_idxBPMZ3D5R] -= (-0.42 * HBP1D5R);
+        diffX[m_idxBPMZ4D5R] -= (-0.84 * HBP1D5R);
+        diffX[m_idxBPMZ5D5R] -= (+0.84 * HBP1D5R);
+        diffX[m_idxBPMZ6D5R] -= (+0.42 * HBP1D5R);
     }
 }
 
@@ -72,7 +72,7 @@ void Handler::init()
     arma::vec CMx;
     arma::vec CMy;
 
-    double IvecX, IvecY; 
+    double IvecX, IvecY;
     double Frequency;
     double P, I, D;
 
@@ -110,7 +110,7 @@ void Handler::init()
     m_numBPMy = SmatY.n_rows;
     m_numCMx = SmatX.n_cols;
     m_numCMy = SmatY.n_cols;
-    
+
     m_dac->setWaveIndexX(std::vector<double>(DAC_WaveIndexX, DAC_WaveIndexX+128));
     m_dac->setWaveIndexY(std::vector<double>(DAC_WaveIndexY, DAC_WaveIndexY+128));
     m_adc->setWaveIndexX(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
@@ -120,7 +120,6 @@ void Handler::init()
 
     this->initIndexes(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
 
-    std::cout << READONLY << std::endl;
     if (!READONLY) {
         m_dac->changeStatus(DAC::Start);
     }
@@ -135,7 +134,7 @@ void Handler::initIndexes(const std::vector<double> &ADC_WaveIndexX)
     m_idxBPMZ6D6R = getIdx(m_numBPMx, ADC_WaveIndexX, 163);
     std::cout << "\tidx 6D6 : " << m_idxBPMZ6D6R << std::endl;
     //ARTOF
-    m_idxHBP1D5R  = 142; //(2*72)-1(x) -1(C)   
+    m_idxHBP1D5R  = 142; //(2*72)-1(x) -1(C)
     m_idxBPMZ3D5R = getIdx(m_numBPMx, ADC_WaveIndexX, 123);
     std::cout << "\tidx 3Z5 : " << m_idxBPMZ3D5R << std::endl;
     m_idxBPMZ4D5R = getIdx(m_numBPMx, ADC_WaveIndexX, 125);
@@ -147,7 +146,7 @@ void Handler::initIndexes(const std::vector<double> &ADC_WaveIndexX)
 }
 
 int Handler::getIdx(char numBPMs, const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWaveIndex)
-{ 
+{
     int res = numBPMs;
     int i;
     for (i = 0; i < numBPMs; i++) {
@@ -160,6 +159,8 @@ int Handler::getIdx(char numBPMs, const std::vector<double> &ADC_BPMIndex_Pos, d
 
 void Handler::writeCorrectors(RFM2G_UINT32* DACout)
 {
+    std::cout << m_plane << m_loopDir << std::endl;
+    exit(0);
     if (m_dac->write(m_plane, m_loopDir, DACout) > 0) {
          m_dma->status()->errornr = FOFB_ERROR_DAC;
          Logger::postError(FOFB_ERROR_DAC);
