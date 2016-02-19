@@ -26,6 +26,13 @@ include_directories(${NUMPY_INCLUDE_DIRS})
 
 set(CMAKE_CXX_STANDARD 11)
 
+# This is just to add colors to the output
+if(NOT WIN32)
+    string(ASCII 27 Esc)
+    set(ColourReset "${Esc}[m")
+    set(ColourBold  "${Esc}[1m")
+    set(Green       "${Esc}[32m")
+endif()
 
 # DUMMY_RFM_DRIVER
 #      1 if on a computer which doesn't support the driver
@@ -34,10 +41,10 @@ set(CMAKE_CXX_STANDARD 11)
 add_definitions(-DDUMMY_DRIVER=0)
 if (DUMMY_DRIVER)
     set(DUMMY_RFM_DRIVER true)
-    message(STATUS "Using dummy RFM driver")
+    message(STATUS "Using ${Green}dummy RFM driver${ColourReset}")
 else()
     set(DUMMY_RFM_DRIVER false)
-    message(STATUS "Using real RFM driver")
+    message(STATUS "Using ${Green}real RFM driver${ColourReset}")
 endif()
 
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/cmake/config.h.cmake ${CMAKE_SOURCE_DIR}/src/config.h )
