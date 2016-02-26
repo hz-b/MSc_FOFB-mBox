@@ -28,11 +28,11 @@ void DAC::changeStatus(int status)
     for (int i = 0 ; i < 10 ; i++) {
         if (m_IOCs[i].isActive()) {
             std::cout << "\t" << m_IOCs[i].name() << "\t: ";
-            if (m_driver->sendEvent( m_IOCs[i].id(), ADC_DAC_EVENT, status))
-            { 
-                std::cout << "Error " << std::endl; 
+            RFM2G_STATUS IOCError = m_driver->sendEvent( m_IOCs[i].id(), ADC_DAC_EVENT, status);
+            if (IOCError) {
+                std::cout << "Error " << std::endl;
             } else {
-                std::cout << "successful" << std::endl;
+                std::cout << "Successful" << std::endl;
             }
         }
     }
@@ -40,10 +40,10 @@ void DAC::changeStatus(int status)
 
 int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
 {
-    int writeflag = 0;   
+    int writeflag = 0;
     //plane = 4;
     switch((int) plane) {
-    case 0: 
+    case 0:
         writeflag = (1<<16) | (1<<17) ;
         break;
     case 1:
@@ -55,7 +55,7 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
     case 3:
         if (loopDir > 0)
             writeflag = (1<<16);
-        else 
+        else
             writeflag= (1<<17);
         break;
     }
@@ -66,7 +66,7 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
     // cout << setw(3) << rfm2gMemNumber << " "<< DACout[113] <<"\n";
 
     /* --- start timer --- */
-    //t_dac_start.clock();    
+    //t_dac_start.clock();
 
     if (m_driver->clearEvent(DAC_EVENT))
         return 1;
@@ -78,18 +78,18 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
     RFM2G_UINT32 threshold = 0;
     /* see if DMA threshold and buffer are intialized */
     m_driver->getDMAThreshold( &threshold );
-    
+
     int data_size = DAC_BUFFER_SIZE*sizeof(RFM2G_UINT32);
     if (data_size < threshold) {
          // use PIO transfer
         if (m_driver->write(DAC_MEMPOS + (rfm2gMemNumber*data_size), &data, data_size))
             return 1;
     } else {
-        RFM2G_INT32 *dst = (RFM2G_INT32*) m_dma->memory(); 
+        RFM2G_INT32 *dst = (RFM2G_INT32*) m_dma->memory();
         for (int i = 0 ; i < DAC_BUFFER_SIZE ; ++i) {
             dst[i] = data[i];
         }
- 
+
         if (m_driver->write(DAC_MEMPOS + (rfm2gMemNumber*data_size),
                             (void*) m_dma->memory(), data_size)) {
             return 1;
@@ -106,17 +106,17 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
     /* tell IOC to work */
     if (m_driver->sendEvent(RFM2G_NODE_ALL, DAC_EVENT, (RFM2G_INT32) rfm2gCtrlSeq))
         return 1;
-    //t_dac_send.clock();    
+    //t_dac_send.clock();
 
     /* wait for atleast one ack. */
     RFM2GEVENTINFO EventInfo;
     EventInfo.Event   = DAC_EVENT;    /* We'll wait on this interrupt */
     EventInfo.Timeout = DAC_TIMEOUT;  /* We'll wait this many milliseconds */
-    if (m_driver->waitForEvent( &EventInfo )) 
+    if (m_driver->waitForEvent( &EventInfo ))
         return 1;
 
     // stop timer
-    //t_dac_stop.clock();    
+    //t_dac_stop.clock();
 
     return 0;
 }

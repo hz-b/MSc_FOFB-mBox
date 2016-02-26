@@ -12,6 +12,7 @@ class ADC
 public:
     explicit ADC(RFMDriver *driver, DMA *dma);
     ~ADC();
+    int init(int freq, int DAC_freq);
     int read();
     RFM2G_INT16 bufferAt(int id) const { return m_buffer[id]; };
     double waveIndexXAt(int id) const { return m_waveIndexX.at(id); };
@@ -26,6 +27,7 @@ private:
     RFM2G_INT16 m_buffer[ADC_BUFFER_SIZE];
     std::vector<double> m_waveIndexX;
     std::vector<double> m_waveIndexY;
+    int m_node;
 };
 
 #endif // ADC_H

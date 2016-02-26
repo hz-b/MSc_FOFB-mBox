@@ -1,6 +1,8 @@
 #include "adc.h"
 
+#include <chrono>
 #include <iostream>
+#include <thread>
 
 #include "dma.h"
 #include "rfmdriver.h"
@@ -8,6 +10,7 @@
 ADC::ADC(RFMDriver *driver, DMA *dma)
     : m_driver(driver)
     , m_dma(dma)
+    , m_node(0x01)
 {}
 
 ADC::~ADC()
@@ -15,22 +18,93 @@ ADC::~ADC()
 
 }
 
+int ADC::init(int freq, int DAC_freq)
+{
+    std::cout << "Init DAC" << std::endl;
+    RFM2G_INT32 ctrlBuffer[128];
+    short Navr = DAC_freq/freq;
+    ctrlBuffer[0] = 512; // RFM2G_LOOP_MAX
+    ctrlBuffer[1] = 0;
+    ctrlBuffer[2] = 0;
+    ctrlBuffer[3] = 2;          // Navr
+
+    //Stop  ADC Sampling (if running)
+    if ((freq == 0) || (DAC_freq == 0)) {
+        std::cout << "\tADC stop sampling." << std::endl;
+
+        RFM2G_STATUS sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, 1);
+        if (sendEventError) {
+            std::cout << "\tCan't stop ADC." << std::endl;
+            return 1;
+        }
+        std::cout << "\tADC should be stopped." << std::endl;
+
+        return 0;
+    }
+
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+
+    // Write ADC CTRL
+    std::cout << "\tADC write sampling config" << std::endl;
+
+    RFM2G_UINT32 threshold = 0;
+    // see if DMA threshold and buffer are intialized
+    m_driver->getDMAThreshold(&threshold);
+
+    int data_size = 512;
+    RFM2G_INT32 writeError;
+    if (data_size < threshold) {
+       // use PIO transfer
+       writeError = m_driver->write(0, &ctrlBuffer, 512);
+    } else {
+       RFM2G_INT32 *dst = (RFM2G_INT32*)m_dma->memory();
+       for (int i = 0 ; i < 128 ; i++) {
+           dst[i] = ctrlBuffer[i];
+       }
+       writeError = m_driver->write(0, (void*)m_dma->memory(), data_size);
+    }
+    if (writeError) {
+        std::cout << "  Can't write ADC config" << std::endl;
+        return 1;
+    }
+
+    // Enable ADC
+    std::cout << "\tADC enable sampling" << std::endl;
+    RFM2G_STATUS sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, 3); // FIXME: Why 3? explicit variable
+    if (sendEventError) {
+        std::cout << "\tCan't enable ADC" << std::endl;
+        return 1;
+    }
+
+    // Start Sampling
+    std::cout << "\tADC start sampling" << std::endl;
+    sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, 2);  // FIXME: Why 2? explicit variable
+    if (sendEventError) {
+        std::cout << "\tCan't start sampling" << std::endl;
+        return 1;
+    }
+    std::cout << "\tADC should be started" << std::endl;
+    return 0;
+}
+
+
 int ADC::read()
 {
-    RFM2GEVENTINFO eventInfo;              // Info about received interrupts 
+    RFM2GEVENTINFO eventInfo;              // Info about received interrupts
     eventInfo.Event = ADC_EVENT;           // We'll wait on this interrupt
     eventInfo.Timeout = ADC_TIMEOUT;       // We'll wait this many milliseconds
 
     /* Wait on an interrupt from the other Reflective Memory board */
     if (this->waitForEvent( eventInfo ))
         return 1;
-    RFM2G_NODE  otherNodeId = eventInfo.NodeId;
-    
+
     t_status *dmaStatus = m_dma->status();
     if ( dmaStatus == NULL )
         return 1;
-    dmaStatus->loopPos = eventInfo.ExtendedInfo;
 
+    dmaStatus->loopPos = eventInfo.ExtendedInfo;
+    RFM2G_NODE otherNodeId = eventInfo.NodeId;
+    std::cout << dmaStatus->loopPos <<std::endl;exit(0);
     /* Now read data from the other board from BPM_MEMPOS */
     RFM2G_UINT32 threshold = 0;
     /* see if DMA threshold and buffer are intialized */
@@ -40,36 +114,44 @@ int ADC::read()
 
     if (data_size  < threshold) {
         // use PIO transfer
-        if (m_driver->read(ADC_MEMPOS + (dmaStatus->loopPos * data_size),
-            (void*) m_buffer, data_size )) {
+        RFM2G_STATUS readError = m_driver->read(ADC_MEMPOS + (dmaStatus->loopPos * data_size),
+                                                (void*)m_buffer, data_size);
+        if (readError)
             return 1;
-        }
-    }
-    else {
-        if (m_driver->read(ADC_MEMPOS + (dmaStatus->loopPos * data_size),
-            (void*) m_dma->memory(), data_size )) {
+
+    } else {
+        RFM2G_STATUS readError = m_driver->read(ADC_MEMPOS + (dmaStatus->loopPos * data_size),
+                                                (void*) m_dma->memory(), data_size);
+        if (readError)
             return 1;
-        }
-        
-        RFM2G_INT16 * src = (RFM2G_INT16*) m_dma->memory(); 
-        for (int i = 0 ; i < ADC_BUFFER_SIZE ; ++i)
-        {
+
+        RFM2G_INT16 *src = (RFM2G_INT16*) m_dma->memory();
+        for (int i = 0 ; i < ADC_BUFFER_SIZE ; ++i) {
             m_buffer[i] = src[i];
         }
     }
-    
+
+    // Send an interrupt to the other Reflective Memory board
+    RFM2G_STATUS sendEventError = m_driver->sendEvent(otherNodeId, ADC_EVENT, 0);
+    if (sendEventError)
+        return 1;
+
     return 0;
 }
 
 RFM2G_STATUS ADC::waitForEvent(RFM2GEVENTINFO eventInfo)
 {
-    RFM2G_STATUS res;
-    if (res = m_driver->clearEvent( eventInfo.Event ))
-        std::cout << "in clearEvent, error: " << res << std::endl;
-        return res;
-    if (res = m_driver->enableEvent(  eventInfo.Event ))
-        std::cout << "in enableEvent, error: " << res << std::endl;
-        return res;
+    RFM2G_STATUS eventError = m_driver->clearEvent(eventInfo.Event);
+    if (eventError) {
+        std::cout << "in clearEvent, error: " << eventError << std::endl;
+        return eventError;
+    }
+    eventError = m_driver->enableEvent(eventInfo.Event);
+    if (eventError) {
+        std::cout << "in enableEvent, error: " << eventError << std::endl;
+        return eventError;
+    }
 
-    return m_driver->waitForEvent( &eventInfo );
+    RFM2G_STATUS waitForEventError = m_driver->waitForEvent(&eventInfo);
+    return waitForEventError;
 }

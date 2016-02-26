@@ -28,7 +28,8 @@ int DMA::init()
     m_driver->setDMAThreshold(DMA_THRESHOLD);
 
     RFM2GCONFIG rfm2gConfig;
-    if(m_driver->getConfig(&rfm2gConfig) == RFM2G_SUCCESS) {
+    RFM2G_STATUS getConfigError = m_driver->getConfig(&rfm2gConfig);
+    if (getConfigError) {
         pPioCard = (char*)rfm2gConfig.PciConfig.rfm2gBase;
         rfm2gSize = rfm2gConfig.PciConfig.rfm2gWindowSize;
     }
@@ -36,7 +37,7 @@ int DMA::init()
     int pageSize = getpagesize();
     unsigned int numPagesDMA = rfm2gSize / (2* pageSize);
     unsigned int numPagesPIO = rfm2gSize / (2* pageSize);
-    if((rfm2gSize % pageSize) > 0) {
+    if ((rfm2gSize % pageSize) > 0) {
         std::cout << "Increase PIO and DMA " << std::endl;
         numPagesDMA++;
         numPagesPIO++;
@@ -49,27 +50,25 @@ int DMA::init()
     std::cout << "\tpageSize  : " << pageSize << std::endl;
     std::cout << "\tnumPages DMA/PIO : " << numPagesDMA << std::endl;
 
-    RFM2G_STATUS rfmReturnStatus = m_driver->userMemory(
+    RFM2G_STATUS rfmMemoryError = m_driver->userMemory(
                                         (volatile void **) (&pDmaCard),
                                         (DMAOFF_A | LINUX_DMA_FLAG),
                                         numPagesDMA
                                         );
-    if(rfmReturnStatus != RFM2G_SUCCESS) {
+    if (rfmMemoryError) {
         std::printf("doDMA: ERROR: Failed to map card DMA buffer; %s\n",
-            m_driver->errorMsg(rfmReturnStatus));
+            m_driver->errorMsg(rfmMemoryError));
         return -1;
     }
     std::printf("doDMA: SUCCESS: mapped numPagesDMA=%d at pDmaCard=%p\n", numPagesDMA, pDmaCard);
     m_memory = pDmaCard;
 
-    rfmReturnStatus = m_driver->userMemoryBytes(
-                            (volatile void **) (&pPioCard),
-                            (0x00000000 | LINUX_DMA_FLAG2),
-                            rfm2gSize
-                            );
-    if(rfmReturnStatus != RFM2G_SUCCESS) {
+    rfmMemoryError = m_driver->userMemoryBytes((volatile void **) (&pPioCard),
+                                               (0x00000000 | LINUX_DMA_FLAG2),
+                                               rfm2gSize);
+    if (rfmMemoryError) {
         std::printf("doDMA: ERROR: Failed to map card PIO; %s\n",
-                    m_driver->errorMsg(rfmReturnStatus));
+                    m_driver->errorMsg(rfmMemoryError));
 
         return -1;
     }
