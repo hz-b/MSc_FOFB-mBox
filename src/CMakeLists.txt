@@ -10,7 +10,7 @@ set(SOURCES main.cpp
             handlers/correction/correctionhandler.cpp
             handlers/correction/correctionprocessor.cpp
             handlers/measures/measurehandler.cpp
-    )
+)
 
 if (${DUMMY_RFM_DRIVER})
     set(SOURCES ${SOURCES} rfmdriver_dummy.cpp)
@@ -27,4 +27,4 @@ target_link_libraries (mbox ${ARMADILLO_LIBRARIES}
                             ${LIBRT_LIBRARIES}
                             ${PYTHON_LIBRARY}
                             ${NUMPY_LIBRARY}
-                        )
+)

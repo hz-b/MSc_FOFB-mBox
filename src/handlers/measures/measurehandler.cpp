@@ -228,8 +228,7 @@ int MeasureHandler::callPythonFunction(const arma::vec &BPMx, const arma::vec &B
         /**
          * Everything must be unreferenced
          */
-        Py_DECREF(pyCMx);
-        Py_DECREF(pyCMy);
+        Py_DECREF(pValue);
         Py_DECREF(pyBPMx);
         Py_DECREF(pyBPMy);
 
