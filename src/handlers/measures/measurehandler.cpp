@@ -14,7 +14,7 @@
 
 
 // HACK: using import_array() with Python2 doesn't work... We should definetely move to Python3
-#define my_import_array() {int r =_import_array(); std::cout <<r << std::endl; \
+#define my_import_array() {int r =_import_array();  \
 if (r < 0) {PyErr_Print(); PyErr_SetString(PyExc_ImportError, "numpy.core.multiarray failed to import");} }
 
 MeasureHandler::MeasureHandler(RFMDriver *driver, DMA *dma, bool weightedCorr,
@@ -113,7 +113,6 @@ int MeasureHandler::initPython()
         m_pFunc = PyObject_GetAttrString(m_pModule, m_functionName.c_str());
 
         if (m_pFunc && PyCallable_Check(m_pFunc)) {
-
             return callPythonInit();
         } else {
             if (PyErr_Occurred())
