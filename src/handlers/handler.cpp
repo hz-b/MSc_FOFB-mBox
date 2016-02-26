@@ -17,6 +17,10 @@ Handler::Handler(RFMDriver *driver, DMA *dma, bool weightedCorr)
     m_dma = dma;
     m_adc = new ADC(m_driver, m_dma);
     m_dac = new DAC(m_driver, m_dma);
+
+    if (m_adc->init(0,0)) {
+        exit(1);
+    }
 }
 
 Handler::~Handler()
@@ -115,9 +119,7 @@ void Handler::init()
     m_dac->setWaveIndexY(std::vector<double>(DAC_WaveIndexY, DAC_WaveIndexY+128));
     m_adc->setWaveIndexX(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
     m_adc->setWaveIndexY(std::vector<double>(ADC_WaveIndexY, ADC_WaveIndexY+128));
-
     this->setProcessor(SmatX, SmatY, IvecX, IvecY, Frequency, P, I, D, CMx, CMy, m_weightedCorr);
-
     this->initIndexes(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
 
     if (!READONLY) {
@@ -128,33 +130,29 @@ void Handler::init()
 void Handler::initIndexes(const std::vector<double> &ADC_WaveIndexX)
 {
     std::cout << "Init Indexes" << std:: endl;
-
     //FS BUMP
     m_idxHBP2D6R  = 160; //(2*81)-1(X) -1(C)
-    m_idxBPMZ6D6R = getIdx(m_numBPMx, ADC_WaveIndexX, 163);
+    m_idxBPMZ6D6R = getIdx(ADC_WaveIndexX, 163);
     std::cout << "\tidx 6D6 : " << m_idxBPMZ6D6R << std::endl;
     //ARTOF
     m_idxHBP1D5R  = 142; //(2*72)-1(x) -1(C)
-    m_idxBPMZ3D5R = getIdx(m_numBPMx, ADC_WaveIndexX, 123);
+    m_idxBPMZ3D5R = getIdx(ADC_WaveIndexX, 123);
     std::cout << "\tidx 3Z5 : " << m_idxBPMZ3D5R << std::endl;
-    m_idxBPMZ4D5R = getIdx(m_numBPMx, ADC_WaveIndexX, 125);
+    m_idxBPMZ4D5R = getIdx(ADC_WaveIndexX, 125);
     std::cout << "\tidx 4Z5 : " << m_idxBPMZ4D5R << std::endl;
-    m_idxBPMZ5D5R = getIdx(m_numBPMx, ADC_WaveIndexX, 129);
+    m_idxBPMZ5D5R = getIdx(ADC_WaveIndexX, 129);
     std::cout << "\tidx 5Z5 : " << m_idxBPMZ5D5R << std::endl;
-    m_idxBPMZ6D5R = getIdx(m_numBPMx, ADC_WaveIndexX, 131);
+    m_idxBPMZ6D5R = getIdx(ADC_WaveIndexX, 131);
     std::cout << "\tidx 6Z5 : " << m_idxBPMZ6D5R << std::endl;
 }
 
-int Handler::getIdx(char numBPMs, const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWaveIndex)
+int Handler::getIdx(const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWaveIndex)
 {
-    int res = numBPMs;
-    int i;
-    for (i = 0; i < numBPMs; i++) {
-        // cout << ADC_BPMIndex_Pos[i] << " ";
+    for (int i = 0; i < ADC_BPMIndex_Pos.size() ; i++) {
         if (ADC_BPMIndex_Pos.at(i) == DeviceWaveIndex)
             return i;
     }
-    return res;
+    return ADC_BPMIndex_Pos.size();
 }
 
 void Handler::writeCorrectors(RFM2G_UINT32* DACout)

@@ -64,7 +64,7 @@ protected:
      * @brief Get the index of a given index
      * @return Error code.
      */
-    int getIdx(char numBPMs, const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWaveIndex);
+    int getIdx(const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWaveIndex);
 
     /**
      * @brief Get the index of a given index
