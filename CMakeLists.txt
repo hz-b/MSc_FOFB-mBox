@@ -18,8 +18,6 @@ find_package(Threads REQUIRED)
 find_package(LibRT REQUIRED)
 include_directories(${LIBRT_INCLUDE_DIRS})
 
-# With PythonLibs 2.7.9, I get segfaults that I disappear with 2.7.11
-#set(Python_ADDITIONAL_VERSIONS 2.7.11)
 find_package(PythonLibs 2.7 REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 
