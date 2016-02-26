@@ -2,7 +2,7 @@
 
 #include <fstream>
 #include <iostream>
-#include <cstring> 
+#include <cstring>
 
 RFM2G_STATUS RFMDriver::open(char *devicePath)
 {
@@ -19,10 +19,9 @@ RFM2G_STATUS RFMDriver::read(RFM2G_UINT32 offset, void* buffer, RFM2G_UINT32 len
     inFile.open( "dump_rmf.dat", std::ios::in | std::ios::binary );
 
     // Check that it doesn't overflow the file
-    int begin = inFile.tellg();
     inFile.seekg (0, std::ios::end);
     int end = inFile.tellg();
-    if ((end - begin) < offset+length) {
+    if (end < offset+length) {
         std::cout << "## ERROR; Size pb ###" << std::endl;
         return RFM2G_DRIVER_ERROR;
     }
@@ -38,13 +37,13 @@ RFM2G_STATUS RFMDriver::read(RFM2G_UINT32 offset, void* buffer, RFM2G_UINT32 len
 RFM2G_STATUS RFMDriver::write(RFM2G_UINT32 offset, void* buffer, RFM2G_UINT32 length)
 {
     std::ofstream outFile;
-    outFile.open( "dump_rmf.dat", std::ios::out | std::ios::binary );
+    outFile.open( "dump_rmf.dat", std::ios::out | std::ios::binary | std::ios::app );
 
     // Check that it doesn't overflow the file
-    int begin = outFile.tellp();
     outFile.seekp (0, std::ios::end);
     int end = outFile.tellp();
-    if ((end - begin) < offset+length) {
+
+    if (end < offset+length) {
         std::cout << "## ERROR; Size pb ###" << std::endl;
         return RFM2G_DRIVER_ERROR;
     }
