@@ -1,7 +1,8 @@
 #include "mbox.h"
 
-#include <time.h>
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 #include "adc.h"
 #include "dac.h"
@@ -86,6 +87,9 @@ void mBox::startLoop()
                 m_runningState = Error;
                 std::cout << "error: " << errornr << std::endl;
             }
+
+            // Write the status
+            m_driver->write(STATUS_MEMPOS, m_dma->status(), sizeof(t_status));
         }
 
         /**
@@ -96,10 +100,7 @@ void mBox::startLoop()
             m_runningState = Preinit;
         }
 
-        struct timespec t_stop;
-        t_stop.tv_sec=0;
-        t_stop.tv_nsec=1000000;
-        clock_nanosleep(CLOCK_MODE, 0, &t_stop, 0);
+        std::this_thread::sleep_for(std::chrono::nanoseconds(1000000));
     }
 }
 

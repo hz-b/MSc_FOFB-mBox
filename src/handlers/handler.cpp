@@ -5,6 +5,7 @@
 #include "dma.h"
 #include "rfm_helper.h"
 #include "logger/logger.h"
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -123,7 +124,7 @@ void Handler::init()
     this->initIndexes(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
 
     if (!READONLY) {
-        m_dac->changeStatus(DAC::Start);
+        m_dac->changeStatus(DAC_ENABLE);
     }
 }
 
@@ -158,7 +159,6 @@ int Handler::getIdx(const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWa
 void Handler::writeCorrectors(RFM2G_UINT32* DACout)
 {
     std::cout << m_plane << m_loopDir << std::endl;
-    exit(0);
     if (m_dac->write(m_plane, m_loopDir, DACout) > 0) {
          m_dma->status()->errornr = FOFB_ERROR_DAC;
          Logger::postError(FOFB_ERROR_DAC);

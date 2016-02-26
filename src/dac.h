@@ -26,10 +26,6 @@ private:
 class DAC
 {
 public:
-    enum Status {
-        Stop = 1,
-        Start = 2
-    };
     explicit DAC(RFMDriver *driver, DMA *dma);
     void changeStatus(int status);
     double waveIndexXAt(int id) const { return m_waveIndexX.at(id); };
@@ -45,7 +41,7 @@ private:
     RFM2G_INT16 m_buffer[DAC_BUFFER_SIZE];
     std::vector<double> m_waveIndexX;
     std::vector<double> m_waveIndexY;
-    IOC m_IOCs[10];
+    std::vector<IOC> m_IOCs;
 };
 
 #endif // DAC_H

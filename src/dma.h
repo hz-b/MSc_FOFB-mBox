@@ -11,8 +11,8 @@ public:
     explicit DMA(RFMDriver *driver);
     ~DMA();
     int init();
-    volatile char* memory() const { return m_memory; };
-    t_status* status() const { return m_status; };
+    volatile char* memory() { return m_memory; };
+    t_status* status() { return m_status; };
 
 private:
     /* DMA Buffer pointer */

@@ -5,24 +5,27 @@
 #include "define.h"
 
 #include <iostream>
+#include <string>
+#include <vector>
 
 DAC::DAC(RFMDriver *driver, DMA *dma)
     : m_driver(driver)
     , m_dma(dma)
 {
-    std::string IOCsnames[] = {"IOCS15G", "IOCS2G", "IOCS4G", "IOCS6G", "IOCS8G", "IOCS10G", "IOCS12G", "IOCS14G", "IOCS16G", "IOC3S16G"};
-    char nodeIds[] =          { 0x02    ,  0x12   ,  0x14   ,  0x16   ,  0x18   ,  0x1A    ,  0x1C    ,  0x1E    ,  0x20    ,  0x21     };
-    bool activeNodes[] =      { true    ,  true   ,  true   ,  true   ,  true   ,  true    ,  true    ,  true    ,  true    ,  true     };
-    for (int i = 0 ; i < 10 ; i++) {
-        m_IOCs[i] =  IOC(nodeIds[i], IOCsnames[i], activeNodes[i]);
+    std::vector<std::string> IOCsnames = {"IOCS15G", "IOCS2G", "IOCS4G", "IOCS6G", "IOCS8G", "IOCS10G", "IOCS12G", "IOCS14G", "IOCS16G", "IOC3S16G"};
+    std::vector<int>  nodeIds =          { 0x02    ,  0x12   ,  0x14   ,  0x16   ,  0x18   ,  0x1A    ,  0x1C    ,  0x1E    ,  0x20    ,  0x21     };
+    std::vector<bool> activeNodes =      { true    ,  true   ,  true   ,  true   ,  true   ,  true    ,  true    ,  true    ,  true    ,  true     };
+    for (int i = 0 ; i < IOCsnames.size() ; i++) {
+        IOC ioc(nodeIds[i], IOCsnames[i], activeNodes[i]);
+        m_IOCs.push_back(ioc);
     }
 }
 
 void DAC::changeStatus(int status)
 {
-    if (status == Start) {
+    if (status == DAC_ENABLE) {
         std::cout << "Starting DACs ... " << std::endl;
-    } else if (status == Stop) {
+    } else if (status == DAC_DISABLE) {
         std::cout << "Stopping DACs ...." << std::endl;
     }
     for (int i = 0 ; i < 10 ; i++) {
@@ -63,7 +66,6 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
 
     RFM2G_UINT32 rfm2gCtrlSeq   = m_dma->status()->loopPos + writeflag;
     RFM2G_UINT32 rfm2gMemNumber = rfm2gCtrlSeq & 0x000ffff;
-    // cout << setw(3) << rfm2gMemNumber << " "<< DACout[113] <<"\n";
 
     /* --- start timer --- */
     //t_dac_start.clock();
@@ -74,24 +76,26 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
         return 1;
     //t_dac_clear.clock();
 
-    /* fill DAC to RFM */
+    // fill DAC to RFM
     RFM2G_UINT32 threshold = 0;
-    /* see if DMA threshold and buffer are intialized */
+    // see if DMA threshold and buffer are intialized
     m_driver->getDMAThreshold( &threshold );
 
     int data_size = DAC_BUFFER_SIZE*sizeof(RFM2G_UINT32);
     if (data_size < threshold) {
          // use PIO transfer
-        if (m_driver->write(DAC_MEMPOS + (rfm2gMemNumber*data_size), &data, data_size))
+        RFM2G_STATUS writeError = m_driver->write(DAC_MEMPOS + (rfm2gMemNumber*data_size),
+                                                  &data, data_size);
+        if (writeError)
             return 1;
     } else {
         RFM2G_INT32 *dst = (RFM2G_INT32*) m_dma->memory();
         for (int i = 0 ; i < DAC_BUFFER_SIZE ; ++i) {
             dst[i] = data[i];
         }
-
-        if (m_driver->write(DAC_MEMPOS + (rfm2gMemNumber*data_size),
-                            (void*) m_dma->memory(), data_size)) {
+        RFM2G_STATUS writeError = m_driver->write(DAC_MEMPOS + (rfm2gMemNumber*data_size),
+                                                  (void*) m_dma->memory(), data_size);
+        if (writeError) {
             return 1;
         }
     }
@@ -108,11 +112,13 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
         return 1;
     //t_dac_send.clock();
 
-    /* wait for atleast one ack. */
+    // wait for at least one ack.
     RFM2GEVENTINFO EventInfo;
     EventInfo.Event   = DAC_EVENT;    /* We'll wait on this interrupt */
     EventInfo.Timeout = DAC_TIMEOUT;  /* We'll wait this many milliseconds */
-    if (m_driver->waitForEvent( &EventInfo ))
+
+    RFM2G_STATUS waitError = m_driver->waitForEvent(&EventInfo);
+    if (waitError)
         return 1;
 
     // stop timer

@@ -2,6 +2,7 @@
 #define DEFINE_H
 
 #include "config.h"
+#include "rfm2g_api.h"
 
 #define CLOCK_MODE CLOCK_MONOTONIC_RAW
 
@@ -11,37 +12,41 @@
 #define CONFIG_MEMPOS     CTRL_MEMPOS + 1000
 
 // ADC
-#define ADC_BUFFER_SIZE 256
-#define ADC_MEMPOS        0x01000000
-#define ADC_TIMEOUT       10000   /* milliseconds */
+const int ADC_BUFFER_SIZE = 256;
+const int ADC_MEMPOS = 0x01000000;
+const int ADC_TIMEOUT = 10000;  /* milliseconds */
+const int ADC_STOP = 1;
+const int ADC_START = 2;
+const int ADC_ENABLE = 3;
+const int ADC_NODE = 0x01;
 
 // DAC
-#define DAC_BUFFER_SIZE 128
-#define DAC_MEMPOS        0x02000000
-#define DAC_TIMEOUT       60000   /* milliseconds */
+const int DAC_BUFFER_SIZE = 128;
+const int DAC_MEMPOS = 0x02000000;
+const int DAC_TIMEOUT = 60000;   /* milliseconds */
+const int DAC_ENABLE = 2;
+const int DAC_DISABLE = 1;
 
 // DMA
-#define DMAOFF_A 0x00100000
+const int DMAOFF_A = 0x00100000;
   //#define  DMAOFF_A 0xf0000000
   //#define  LINUX_DMA_FLAG 0x0
-#define LINUX_DMA_FLAG 0x01
-#define LINUX_DMA_FLAG2 0
-#define DMA_THRESHOLD 128
+const int LINUX_DMA_FLAG = 0x01;
+const int LINUX_DMA_FLAG2 = 0;
+const int DMA_THRESHOLD = 128;
 
 #define FOFB_ERROR_ADC      1
-#define FOFB_ERROR_DAC      2  
-#define FOFB_ERROR_CM100    4 
-#define FOFB_ERROR_NoBeam   5 
-#define FOFB_ERROR_RMS      6  
+#define FOFB_ERROR_DAC      2
+#define FOFB_ERROR_CM100    4
+#define FOFB_ERROR_NoBeam   5
+#define FOFB_ERROR_RMS      6
 #define FOFB_ERROR_ADCReset 8
-#define FOFB_ERROR_Unkonwn  7 
+#define FOFB_ERROR_Unkonwn  7
 
-#include "rfm2g_api.h"
-
-#define readStructtype_pchar 0
-#define readStructtype_mat 1
-#define readStructtype_vec 2
-#define readStructtype_double 3
+const int readStructtype_pchar = 0;
+const int readStructtype_mat = 1;
+const int readStructtype_vec = 2;
+const int readStructtype_double = 3;
 
 const RFM2GEVENTTYPE ADC_EVENT = RFM2GEVENT_INTR1;
 const RFM2GEVENTTYPE ADC_DAC_EVENT = RFM2GEVENT_INTR2;

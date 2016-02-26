@@ -10,7 +10,7 @@
 ADC::ADC(RFMDriver *driver, DMA *dma)
     : m_driver(driver)
     , m_dma(dma)
-    , m_node(0x01)
+    , m_node(ADC_NODE)
 {}
 
 ADC::~ADC()
@@ -20,9 +20,9 @@ ADC::~ADC()
 
 int ADC::init(int freq, int DAC_freq)
 {
-    std::cout << "Init DAC" << std::endl;
+    std::cout << "Init ADC" << std::endl;
     RFM2G_INT32 ctrlBuffer[128];
-    short Navr = DAC_freq/freq;
+//    short Navr = DAC_freq/freq;
     ctrlBuffer[0] = 512; // RFM2G_LOOP_MAX
     ctrlBuffer[1] = 0;
     ctrlBuffer[2] = 0;
@@ -32,7 +32,7 @@ int ADC::init(int freq, int DAC_freq)
     if ((freq == 0) || (DAC_freq == 0)) {
         std::cout << "\tADC stop sampling." << std::endl;
 
-        RFM2G_STATUS sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, 1);
+        RFM2G_STATUS sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, ADC_STOP);
         if (sendEventError) {
             std::cout << "\tCan't stop ADC." << std::endl;
             return 1;
@@ -70,7 +70,7 @@ int ADC::init(int freq, int DAC_freq)
 
     // Enable ADC
     std::cout << "\tADC enable sampling" << std::endl;
-    RFM2G_STATUS sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, 3); // FIXME: Why 3? explicit variable
+    RFM2G_STATUS sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, ADC_ENABLE);
     if (sendEventError) {
         std::cout << "\tCan't enable ADC" << std::endl;
         return 1;
@@ -78,7 +78,7 @@ int ADC::init(int freq, int DAC_freq)
 
     // Start Sampling
     std::cout << "\tADC start sampling" << std::endl;
-    sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, 2);  // FIXME: Why 2? explicit variable
+    sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, ADC_START);
     if (sendEventError) {
         std::cout << "\tCan't start sampling" << std::endl;
         return 1;
@@ -94,17 +94,17 @@ int ADC::read()
     eventInfo.Event = ADC_EVENT;           // We'll wait on this interrupt
     eventInfo.Timeout = ADC_TIMEOUT;       // We'll wait this many milliseconds
 
-    /* Wait on an interrupt from the other Reflective Memory board */
-    if (this->waitForEvent( eventInfo ))
+    // Wait on an interrupt from the other Reflective Memory board
+    RFM2G_STATUS waitError = this->waitForEvent(eventInfo);
+    if (waitError)
         return 1;
 
-    t_status *dmaStatus = m_dma->status();
-    if ( dmaStatus == NULL )
+    if ( m_dma->status() == NULL )
         return 1;
 
-    dmaStatus->loopPos = eventInfo.ExtendedInfo;
+    m_dma->status()->loopPos = eventInfo.ExtendedInfo;
     RFM2G_NODE otherNodeId = eventInfo.NodeId;
-    std::cout << dmaStatus->loopPos <<std::endl;exit(0);
+    
     /* Now read data from the other board from BPM_MEMPOS */
     RFM2G_UINT32 threshold = 0;
     /* see if DMA threshold and buffer are intialized */
@@ -114,13 +114,13 @@ int ADC::read()
 
     if (data_size  < threshold) {
         // use PIO transfer
-        RFM2G_STATUS readError = m_driver->read(ADC_MEMPOS + (dmaStatus->loopPos * data_size),
+        RFM2G_STATUS readError = m_driver->read(ADC_MEMPOS + ( m_dma->status()->loopPos * data_size),
                                                 (void*)m_buffer, data_size);
         if (readError)
             return 1;
 
     } else {
-        RFM2G_STATUS readError = m_driver->read(ADC_MEMPOS + (dmaStatus->loopPos * data_size),
+        RFM2G_STATUS readError = m_driver->read(ADC_MEMPOS + ( m_dma->status()->loopPos * data_size),
                                                 (void*) m_dma->memory(), data_size);
         if (readError)
             return 1;
