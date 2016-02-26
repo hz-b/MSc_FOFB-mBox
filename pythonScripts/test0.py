@@ -52,6 +52,8 @@ def init(BPMx_nb, BPMy_nb, CMx_nb, CMy_nb):
            }
     filename += '_' + time.strftime('%Y-%m-%d_%H-%M-%S')
 
+    print("\033[95m [Python] Saving in {}.npy\033[00m".format(filename))
+
 
 def corr_value(BPMx, BPMy):
     global gCMx_nb, gCMy_nb, \
@@ -145,7 +147,7 @@ def calc_amp_phase(f_id, CM_id, axis):
         ph['yy'][f_id, :, CM_id] = phy
 
     save_to_file()
-    print("saved -- (axis={} / CM8_id={} / f={})"
+    print("saved -- (axis={} / CMB_id={} / f={})"
           .format(axis, CM_id, f[f_id]))
 
 def save_to_file():

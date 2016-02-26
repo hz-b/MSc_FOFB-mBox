@@ -6,7 +6,6 @@
 #include "zmq.hpp"
 //#include "zhelpers.hpp"
 
-// RFM2G_INT16    ADC_Buffer[ADC_BUFFER_SIZE];
 
 // template<T>
 // bool send(zmq::socket_t & socket, T value, int flags =0) {
