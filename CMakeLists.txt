@@ -13,11 +13,6 @@ include_directories(${RFM2G_INCLUDE_DIRS})
 find_package(ZeroMQ REQUIRED)
 include_directories(${ZEROMQ_INCLUDE_DIRS})
 
-find_package(Threads REQUIRED)
-
-find_package(LibRT REQUIRED)
-include_directories(${LIBRT_INCLUDE_DIRS})
-
 find_package(PythonLibs 2.7 REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 
