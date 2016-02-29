@@ -14,7 +14,6 @@ set(SOURCES main.cpp
 
 if (${DUMMY_RFM_DRIVER})
     set(SOURCES ${SOURCES} rfmdriver_dummy.cpp)
-
 endif()
 
 

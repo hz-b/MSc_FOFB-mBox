@@ -5,7 +5,7 @@
 Logger::Logger::Logger(zmq::context_t &context)
     : m_rfmHelper(NULL, NULL)
 {
-    m_zmqSocket = new zmq::socket_t(context, zmq::socket_type::pub);
+    m_zmqSocket = new zmq::socket_t(context, ZMQ_PUB /*zmq::socket_type::pub*/);
     m_zmqSocket->bind("tcp://*:5555");
 }
 
