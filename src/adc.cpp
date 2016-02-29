@@ -96,11 +96,15 @@ int ADC::read()
 
     // Wait on an interrupt from the other Reflective Memory board
     RFM2G_STATUS waitError = this->waitForEvent(eventInfo);
-    if (waitError)
+    if (waitError) {
+        std::cerr << "[ADC::read] Wait Error" << std::endl;
         return 1;
+    }
 
-    if ( m_dma->status() == NULL )
+    if ( m_dma->status() == NULL ) {
+        std::cerr << "[ADC::read] Null status" << std::endl;
         return 1;
+    }
 
     m_dma->status()->loopPos = eventInfo.ExtendedInfo;
     RFM2G_NODE otherNodeId = eventInfo.NodeId;
@@ -116,14 +120,20 @@ int ADC::read()
         // use PIO transfer
         RFM2G_STATUS readError = m_driver->read(ADC_MEMPOS + ( m_dma->status()->loopPos * data_size),
                                                 (void*)m_buffer, data_size);
-        if (readError)
+        if (readError) {
+            std::cerr << "[ADC::read] Read error" << std::endl;
+
             return 1;
+        }
 
     } else {
         RFM2G_STATUS readError = m_driver->read(ADC_MEMPOS + ( m_dma->status()->loopPos * data_size),
                                                 (void*) m_dma->memory(), data_size);
-        if (readError)
+        if (readError) {
+            std::cerr << "[ADC::read] Read error DMA" << std::endl;
+
             return 1;
+        }
 
         RFM2G_INT16 *src = (RFM2G_INT16*) m_dma->memory();
         for (int i = 0 ; i < ADC_BUFFER_SIZE ; ++i) {
@@ -131,15 +141,17 @@ int ADC::read()
         }
     }
 
-    // Send an interrupt to the other Reflective Memory board
+    // Send an interrupt to the IOC Reflective Memory board
     RFM2G_STATUS sendEventError = m_driver->sendEvent(otherNodeId, ADC_EVENT, 0);
-    if (sendEventError)
-        return 1;
+    if (sendEventError) {
+        std::cerr << "[ADC::read] Event not sent" << std::endl;
 
+        return 1;
+    }
     return 0;
 }
 
-RFM2G_STATUS ADC::waitForEvent(RFM2GEVENTINFO eventInfo)
+RFM2G_STATUS ADC::waitForEvent(RFM2GEVENTINFO &eventInfo)
 {
     RFM2G_STATUS eventError = m_driver->clearEvent(eventInfo.Event);
     if (eventError) {

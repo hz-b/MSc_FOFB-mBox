@@ -14,7 +14,12 @@
 
 #include "logger/logger.h"
 
-mBox::mBox(char *deviceName, bool weightedCorr, std::string inputFile)
+
+mBox::mBox()
+{
+}
+
+void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
 {
     m_runningState = Preinit;
     m_runningStatus = Idle;
@@ -43,12 +48,12 @@ mBox::mBox(char *deviceName, bool weightedCorr, std::string inputFile)
 
 mBox::~mBox()
 {
+std::cout << "deleted nbox"<<std::endl;
     delete m_handler,
            m_rfmHelper,
            m_dma,
            m_driver;
 }
-
 
 void mBox::startLoop()
 {
@@ -72,7 +77,7 @@ void mBox::startLoop()
          * Initialize correction
          */
         if ((m_runningStatus == Running) && (m_runningState == Preinit)) {
-            m_handler->init();
+            m_handler->init(150, 600);
             m_runningState = Initialized;
 
             std::cout << "RUN RUN RUN .... " << std::endl;
@@ -97,6 +102,7 @@ void mBox::startLoop()
          */
         if ((m_runningStatus == Idle) && (m_runningState != Preinit)) {
             std::cout << "Stopped  ....." << std::endl << std::flush;
+	    m_handler->disable();
             m_runningState = Preinit;
         }
 
@@ -122,3 +128,4 @@ void mBox::initRFM(char *deviceName)
     }
     std::cout << "\tRFM Node Id : " << nodeId << std::endl;
 }
+

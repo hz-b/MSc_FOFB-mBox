@@ -24,17 +24,28 @@ Handler::Handler(RFMDriver *driver, DMA *dma, bool weightedCorr)
     }
 }
 
+
 Handler::~Handler()
 {
+    this->disable();
     delete m_dac,
            m_adc;
+}
+
+void Handler::disable()
+{
+    std::cout << "disable handler";
+    m_adc->init(0,0);
+    m_dac->changeStatus(DAC_DISABLE);
+
 }
 
 void Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
 {
     arma::vec rADCdataX(m_numBPMx), rADCdataY(m_numBPMy);
     if (m_adc->read()) {
-         // this->postError(FOFB_ERROR_ADC);
+        Logger::postError(FOFB_ERROR_ADC);
+	std::cout<< "[Handler::getNewData] ADC::read Error"<< std::endl;
     } else {
          for (unsigned int i = 0; i < m_numBPMx; i++) {
              unsigned int  lADCPos = m_adc->waveIndexXAt(i)-1;
@@ -48,7 +59,6 @@ void Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
 
         diffX = (rADCdataX % m_gainX * numbers::cf * -1 ) - m_BPMoffsetX;
         diffY = (rADCdataY % m_gainY * numbers::cf      ) - m_BPMoffsetY;
-
         //FS BUMP
         double HBP2D6R = m_adc->bufferAt(m_idxHBP2D6R) * numbers::cf * 0.8;
         diffX[m_idxBPMZ6D6R] -= (-0.325 * HBP2D6R);
@@ -62,7 +72,7 @@ void Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
     }
 }
 
-void Handler::init()
+void Handler::init(int freq, int freqDAC)
 {
     std::cout << "Read Data from RFM" << std::endl;
 
@@ -124,6 +134,7 @@ void Handler::init()
     this->initIndexes(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
 
     if (!READONLY) {
+        m_adc->init(freq, freqDAC);
         m_dac->changeStatus(DAC_ENABLE);
     }
 }

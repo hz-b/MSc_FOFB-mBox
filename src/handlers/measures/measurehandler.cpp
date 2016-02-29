@@ -43,11 +43,36 @@ int MeasureHandler::make()
     arma::vec CMx, CMy;
     bool newInjection;
     this->getNewData(diffX, diffY, newInjection);
+    std::cout<< "data" << std::endl;
+    int errornr = this->callPythonFunction(diffX, diffY, CMx, CMy);
 
-    int error = this->callPythonFunction(diffX, diffY, CMx, CMy);
+    if (errornr) {
+        m_loopDir *= -1; 
+        return errornr;
+    }
 
-    // WRITE CMx and CMy to the DAC !
+    RFM2G_UINT32   DACout[DAC_BUFFER_SIZE];
 
+    CMx = (CMx % m_scaleDigitsX) + numbers::halfDigits;
+    for (int i = 0; i < CMx.n_elem ; i++)
+    {
+        int corPos = m_dac->waveIndexXAt(i)-1;
+        DACout[corPos] = CMx(i);
+    }
+    CMy = (CMy % m_scaleDigitsY) + numbers::halfDigits;
+    for (int i = 0; i < CMy.n_elem; i++) {
+        int corPos = m_dac->waveIndexYAt(i)-1;
+        DACout[corPos] = CMy(i);
+    }
+    DACout[112] = (m_loopDir*2500000) + numbers::halfDigits;
+    DACout[113] = (m_loopDir* (-1) * 2500000) + numbers::halfDigits;
+    DACout[114] = (m_loopDir*2500000) + numbers::halfDigits;
+
+    m_loopDir *= -1;
+
+    if (!READONLY) {
+        this->writeCorrectors(DACout);
+    }
     return 0;
 }
 

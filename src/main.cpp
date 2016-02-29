@@ -9,6 +9,8 @@ extern "C" void openblas_set_num_threads(int num_threads);
 
 bool READONLY;
 
+static mBox mbox;
+
 void SIGINT_handler(int signum)
 {
     std::cout << std::endl << "Quit mBox...." << std::endl;
@@ -69,8 +71,7 @@ int main(int argc, char *argv[])
               << "=============" << std::endl;
     char devicename[] = "/dev/rfm2g0";
     bool weigthedCorr = true;
-    mBox mbox(devicename, weigthedCorr, experimentFile);
-
+    mbox.init(devicename, weigthedCorr, experimentFile);
     std::cout << "mBox ready" << std::endl;
 
     signal(SIGINT, SIGINT_handler);

@@ -40,8 +40,8 @@ public:
      *
      * This will read the RFM to get the parameters from the cBox
      */
-    void init();
-
+    void init(int freq, int freqDAC);
+    void disable();
     int status() { return m_status; }
 
 protected:

@@ -30,23 +30,17 @@ int CorrectionHandler::make()
                                                 CMx, CMy,
                                                 typeCorr);
     if (errornr) {
-        m_loopDir *= -1; // FIXME: Do we really want this?
         return errornr;
     }
 
     RFM2G_UINT32   DACout[DAC_BUFFER_SIZE];
-    RFM2G_UINT32   DACout2[DAC_BUFFER_SIZE];
 
     if ((typeCorr & Correction::Horizontal) == Correction::Horizontal) {
         CMx = (CMx % m_scaleDigitsX) + numbers::halfDigits;
         for (int i = 0; i <  m_correctionProcessor.numCMx(); i++)
         {
-            int corPos = m_dac->waveIndexYAt(i)-1;
-            if (rfm2gMemNumber % 2 == 0) {
-                DACout2[corPos] = CMx(i);
-            } else {
-                DACout[corPos] = CMx(i);
-            }
+            int corPos = m_dac->waveIndexXAt(i)-1;
+            DACout[corPos] = CMx(i);
         }
     }
     if ((typeCorr & Correction::Vertical) == Correction::Vertical) {
@@ -54,11 +48,7 @@ int CorrectionHandler::make()
 
         for (int i = 0; i < m_correctionProcessor.numCMy(); i++) {
             int corPos = m_dac->waveIndexYAt(i)-1;
-            if (rfm2gMemNumber % 2 == 0) {
-                DACout2[corPos] = CMy(i);
-            } else {
-                DACout[corPos] = CMy(i);
-            }
+            DACout[corPos] = CMy(i);
         }
     }
     DACout[112] = (m_loopDir*2500000) + numbers::halfDigits;
@@ -66,7 +56,6 @@ int CorrectionHandler::make()
     DACout[114] = (m_loopDir*2500000) + numbers::halfDigits;
 
     m_loopDir *= -1;
-    m_correctionProcessor.checkCorrection();
 
     if (!READONLY) {
         this->writeCorrectors(DACout);

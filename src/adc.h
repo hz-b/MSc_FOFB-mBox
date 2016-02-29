@@ -21,7 +21,7 @@ public:
     void setWaveIndexY(std::vector<double> vect) { m_waveIndexY = vect; };
 
 private:
-    RFM2G_STATUS waitForEvent(RFM2GEVENTINFO eventInfo);
+    RFM2G_STATUS waitForEvent(RFM2GEVENTINFO &eventInfo);
     DMA *m_dma;
     RFMDriver *m_driver;
     RFM2G_INT16 m_buffer[ADC_BUFFER_SIZE];

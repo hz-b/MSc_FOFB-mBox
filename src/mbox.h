@@ -14,11 +14,11 @@ class DMA;
 class mBox
 {
 public:
-    explicit mBox(char *deviceName, bool weightedCorr,std::string inputFile);
+    explicit mBox();
+    void init(char *deviceName, bool weightedCorr,std::string inputFile);
     ~mBox();
     void startLoop();
     void sendMessage(const char* message, const char *error);
-
 private:
     void initRFM(char *deviceName);
     void writeCorrection(RFM2G_UINT32* DACout);
