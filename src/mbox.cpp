@@ -29,13 +29,12 @@ void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
 
     this->initRFM( deviceName );
 
-    m_dma = new DMA(m_driver);
-    if ( int res = m_dma->init() )
+    m_dma = new DMA();
+    if ( int res = m_dma->init(m_driver) )
     {
-        std::cout << "DMA Error .... Quit" << std::endl;
+        std::cerr << "DMA Error .... Quit" << std::endl;
         exit(res);
     }
-    m_rfmHelper = new RFMHelper(m_driver, m_dma);
     Logger::logger.init(m_driver, m_dma);
 
     if (!inputFile.empty()) { // inputFile => Experiment mode
@@ -48,9 +47,8 @@ void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
 
 mBox::~mBox()
 {
-std::cout << "deleted nbox"<<std::endl;
+    std::cout << "deleted mbox"<<std::endl;
     delete m_handler,
-           m_rfmHelper,
            m_dma,
            m_driver;
 }

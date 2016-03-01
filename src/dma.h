@@ -8,16 +8,17 @@ class RFMDriver;
 class DMA
 {
 public:
-    explicit DMA(RFMDriver *driver);
+    explicit DMA();
     ~DMA();
-    int init();
+    int init(RFMDriver *driver);
     volatile char* memory() { return m_memory; };
     t_status* status() { return m_status; };
 
 private:
-    /* DMA Buffer pointer */
+    /**
+     * DMA Buffer pointer = pDmaCard
+     */
     volatile char *m_memory;
-    RFMDriver *m_driver;
     t_status *m_status;
 };
 

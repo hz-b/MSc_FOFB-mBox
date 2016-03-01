@@ -29,8 +29,6 @@ private:
     DMA *m_dma;
     Handler *m_handler;
     RFMDriver *m_driver;
-    RFMHelper *m_rfmHelper;
-
 };
 
 #endif // MBOX_H
