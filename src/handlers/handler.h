@@ -15,6 +15,15 @@ namespace numbers {
     const double halfDigits   = 1<<23;
 }
 
+namespace Correction {
+    enum Type {
+        None = 0b01,
+        Horizontal = 0b01,
+        Vertical = 0b10,
+        All = 0b11
+    };
+}
+
 class Handler
 {
 public:
@@ -36,11 +45,12 @@ public:
     virtual int make() = 0;
 
     /**
-     * @brief Initialize the parameters and call `setProcessor()`.
+     * @brief Initialize the attributes and call `setProcessor()`.
      *
-     * This will read the RFM to get the parameters from the cBox
+     * This will read the RFM to get the parameters from the cBox and initialize the ADC/DAC.
      */
-    void init(int freq, int freqDAC);
+    void init();
+
     void disable();
     int status() { return m_status; }
 
@@ -56,6 +66,20 @@ protected:
     void getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection);
 
     /**
+     * @brief Prepare the values to be written by the DAC
+     *
+     * @param CMx the corrector values for axis x
+     * @param CMy the corrector values for axis y
+     * @param typeCorr int value in the following set:
+     *                  * Correction::None (= `0b00`)
+     *                  * Correction::Horizontal (= `0b01`)
+     *                  * Correction::Vertical (= `0b10`)
+     *                  * Correction::All (= `0b11`)
+     * @return DACout, the pointer of values to use in writeCorrectors()
+     */
+    RFM2G_UINT32 *prepareCorrectorValues(arma::vec &CMx, arma::vec &CMy, int typeCorr);
+
+    /**
      * @brief Write DACout to the RFM
      */
     void writeCorrectors(RFM2G_UINT32* DACout);
@@ -68,7 +92,6 @@ protected:
 
     /**
      * @brief Get the index of a given index
-     * @return
      */
     void initIndexes(const std::vector<double> &ADC_WaveIndexX);
 
@@ -90,12 +113,12 @@ protected:
     bool m_weightedCorr;
 
     int m_idxHBP2D6R,
-    m_idxBPMZ6D6R,
-    m_idxHBP1D5R,
-    m_idxBPMZ3D5R,
-    m_idxBPMZ4D5R,
-    m_idxBPMZ5D5R,
-    m_idxBPMZ6D5R;
+        m_idxBPMZ6D6R,
+        m_idxHBP1D5R,
+        m_idxBPMZ3D5R,
+        m_idxBPMZ4D5R,
+        m_idxBPMZ5D5R,
+        m_idxBPMZ6D5R;
     double m_loopDir;
     double m_plane;
     arma::vec m_scaleDigitsX, m_scaleDigitsY;

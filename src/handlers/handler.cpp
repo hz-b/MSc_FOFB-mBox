@@ -19,7 +19,7 @@ Handler::Handler(RFMDriver *driver, DMA *dma, bool weightedCorr)
     m_adc = new ADC(m_driver, m_dma);
     m_dac = new DAC(m_driver, m_dma);
 
-    if (m_adc->init(0,0)) {
+    if (m_adc->stop()) {
         exit(1);
     }
 }
@@ -35,7 +35,7 @@ Handler::~Handler()
 void Handler::disable()
 {
     std::cout << "disable handler";
-    m_adc->init(0,0);
+    m_adc->stop();
     m_dac->changeStatus(DAC_DISABLE);
 
 }
@@ -72,7 +72,7 @@ void Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
     }
 }
 
-void Handler::init(int freq, int freqDAC)
+void Handler::init()
 {
     std::cout << "Read Data from RFM" << std::endl;
 
@@ -134,7 +134,7 @@ void Handler::init(int freq, int freqDAC)
     this->initIndexes(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
 
     if (!READONLY) {
-        m_adc->init(freq, freqDAC);
+        m_adc->init();
         m_dac->changeStatus(DAC_ENABLE);
     }
 }
@@ -166,6 +166,34 @@ int Handler::getIdx(const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWa
     }
     return ADC_BPMIndex_Pos.size();
 }
+
+RFM2G_UINT32 *Handler::prepareCorrectorValues(arma::vec& CMx, arma::vec& CMy, int typeCorr)
+{
+    RFM2G_UINT32 DACout[DAC_BUFFER_SIZE];
+
+    if ((typeCorr & Correction::Horizontal) == Correction::Horizontal) {
+        CMx = (CMx % m_scaleDigitsX) + numbers::halfDigits;
+        for (int i = 0; i <  CMx.n_elem; i++)
+        {
+            int corPos = m_dac->waveIndexXAt(i)-1;
+            DACout[corPos] = CMx(i);
+        }
+    }
+    if ((typeCorr & Correction::Vertical) == Correction::Vertical) {
+        CMy = (CMy % m_scaleDigitsY) + numbers::halfDigits;
+
+        for (int i = 0; i < CMy.n_elem; i++) {
+            int corPos = m_dac->waveIndexYAt(i)-1;
+            DACout[corPos] = CMy(i);
+        }
+    }
+    DACout[112] = (m_loopDir*2500000) + numbers::halfDigits;
+    DACout[113] = (m_loopDir* (-1) * 2500000) + numbers::halfDigits;
+    DACout[114] = (m_loopDir*2500000) + numbers::halfDigits;
+
+    m_loopDir *= -1;
+}
+
 
 void Handler::writeCorrectors(RFM2G_UINT32* DACout)
 {

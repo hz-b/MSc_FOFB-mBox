@@ -15,15 +15,30 @@ class mBox
 {
 public:
     explicit mBox();
-    void init(char *deviceName, bool weightedCorr,std::string inputFile);
     ~mBox();
+
+    /**
+     * @brief Initialiwe the mBox.
+     *
+     * @param deviceName Name of the RFM device (to be passed to RFMDriver)
+     * @param weightedCorr True if the correction is weighted
+     * @param inputFile File to use for experiments (eg: Python module)
+     */
+    void init(char *deviceName, bool weightedCorr,std::string inputFile);
+
+    /**
+     * @brief Start the main loop that handle the different events
+     */
     void startLoop();
-    void sendMessage(const char* message, const char *error);
+
 private:
+
+    /**
+     * @brief Initialize the RFM.
+     * @param deviceName Name of the RFM device
+     */
     void initRFM(char *deviceName);
-    void writeCorrection(RFM2G_UINT32* DACout);
-    void postError(unsigned int errornr);
-    bool m_readOnly;
+
     RunState m_runningState;
     RunStatus m_runningStatus;
     DMA *m_dma;

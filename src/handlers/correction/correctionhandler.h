@@ -12,11 +12,14 @@ public:
     virtual int make();
 
 private:
+    /**
+     * @brief Set the processor: the S matrix, the PID values and other parameters are initialized here.
+     */
     void setProcessor(arma::mat SmatX, arma::mat SmatY,
                       double IvecX, double IvecY,
-                      double Frequency, 
+                      double Frequency,
                       double P, double I, double D,
-                      arma::vec CMx, arma::vec CMy, 
+                      arma::vec CMx, arma::vec CMy,
                       bool weightedCorr);
 
     CorrectionProcessor m_correctionProcessor;

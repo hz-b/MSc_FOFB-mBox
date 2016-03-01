@@ -1,6 +1,7 @@
 #include "correctionprocessor.h"
 
 #include "adc.h"
+#include "handlers/handler.h"
 
 CorrectionProcessor::CorrectionProcessor()
 {

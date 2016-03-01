@@ -3,10 +3,7 @@
 ## Dependancies
  * armadillo
  * zeroMQ
- * python > 2.7.11
-   * libpython2.7 or libpython3.x (debian)
-   * libpython2.7-dev or libpython3.x-dev (debian)
-   * python2.7 or python3.x (debian)
+ * python (debian: python, libpython, libpython-dev)
  * numpy
 
 ## How to compile and run
@@ -45,8 +42,9 @@ Later I'll add a install command to put the executable somewhere in the system w
 ## Class organization
 
 <!--
+    Width of picture = 1200 px
     1st link is for Doxygen
     2nd for gitlab/github/direct markdown
 -->
-![ ](../img/classDiagram.png "Diagramme")
-![ ](doc/img/classDiagram.png "Diagramme")
+![ ](../img/mBox_classDiagram.png "Diagramme")
+![ ](doc/img/mBox_classDiagram.png "Diagramme")

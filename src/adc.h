@@ -10,11 +10,42 @@ class DMA;
 class ADC
 {
 public:
+    /**
+     * @brief Constructor
+     */
     explicit ADC(RFMDriver *driver, DMA *dma);
+
+    /**
+     * @brief Destructor
+     */
     ~ADC();
-    int init(int freq, int DAC_freq);
+
+    /**
+     * @brief Initialize the ADC.
+     * @return 1 if error, 0 if success
+     */
+    int init();
+
+    /**
+     * @brief Stop the ADC.
+     *
+     * This must be called when quitting the program, would it be a crash or a normal exit,
+     * @return 1 if error, 0 if success
+     */
+    int stop();
+
+    /**
+     * @brief Read the RFM
+     *
+     * First wait for an interruption from the RFM, then read the RFM into `m_buffer`.
+     */
     int read();
-    RFM2G_INT16 bufferAt(int id) const { return m_buffer[id]; };
+
+    /**
+     * @brief Access to an element of the buffer.
+     */
+    RFM2G_INT16 bufferAt(int id) const { if (id < ADC_BUFFER_SIZE) return m_buffer[id]; };
+    
     double waveIndexXAt(int id) const { return m_waveIndexX.at(id); };
     double waveIndexYAt(int id) const { return m_waveIndexY.at(id); };
     void setWaveIndexX(std::vector<double> vect) { m_waveIndexX = vect; };

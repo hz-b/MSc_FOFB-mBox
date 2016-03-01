@@ -19,6 +19,14 @@ mBox::mBox()
 {
 }
 
+mBox::~mBox()
+{
+    std::cout << "Delete mbox"<<std::endl;
+    delete m_handler,
+           m_dma,
+           m_driver;
+}
+
 void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
 {
     m_runningState = Preinit;
@@ -44,17 +52,10 @@ void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
     }
 }
 
-
-mBox::~mBox()
-{
-    std::cout << "deleted mbox"<<std::endl;
-    delete m_handler,
-           m_dma,
-           m_driver;
-}
-
 void mBox::startLoop()
 {
+    std::cout << "Enter loop" << std::endl;
+
     for(;;) {
         m_driver->read(CTRL_MEMPOS, &m_runningStatus, 1);
         m_runningStatus = Running; // HACK
@@ -75,7 +76,7 @@ void mBox::startLoop()
          * Initialize correction
          */
         if ((m_runningStatus == Running) && (m_runningState == Preinit)) {
-            m_handler->init(150, 600);
+            m_handler->init();
             m_runningState = Initialized;
 
             std::cout << "RUN RUN RUN .... " << std::endl;

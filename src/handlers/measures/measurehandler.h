@@ -54,10 +54,16 @@ private:
                       double Frequency,
                       double P, double I, double D,
                       arma::vec CMx, arma::vec CMy, bool weightedCorr);
+
+    /**
+     * @brief String manipulations to define the Python module to use, based on `m_inputFile`.
+     */
     void setModule();
 
     /**
-     * @brief Itinitialize Python environnment.
+     * @brief Inititialize Python environnment.
+     *
+     * It sets the attributes `m_pFunc` and `m_pFunc` and call callPythonInit()
      *
      * @note Should be called only after having set `m_numBPMx/y` and `m_numCMx/y`!
      * @return Error: 0 if success, 1 if failure.
@@ -65,6 +71,7 @@ private:
     int initPython();
 
     /**
+     * @brief Call the `init( ..args... )` function from the Python module `m_pModule`.
      */
     int callPythonInit();
 

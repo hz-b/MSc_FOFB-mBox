@@ -33,29 +33,7 @@ int CorrectionHandler::make()
         return errornr;
     }
 
-    RFM2G_UINT32   DACout[DAC_BUFFER_SIZE];
-
-    if ((typeCorr & Correction::Horizontal) == Correction::Horizontal) {
-        CMx = (CMx % m_scaleDigitsX) + numbers::halfDigits;
-        for (int i = 0; i <  m_correctionProcessor.numCMx(); i++)
-        {
-            int corPos = m_dac->waveIndexXAt(i)-1;
-            DACout[corPos] = CMx(i);
-        }
-    }
-    if ((typeCorr & Correction::Vertical) == Correction::Vertical) {
-        CMy = (CMy % m_scaleDigitsY) + numbers::halfDigits;
-
-        for (int i = 0; i < m_correctionProcessor.numCMy(); i++) {
-            int corPos = m_dac->waveIndexYAt(i)-1;
-            DACout[corPos] = CMy(i);
-        }
-    }
-    DACout[112] = (m_loopDir*2500000) + numbers::halfDigits;
-    DACout[113] = (m_loopDir* (-1) * 2500000) + numbers::halfDigits;
-    DACout[114] = (m_loopDir*2500000) + numbers::halfDigits;
-
-    m_loopDir *= -1;
+    RFM2G_UINT32 *DACout = this->prepareCorrectorValues(CMx, CMy, typeCorr);
 
     if (!READONLY) {
         this->writeCorrectors(DACout);

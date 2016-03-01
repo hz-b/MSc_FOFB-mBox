@@ -18,7 +18,7 @@ ADC::~ADC()
 
 }
 
-int ADC::init(int freq, int DAC_freq)
+int ADC::init()
 {
     std::cout << "Init ADC" << std::endl;
     RFM2G_INT32 ctrlBuffer[128];
@@ -26,21 +26,7 @@ int ADC::init(int freq, int DAC_freq)
     ctrlBuffer[0] = 512; // RFM2G_LOOP_MAX
     ctrlBuffer[1] = 0;
     ctrlBuffer[2] = 0;
-    ctrlBuffer[3] = 2;          // Navr
-
-    //Stop  ADC Sampling (if running)
-    if ((freq == 0) || (DAC_freq == 0)) {
-        std::cout << "\tADC stop sampling." << std::endl;
-
-        RFM2G_STATUS sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, ADC_STOP);
-        if (sendEventError) {
-            std::cout << "\tCan't stop ADC." << std::endl;
-            return 1;
-        }
-        std::cout << "\tADC should be stopped." << std::endl;
-
-        return 0;
-    }
+    ctrlBuffer[3] = 2;   // Navr
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
@@ -87,6 +73,20 @@ int ADC::init(int freq, int DAC_freq)
     return 0;
 }
 
+int ADC::stop()
+{
+    std::cout << "\tADC stop sampling." << std::endl;
+
+    RFM2G_STATUS sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, ADC_STOP);
+    if (sendEventError) {
+        std::cout << "\tCan't stop ADC." << std::endl;
+        return 1;
+    }
+    std::cout << "\tADC should be stopped." << std::endl;
+
+    return 0;
+}
+
 
 int ADC::read()
 {
@@ -108,7 +108,7 @@ int ADC::read()
 
     m_dma->status()->loopPos = eventInfo.ExtendedInfo;
     RFM2G_NODE otherNodeId = eventInfo.NodeId;
-    
+
     /* Now read data from the other board from BPM_MEMPOS */
     RFM2G_UINT32 threshold = 0;
     /* see if DMA threshold and buffer are intialized */
