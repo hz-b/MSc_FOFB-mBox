@@ -4,6 +4,7 @@
 #include "rfmdriver.h"
 #include "define.h"
 
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -30,7 +31,7 @@ void DAC::changeStatus(int status)
     }
     for (int i = 0 ; i < 10 ; i++) {
         if (m_IOCs[i].isActive()) {
-            std::cout << "\t" << m_IOCs[i].name() << "\t: ";
+            std::cout << "\t" << std::left << std::setw(15) << std::setfill('.') << m_IOCs[i].name();
             RFM2G_STATUS IOCError = m_driver->sendEvent( m_IOCs[i].id(), ADC_DAC_EVENT, status);
             if (IOCError) {
                 std::cout << "Error \n";

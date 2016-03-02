@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "rfmdriver.h"
-
+#include "logger/logger.h"
 
 DMA::DMA()
     : m_memory(NULL)
@@ -23,7 +23,7 @@ int DMA::init(RFMDriver *driver)
     RFM2G_UINT32 rfm2gSize;
     volatile void *pPioCard = NULL;
 
-    std::cout << "RFM DMA Init \n";
+    Logger::log("LOG") << "RFM DMA Init" << Logger::flush;
 
     driver->setDMAThreshold(DMA_THRESHOLD);
 
@@ -43,10 +43,10 @@ int DMA::init(RFMDriver *driver)
         numPagesPIO++;
     }
 
-    std::cout << "\tpPioCard : " << pPioCard << std::endl;
-    std::cout << "\trfm2gSize : " << rfm2gSize << std::endl;
-    std::cout << "\tpageSize  : " << pageSize << std::endl;
-    std::cout << "\tnumPages DMA/PIO : " << numPagesDMA << std::endl;
+    Logger::log("LOG") << "\tpPioCard : " << pPioCard << Logger::flush;
+    Logger::log("LOG") << "\trfm2gSize : " << rfm2gSize << Logger::flush;
+    Logger::log("LOG") << "\tpageSize  : " << pageSize << Logger::flush;
+    Logger::log("LOG") << "\tnumPages DMA/PIO : " << numPagesDMA << Logger::flush;
 
     RFM2G_STATUS rfmMemoryError = driver->userMemory(
                                         (volatile void **) (&m_memory),
@@ -54,28 +54,30 @@ int DMA::init(RFMDriver *driver)
                                         numPagesDMA
                                         );
     if (rfmMemoryError) {
-        std::cout << "doDMA: ERROR: Failed to map card DMA buffer; "
-                  << driver->errorMsg(rfmMemoryError)
-                  << std ::endl;
+        Logger::error(_ME_) << "doDMA: ERROR: Failed to map card DMA buffer; "
+                            << driver->errorMsg(rfmMemoryError)
+                            << '\n';
         return -1;
     }
-    std::cout << "doDMA: SUCCESS: mapped numPagesDMA=" << numPagesDMA
-              << " at pDmaCard=" << std::hex << m_memory
-              << std::endl;
+
+    Logger::log("LOG") << "doDMA: SUCCESS: mapped numPagesDMA=" << numPagesDMA
+                       << " at pDmaCard=" << std::hex << m_memory
+                       << Logger::flush;
 
     rfmMemoryError = driver->userMemoryBytes((volatile void **) (&pPioCard),
                                              (0x00000000 | LINUX_DMA_FLAG2),
                                              rfm2gSize);
     if (rfmMemoryError) {
-        std::cout << "doDMA: ERROR: Failed to map card PIO; "
-                  << driver->errorMsg(rfmMemoryError)
-                  << std::endl;
+        Logger::error(_ME_) << "doDMA: ERROR: Failed to map card PIO; "
+                            << driver->errorMsg(rfmMemoryError)
+                            << '\n';
 
         return -1;
     }
-    std::cout << "doDMA: Card: PIO memory pointer = 0x" << std::hex << pPioCard
-              << ", Size = 0x" << std::hex << rfm2gSize
-              << std::endl;
+
+    Logger::log("LOG") << "doDMA: Card: PIO memory pointer = 0x" << std::hex << pPioCard
+                       << ", Size = 0x" << std::hex << rfm2gSize
+                       << Logger::flush;
 
     return 0;
 }

@@ -2,6 +2,7 @@
 
 #include "adc.h"
 #include "handlers/handler.h"
+#include "logger/logger.h"
 
 CorrectionProcessor::CorrectionProcessor()
 {
@@ -41,7 +42,7 @@ int CorrectionProcessor::correct(arma::vec &diffX, arma::vec &diffY,
                                  int type)
 {
     if (sum(diffX) < -10.5) {
-        std::cout << " ERROR: No Beam\n";
+        Logger::error(_ME_) << " ERROR: No Beam\n";
       //  return FOFB_ERROR_NoBeam;
     }
 
@@ -219,39 +220,39 @@ void CorrectionProcessor::calcSmat(const arma::mat &Smat,
                                    arma::vec &CMWeight,
                                    arma::mat &SmatInv)
 {
-    std::cout << "Calculate Smat\n";
+    Logger::log("LOG") << "Calculate Smat" << Logger::flush;
     arma::mat U, S, V;
     arma::vec s;
 
-    std::cout << "\tGiven : " << " Smat cols: " << Smat.n_cols << " smat rows " << Smat.n_rows << "  Ivec : " << Ivec << std::endl;
+    Logger::log("LOG") << "\tGiven : " << " Smat cols: " << Smat.n_cols << " smat rows " << Smat.n_rows << "  Ivec : " << Ivec << Logger::flush;
     arma::mat Smat_w = arma::zeros(Smat.n_rows, Smat.n_cols);
-    std::cout << "\tmake Ivec\n";
+    Logger::log("LOG") << "\tmake Ivec" << Logger::flush;
     if (Ivec > Smat.n_rows) {
-        std::cout << "\tIVec > Smat.n_rows: Setting Ivec = Smat.n_rows\n";
+        Logger::log("LOG") << "\tIVec > Smat.n_rows: Setting Ivec = Smat.n_rows" << Logger::flush;
         double Ivec = Smat.n_rows;
     }
     if (m_useCMWeight) {
-        std::cout << "\tcalc CMWeights\n";
+        Logger::log("LOG") << "\tcalc CMWeights" << Logger::flush;
         CMWeight = 1/(arma::trans(stddev(Smat)));
-        std::cout << "\tInclude CMWeightX in SMat\n";
+        Logger::log("LOG") << "\tInclude CMWeightX in SMat" << Logger::flush;
         for (int i = 0; i < Smat.n_cols; i++) {
             Smat_w.col(i) = Smat.col(i) * CMWeight(i);
         }
     } else {
         Smat_w = Smat;
     }
-    std::cout << "\tcalc SVD\n";
+    Logger::log("LOG") << "\tcalc SVD" << Logger::flush;
     arma::svd(U,s,V,Smat_w);
-    std::cout << "\treduce U to Ivec\n";
+    Logger::log("LOG") << "\treduce U to Ivec" << Logger::flush;
     U = U.cols(0,Ivec-1);
-    std::cout << "\tTranspose U\n";
+    Logger::log("LOG") << "\tTranspose U" << Logger::flush;
     U = trans(U);
-    std::cout << "\tGet Diag Matrix of  S\n";
+    Logger::log("LOG") << "\tGet Diag Matrix of  S" << Logger::flush;
     S = diagmat(s.subvec(0,Ivec-1));
-    std::cout << "\treduce V to Ivec\n";
+    Logger::log("LOG") << "\treduce V to Ivec" << Logger::flush;
     V = V.cols(0,Ivec-1);
-    std::cout << "\tCalc new Matrix\n";
+    Logger::log("LOG") << "\tCalc new Matrix" << Logger::flush;
     SmatInv = V * arma::inv(S) * U;
 
-    std::cout << "SVD complete ...\n";
+    Logger::log("LOG") << "SVD complete ..." << Logger::flush;
 }

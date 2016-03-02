@@ -55,7 +55,7 @@ int ADC::init()
     }
 
     // Enable ADC
-    Logger::log("LOG") << "ADC enable sampling" << Logger::flush;
+    Logger::log("LOG") << "\tADC enable sampling" << Logger::flush;
     RFM2G_STATUS sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, ADC_ENABLE);
     if (sendEventError) {
         Logger::error(_ME_) << "Can't enable ADC\n";
@@ -69,7 +69,7 @@ int ADC::init()
         Logger::error(_ME_) << "Can't start sampling\n";
         return 1;
     }
-    Logger::log("LOG") << "ADC started" << Logger::flush;
+    Logger::log("LOG") << "\tADC started" << Logger::flush;
     return 0;
 }
 
@@ -82,7 +82,7 @@ int ADC::stop()
         Logger::error(_ME_) << "Can't stop ADC.\n";
         return 1;
     }
-    Logger::log("LOG") << "ADC stopped." << Logger::flush;
+    Logger::log("LOG") << "\tADC stopped." << Logger::flush;
 
     return 0;
 }

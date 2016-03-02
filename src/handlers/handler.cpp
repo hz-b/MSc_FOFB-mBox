@@ -197,7 +197,6 @@ RFM2G_UINT32 *Handler::prepareCorrectionValues(arma::vec& CMx, arma::vec& CMy, i
 
 void Handler::writeCorrection(RFM2G_UINT32* DACout)
 {
-    std::cout << m_plane << m_loopDir << std::endl;
     if (m_dac->write(m_plane, m_loopDir, DACout) > 0) {
          m_dma->status()->errornr = FOFB_ERROR_DAC;
          Logger::postError(FOFB_ERROR_DAC);

@@ -29,7 +29,7 @@ class Logger
 public:
     explicit Logger(zmq::context_t &context);
     ~Logger();
-    void init(RFMDriver *driver, DMA *dma) { m_rfmHelper = RFMHelper(driver, dma); }
+    void initRFM(RFMDriver *driver, DMA *dma) { m_rfmHelper = RFMHelper(driver, dma); }
     void record(std::string message);
 
     void sendMessage(std::string message, std::string error="");

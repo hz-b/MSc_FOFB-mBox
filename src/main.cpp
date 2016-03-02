@@ -1,5 +1,7 @@
 #include <iostream>
 #include <csignal>
+#include <chrono>
+#include <thread>
 #include <string>
 
 #include "define.h"
@@ -92,6 +94,9 @@ int main(int argc, char *argv[])
     char devicename[] = "/dev/rfm2g0";
     bool weigthedCorr = true;
 
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    Logger::log("LOG") << "====================" << Logger::flush;
+    Logger::log("LOG") << "Starting the MBox..." << Logger::flush;
     mbox.init(devicename, weigthedCorr, experimentFile);
 
     Logger::log("LOG") << "mBox ready" << Logger::flush;
