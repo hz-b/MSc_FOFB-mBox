@@ -17,9 +17,12 @@ class RFMDriver;
 class DMA;
 
 
-// https://savingyoutime.wordpress.com/2009/04/21/using-c-stl-streambufostream-to-create-time-stamped-logging-class/
-// http://www.horstmann.com/cpp/streams.txt
 namespace Logger {
+
+struct log_stream_t {
+    std::string header;
+    std::ostringstream message;
+};
 
 class Logger
 {
@@ -30,32 +33,33 @@ public:
     void record(std::string message);
 
     void sendMessage(std::string message, std::string error="");
-    void sendZmq(std::string message);
+    void sendZmq(const std::string& header, const std::string& message);
 
-    template<typename T>
-    Logger& operator<< (const T& data)
-    {
-  /*    if (data == Logger::end)
-        {
-            std:: cout << m_buffer << std::endl;
-        }*/
-        std::ostringstream stream;
-        stream << data;
-        if (!m_buffer.empty()) {
-            m_buffer.append(" ");
-        }
-        m_buffer.append(stream.str());
-    };
+    log_stream_t m_logStream;
 
 private:
     RFMHelper m_rfmHelper;
-    zmq::socket_t *m_zmqSocket;
+    zmq_ext::socket_t *m_zmqSocket;
     std::thread *m_thread;
     std::string m_buffer;
 };
 
 
+
 extern Logger logger;
+
+inline std::ostream& flush(std::ostream & output)
+{
+    logger.sendZmq(logger.m_logStream.header, logger.m_logStream.message.str());
+    logger.m_logStream.header = "";
+    logger.m_logStream.message.str("");
+}
+
+inline std::ostringstream& log(std::string type)
+{
+    logger.m_logStream.header = type ;
+    return logger.m_logStream.message;
+}
 
 inline std::ostream& error(std::string name) {
     return std::cerr << "\x1b[1;33;41m[" << name << "]\x1b[0m ";

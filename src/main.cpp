@@ -10,7 +10,14 @@ extern "C" void openblas_set_num_threads(int num_threads);
 
 bool READONLY;
 
-static mBox mbox;  // Must be static so that exit() do a proper deletion.
+// Must be started first to be deleted last.
+namespace Logger {
+    zmq::context_t context(1);
+    Logger logger(context);
+}
+
+// Must be static so that exit() do a proper deletion.
+static mBox mbox;
 
 /**
  * @brief Function called on CTRL+C.
@@ -86,10 +93,10 @@ int main(int argc, char *argv[])
     bool weigthedCorr = true;
 
     mbox.init(devicename, weigthedCorr, experimentFile);
-    std::cout << "mBox ready\n";
+
+    Logger::log("LOG") << "mBox ready" << Logger::flush;
 
     signal(SIGINT, SIGINT_handler);
-
     mbox.startLoop();
 
     return 0;

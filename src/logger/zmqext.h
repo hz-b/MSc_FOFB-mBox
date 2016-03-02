@@ -4,7 +4,6 @@
 #include <rfm2g_api.h>
 #include <armadillo>
 #include "zmq.hpp"
-//#include "zhelpers.hpp"
 
 
 // template<T>
@@ -13,11 +12,17 @@
 // }
 
 namespace zmq_ext {
-    bool send(zmq::socket_t & socket, RFM2G_INT16* value , int size, int flags =0);
-    bool send(zmq::socket_t & socket, int value, int flags =0);
-    bool send(zmq::socket_t & socket, std::vector<short> & values, int flags =0);
-    bool send(zmq::socket_t & socket, arma::vec & values, int flags =0);
-    bool send(zmq::socket_t & socket, std::string & value, int flags =0);
+
+    class socket_t : public zmq::socket_t
+    {
+    public:
+        explicit socket_t(zmq::context_t& c, int socket_type);
+        bool send(RFM2G_INT16* value , int size, int flags =0);
+        bool send(int value, int flags =0);
+        bool send(std::vector<short> & values, int flags =0);
+        bool send(arma::vec & values, int flags =0);
+        bool send(std::string & value, int flags =0);
+    };
 }
 
 #endif

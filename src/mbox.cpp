@@ -63,7 +63,7 @@ void mBox::startLoop()
                 sleep(1);
             }
             //std::cout << "...Wait for start...\n";
-            Logger::logger << "...Wait for start..." /*<< Logger::end */;
+            //Logger::logger << "...Wait for start..." /*<< Logger::end */;
         }
 
         // if Idle, don't do anything

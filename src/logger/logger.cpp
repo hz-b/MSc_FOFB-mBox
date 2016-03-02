@@ -1,12 +1,12 @@
 #include  "logger/logger.h"
 
-#include <thread>
+#include <ctime>
 
 Logger::Logger::Logger(zmq::context_t &context)
     : m_rfmHelper(NULL, NULL)
 {
-    m_zmqSocket = new zmq::socket_t(context, ZMQ_PUB /*zmq::socket_type::pub*/);
-    m_zmqSocket->bind("tcp://*:5555");
+    m_zmqSocket = new zmq_ext::socket_t(context, ZMQ_PUB /*zmq::socket_type::pub*/);
+    m_zmqSocket->bind("tcp://*:3333");
 }
 
 Logger::Logger::~Logger()
@@ -31,11 +31,13 @@ void Logger::Logger::sendMessage(std::string message, std::string error)
     }
 }
 
-void Logger::Logger::sendZmq(std::string message)
+void Logger::Logger::sendZmq(const std::string& header, const std::string& message)
 {
-    zmq_ext::send(*m_zmqSocket, message);
-}
-namespace Logger {
-    zmq::context_t context(1);
-    Logger logger(context);
+    time_t rawtime = time(NULL);
+    struct tm* timeinfo = localtime(&rawtime);
+    char timeBuf[80];
+    strftime(timeBuf, sizeof(timeBuf), "%F %T", timeinfo);
+
+    std::string formatedMessage = "[" + header + "] " + std::string(timeBuf) + " -- " + message;
+    m_zmqSocket->send(formatedMessage);
 }
