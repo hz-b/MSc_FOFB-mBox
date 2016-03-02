@@ -24,6 +24,11 @@ namespace Correction {
     };
 }
 
+/**
+ * @class Handler
+ * @brief Abstract class to connect the mBox to a Processor that do the maths
+ *        to generate the correction.
+ */
 class Handler
 {
 public:
@@ -40,18 +45,29 @@ public:
     /**
      * @brief Do what the handler is designed for (correction, setting values..)
      *
-     * This should call `writeCorrectors()` to write the results on the RFM
+     * This should call
+     *      * getNewData() to read the BPM values from the RFM
+     *      * a function that do the calculations (in the Processor)
+     *      * prepareCorrectionValues()
+     *      * writeCorrectors() to write the results on the RFM
      */
     virtual int make() = 0;
 
     /**
-     * @brief Initialize the attributes and call `setProcessor()`.
+     * @brief Initialize the attributes and call setProcessor().
      *
      * This will read the RFM to get the parameters from the cBox and initialize the ADC/DAC.
      */
     void init();
 
+    /**
+     * @brief Disaqble te ADC and the DAC.
+     */
     void disable();
+
+    /**
+     * @note This function should disappear.
+     */
     int status() { return m_status; }
 
 protected:
@@ -77,12 +93,12 @@ protected:
      *                  * Correction::All (= `0b11`)
      * @return DACout, the pointer of values to use in writeCorrectors()
      */
-    RFM2G_UINT32 *prepareCorrectorValues(arma::vec &CMx, arma::vec &CMy, int typeCorr);
+    RFM2G_UINT32 *prepareCorrectionValues(arma::vec &CMx, arma::vec &CMy, int typeCorr);
 
     /**
      * @brief Write DACout to the RFM
      */
-    void writeCorrectors(RFM2G_UINT32* DACout);
+    void writeCorrection(RFM2G_UINT32* DACout);
 
     /**
      * @brief Get the index of a given index

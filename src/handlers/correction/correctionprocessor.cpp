@@ -41,7 +41,7 @@ int CorrectionProcessor::correct(arma::vec &diffX, arma::vec &diffY,
                                  int type)
 {
     if (sum(diffX) < -10.5) {
-        std::cout << " ERROR: No Beam" << std::endl;
+        std::cout << " ERROR: No Beam\n";
       //  return FOFB_ERROR_NoBeam;
     }
 
@@ -219,39 +219,39 @@ void CorrectionProcessor::calcSmat(const arma::mat &Smat,
                                    arma::vec &CMWeight,
                                    arma::mat &SmatInv)
 {
-    std::cout << "Calculate Smat" << std::endl;
+    std::cout << "Calculate Smat\n";
     arma::mat U, S, V;
     arma::vec s;
 
     std::cout << "\tGiven : " << " Smat cols: " << Smat.n_cols << " smat rows " << Smat.n_rows << "  Ivec : " << Ivec << std::endl;
     arma::mat Smat_w = arma::zeros(Smat.n_rows, Smat.n_cols);
-    std::cout << "\tmake Ivec" << std::endl;
+    std::cout << "\tmake Ivec\n";
     if (Ivec > Smat.n_rows) {
-        std::cout << "\tIVec > Smat.n_rows: Setting Ivec = Smat.n_rows" << std::endl;
+        std::cout << "\tIVec > Smat.n_rows: Setting Ivec = Smat.n_rows\n";
         double Ivec = Smat.n_rows;
     }
     if (m_useCMWeight) {
-        std::cout << "\tcalc CMWeights" << std::endl;
+        std::cout << "\tcalc CMWeights\n";
         CMWeight = 1/(arma::trans(stddev(Smat)));
-        std::cout << "\tInclude CMWeightX in SMat" << std::endl;
+        std::cout << "\tInclude CMWeightX in SMat\n";
         for (int i = 0; i < Smat.n_cols; i++) {
             Smat_w.col(i) = Smat.col(i) * CMWeight(i);
         }
     } else {
         Smat_w = Smat;
     }
-    std::cout << "\tcalc SVD" << std::endl;
+    std::cout << "\tcalc SVD\n";
     arma::svd(U,s,V,Smat_w);
-    std::cout << "\treduce U to Ivec" << std::endl;
+    std::cout << "\treduce U to Ivec\n";
     U = U.cols(0,Ivec-1);
-    std::cout << "\tTranspose U" << std::endl;
+    std::cout << "\tTranspose U\n";
     U = trans(U);
-    std::cout << "\tGet Diag Matrix of  S" << std::endl;
+    std::cout << "\tGet Diag Matrix of  S\n";
     S = diagmat(s.subvec(0,Ivec-1));
-    std::cout << "\treduce V to Ivec" << std::endl;
+    std::cout << "\treduce V to Ivec\n";
     V = V.cols(0,Ivec-1);
-    std::cout << "\tCalc new Matrix" << std::endl;
+    std::cout << "\tCalc new Matrix\n";
     SmatInv = V * arma::inv(S) * U;
 
-    std::cout << "SVD complete ..." << std::endl;
+    std::cout << "SVD complete ...\n";
 }

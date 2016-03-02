@@ -7,6 +7,9 @@
 class RFMDriver;
 class DMA;
 
+/**
+ * This class is used to read the data (= BPM values) to the RFM.
+ */
 class ADC
 {
 public:
@@ -45,7 +48,7 @@ public:
      * @brief Access to an element of the buffer.
      */
     RFM2G_INT16 bufferAt(int id) const { if (id < ADC_BUFFER_SIZE) return m_buffer[id]; };
-    
+
     double waveIndexXAt(int id) const { return m_waveIndexX.at(id); };
     double waveIndexYAt(int id) const { return m_waveIndexY.at(id); };
     void setWaveIndexX(std::vector<double> vect) { m_waveIndexX = vect; };

@@ -34,7 +34,7 @@ Handler::~Handler()
 
 void Handler::disable()
 {
-    std::cout << "disable handler";
+    std::cout << "Disable handler";
     m_adc->stop();
     m_dac->changeStatus(DAC_DISABLE);
 
@@ -74,7 +74,7 @@ void Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
 
 void Handler::init()
 {
-    std::cout << "Read Data from RFM" << std::endl;
+    std::cout << "Read Data from RFM\n";
 
     double ADC_WaveIndexX[128];
     double ADC_WaveIndexY[128];
@@ -167,7 +167,7 @@ int Handler::getIdx(const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWa
     return ADC_BPMIndex_Pos.size();
 }
 
-RFM2G_UINT32 *Handler::prepareCorrectorValues(arma::vec& CMx, arma::vec& CMy, int typeCorr)
+RFM2G_UINT32 *Handler::prepareCorrectionValues(arma::vec& CMx, arma::vec& CMy, int typeCorr)
 {
     RFM2G_UINT32 DACout[DAC_BUFFER_SIZE];
 
@@ -195,7 +195,7 @@ RFM2G_UINT32 *Handler::prepareCorrectorValues(arma::vec& CMx, arma::vec& CMy, in
 }
 
 
-void Handler::writeCorrectors(RFM2G_UINT32* DACout)
+void Handler::writeCorrection(RFM2G_UINT32* DACout)
 {
     std::cout << m_plane << m_loopDir << std::endl;
     if (m_dac->write(m_plane, m_loopDir, DACout) > 0) {

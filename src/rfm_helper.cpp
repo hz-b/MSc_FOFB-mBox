@@ -67,7 +67,7 @@ void RFMHelper::prepareField(arma::vec& field, unsigned long pos, unsigned long 
     } else {
         // use DMA transfer
         m_driver->read(pos,(void*)m_dma->memory(), data_size);
-        std::cout << "vec DMA " << std::endl;
+        std::cout << "vec DMA \n";
         dumpMemory(m_dma->memory(),8);
         field = arma::vec((const double *)m_dma->memory(),dim1*dim2);
     }

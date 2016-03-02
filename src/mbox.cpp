@@ -21,7 +21,6 @@ mBox::mBox()
 
 mBox::~mBox()
 {
-    std::cout << "Delete mbox"<<std::endl;
     delete m_handler,
            m_dma,
            m_driver;
@@ -40,7 +39,7 @@ void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
     m_dma = new DMA();
     if ( int res = m_dma->init(m_driver) )
     {
-        std::cerr << "DMA Error .... Quit" << std::endl;
+        std::cerr << "[" << __PRETTY_FUNCTION__ <<"] DMA Error .... Quit\n";
         exit(res);
     }
     Logger::logger.init(m_driver, m_dma);
@@ -54,18 +53,18 @@ void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
 
 void mBox::startLoop()
 {
-    std::cout << "Enter loop" << std::endl;
+    std::cout << "[" << __PRETTY_FUNCTION__ <<"] Enter loop\n";
 
     for(;;) {
         m_driver->read(CTRL_MEMPOS, &m_runningStatus, 1);
         m_runningStatus = Running; // HACK
         if (m_runningStatus == 33) {
-            std::cout << "  !!! MDIZ4T4R was restarted !!! ... Wait for initialization " << std::endl;
+            std::cout << "  !!! MDIZ4T4R was restarted !!! ... Wait for initialization \n";
             while (m_runningStatus != Idle) {
                 m_driver->read(CTRL_MEMPOS , &m_runningStatus , 1);
                 sleep(1);
             }
-            //std::cout << "...Wait for start..." << std::endl;
+            //std::cout << "...Wait for start...\n";
             Logger::logger << "...Wait for start..." /*<< Logger::end */;
         }
 
@@ -79,7 +78,7 @@ void mBox::startLoop()
             m_handler->init();
             m_runningState = Initialized;
 
-            std::cout << "RUN RUN RUN .... " << std::endl;
+            std::cout << "RUN RUN RUN .... \n";
         }
 
         /**
@@ -100,7 +99,7 @@ void mBox::startLoop()
          * Stop correction
          */
         if ((m_runningStatus == Idle) && (m_runningState != Preinit)) {
-            std::cout << "Stopped  ....." << std::endl << std::flush;
+            std::cout << "Stopped  .....\n" << std::flush;
 	    m_handler->disable();
             m_runningState = Preinit;
         }
@@ -111,18 +110,18 @@ void mBox::startLoop()
 
 void mBox::initRFM(char *deviceName)
 {
-    std::cout << "Init RFM" << std::endl;
+    std::cout << "Init RFM\n";
     std::cout << "\tRFM Handle : " << m_driver->handle() << std::endl;
 
     if (m_driver->open(deviceName)) {
         std::cout << "\tCan't open " << deviceName << std::endl;
-        std::cout << "\tExit fron initRFM()" << std::endl;
+        std::cout << "\tExit fron initRFM()\n";
         exit(1);
     }
 
     RFM2G_NODE nodeId(0);
     if (m_driver->nodeId(&nodeId)) {
-        std::cout << "\tCan't get Node Id" << std::endl;
+        std::cout << "\tCan't get Node Id\n";
         exit(1);
     }
     std::cout << "\tRFM Node Id : " << nodeId << std::endl;

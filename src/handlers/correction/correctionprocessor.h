@@ -9,6 +9,9 @@ class RFM;
 class CorrectionProcessor
 {
 public:
+    /**
+     * @brief Constructor
+     */
     explicit CorrectionProcessor();
 
     /**
@@ -26,13 +29,44 @@ public:
      *                  * Correction::All (= `0b11`)
      */
     int correct(arma::vec &diffX, arma::vec &diffY, bool newInjection, arma::vec &Data_CMx, arma::vec &Data_CMy, int type);
+
+    /**
+     * @brief Check if the correction is correct.
+     *
+     * This function should not be called in `--rw` or `--experiment` mode, as
+     * it's time consuming.
+     *
+     * @note This is an empty function: not implemented for now.
+     *
+     * @return  ???
+     */
     int checkCorrection();
 
+    /**
+     * @brief Set the PID parameters.
+     */
     void setPID(double P, double I, double D) { m_P = P; m_I = I; m_D = D;};
+
+    /**
+     * @brief Set the correctors.
+     */
     void setCMs(arma::vec CMx, arma::vec CMy);
-    int numCMx() { return m_CMx.n_elem; };
-    int numCMy() { return m_CMy.n_elem; };
+
+    /**
+     * @brief Initialize the injection count.
+     *
+     *  * count start = frequency/1000
+     *  * count stop  = frequency*60/1000
+     */
     void setInjectionCnt(double frequency);
+
+    /**
+     * @brief Function that call calcSmat() for both x and y axes.
+     *
+     * @param SmatX, SmatY Matrices to inverse (both axes)
+     * @param IvecX, IvecY ????
+     * @param CMWeight True if the correction should be weighted or not.
+     */
     void setSmat(arma::mat &SmatX, arma::mat &SmatY, double IvecX, double IvecY, bool weightedCorr);
 
 private:

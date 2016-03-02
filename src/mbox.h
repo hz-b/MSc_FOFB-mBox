@@ -14,7 +14,15 @@ class DMA;
 class mBox
 {
 public:
+
+    /**
+     * @brief Constructor
+     */
     explicit mBox();
+
+    /**
+     * @brief Destructor
+     */
     ~mBox();
 
     /**

@@ -73,7 +73,7 @@ s_sendmore (zmq::socket_t & socket, const std::string & string) {
 static void
 s_dump (zmq::socket_t & socket)
 {
-  std::cout << "----------------------------------------" << std::endl;
+  std::cout << "----------------------------------------\n";
   while (1) {
     // Process all parts of the message
     zmq::message_t message;
@@ -136,7 +136,7 @@ s_version_assert (int want_major, int want_minor)
       || (major == want_major && minor < want_minor)) {
     std::cout << "Current 0MQ version is " << major << "." << minor << std::endl;
     std::cout << "Application needs at least " << want_major << "." << want_minor
-	      << " - cannot continue" << std::endl;
+	      << " - cannot continue\n";
     exit (EXIT_FAILURE);
   }
 }*/

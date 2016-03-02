@@ -24,18 +24,18 @@ DAC::DAC(RFMDriver *driver, DMA *dma)
 void DAC::changeStatus(int status)
 {
     if (status == DAC_ENABLE) {
-        std::cout << "Starting DACs ... " << std::endl;
+        std::cout << "Starting DACs ... \n";
     } else if (status == DAC_DISABLE) {
-        std::cout << "Stopping DACs ...." << std::endl;
+        std::cout << "Stopping DACs ....\n";
     }
     for (int i = 0 ; i < 10 ; i++) {
         if (m_IOCs[i].isActive()) {
             std::cout << "\t" << m_IOCs[i].name() << "\t: ";
             RFM2G_STATUS IOCError = m_driver->sendEvent( m_IOCs[i].id(), ADC_DAC_EVENT, status);
             if (IOCError) {
-                std::cout << "Error " << std::endl;
+                std::cout << "Error \n";
             } else {
-                std::cout << "Successful" << std::endl;
+                std::cout << "Successful\n";
             }
         }
     }

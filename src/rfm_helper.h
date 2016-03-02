@@ -53,7 +53,7 @@ public:
             }
             pos += datasize;
         }
-        std::cout << "\tWARNING : " << structname << " not found !!!" << std::endl;
+        std::cout << "\tWARNING : " << structname << " not found !!!\n";
     };
 
 private:

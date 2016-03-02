@@ -43,7 +43,7 @@ int MeasureHandler::make()
     arma::vec CMx, CMy;
     bool newInjection;
     this->getNewData(diffX, diffY, newInjection);
-    std::cout<< "data" << std::endl;
+    std::cout<< "data\n";
     int errornr = this->callPythonFunction(diffX, diffY, CMx, CMy);
 
     if (errornr) {
@@ -52,10 +52,10 @@ int MeasureHandler::make()
     }
 
     int typeCorr = Correction::All;
-    RFM2G_UINT32 *DACout = this->prepareCorrectorValues(CMx, CMy, typeCorr);
+    RFM2G_UINT32 *DACout = this->prepareCorrectionValues(CMx, CMy, typeCorr);
 
     if (!READONLY) {
-        this->writeCorrectors(DACout);
+        this->writeCorrection(DACout);
     }
     return 0;
 }
@@ -71,7 +71,7 @@ void MeasureHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
     int errorPythonInit = this->initPython();
 
     if (errorPythonInit) {
-        std::cout << "error in python Init" << std::endl;
+        std::cout << "error in python Init\n";
         m_status = Error;
     }
 }
@@ -126,12 +126,12 @@ int MeasureHandler::initPython()
         } else {
             if (PyErr_Occurred())
                 PyErr_Print();
-            std::cerr << "Cannot find function '"<< m_functionName <<"'" << std::endl;
+            std::cerr << "[MeasureHandler::initPython] Cannot find function '"<< m_functionName <<"'\n";
         }
         return 1;
     } else {
         PyErr_Print();
-        std::cerr << "Failed to load " << m_inputFile << std::endl;
+        std::cerr << "[MeasureHandler::initPython] Failed to load " << m_inputFile << std::endl;
         return 1;
     }
 }
@@ -157,7 +157,7 @@ int MeasureHandler::callPythonInit()
             Py_DECREF(pyBPMy_nb);
             Py_DECREF(pyCMy_nb);
             Py_DECREF(pyCMy_nb);
-            std::cerr << "[Python init] Cannot convert arguments" << std::endl;
+            std::cerr << "[Python init] Cannot convert arguments\n";
             return 1;
         }
         pArgs = PyTuple_New(4);
@@ -180,7 +180,7 @@ int MeasureHandler::callPythonInit()
 
     } else {
         PyErr_Print();
-        std::cerr << "[Python init] Call failed" << std::endl;
+        std::cerr << "[Python init] Call failed\n";
         return 1;
     }
 }
@@ -207,7 +207,7 @@ int MeasureHandler::callPythonFunction(const arma::vec &BPMx, const arma::vec &B
     if (!pyBPMx || !pyBPMy) {
         Py_DECREF(pyBPMx);
         Py_DECREF(pyBPMy);
-        std::cerr << "[callPythonFunction] Cannot convert argument" << std::endl;
+        std::cerr << "[callPythonFunction] Cannot convert argument\n";
         return 1;
     }
 
@@ -238,7 +238,7 @@ int MeasureHandler::callPythonFunction(const arma::vec &BPMx, const arma::vec &B
 
     } else {
         PyErr_Print();
-        std::cerr << "[callPythonFunction] Call failed" << std::endl;
+        std::cerr << "[callPythonFunction] Call failed\n";
         return 1;
     }
 }

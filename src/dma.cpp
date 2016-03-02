@@ -23,7 +23,7 @@ int DMA::init(RFMDriver *driver)
     RFM2G_UINT32 rfm2gSize;
     volatile void *pPioCard = NULL;
 
-    std::cout << "RFM DMA Init " << std::endl;
+    std::cout << "RFM DMA Init \n";
 
     driver->setDMAThreshold(DMA_THRESHOLD);
 
@@ -38,7 +38,7 @@ int DMA::init(RFMDriver *driver)
     unsigned int numPagesDMA = rfm2gSize / (2* pageSize);
     unsigned int numPagesPIO = rfm2gSize / (2* pageSize);
     if ((rfm2gSize % pageSize) > 0) {
-        std::cout << "Increase PIO and DMA " << std::endl;
+        std::cout << "Increase PIO and DMA \n";
         numPagesDMA++;
         numPagesPIO++;
     }

@@ -33,7 +33,7 @@ public:
     template<typename T>
     Logger& operator<< (const T& data)
     {
-  /*      if (data == Logger::end)
+  /*    if (data == Logger::end)
         {
             std:: cout << m_buffer << std::endl;
         }*/

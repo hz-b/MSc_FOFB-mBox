@@ -1,12 +1,36 @@
 # mBox++
 
-## Dependancies
+## Contents
+ * [How to run](#run-howto)
+ * [Dependencies](#deps)
+ * [How to compile](#compile-howto)
+ * [Class organization](#diagram)
+
+## <a name="run-howto"></a> How to run
+
+Read only mode (Corrector values are not sent to the RFM):
+
+    mbox --ro
+
+Full mode (read-write):
+
+    mbox --rw
+
+Experiment-mode:
+
+    mbox --experiment <NAME_OF_PYTHON_FILE>
+
+The Python file should contain
+
+
+## <a name="deps"></a> Dependencies
  * armadillo
  * zeroMQ
  * python (debian: python, libpython, libpython-dev)
  * numpy
 
-## How to compile and run
+
+## <a name="compile-howto"></a> How to compile
 
 Go on the root of the project, create a build folder and go in it:
 
@@ -14,7 +38,7 @@ Go on the root of the project, create a build folder and go in it:
     mkdir build
     cd build
 
-Then configure the compilation.
+Then configure the compilation. If a dependency is missing, you'll be told.
 
 In debug mode with the dummy driver:
 
@@ -32,14 +56,16 @@ Then build:
 
     make
 
-Later I'll add a install command to put the executable somewhere in the system with :
+If you want to install (so that it's in the system path):
 
     make install
 
+To install for the user only (no root needed), add to the cmake command the
+following argument (or anything relevant):
 
+    -DCMAKE_INSTALL_PREFIX=$HOME/.local
 
-
-## Class organization
+## <a name="diagram"></a> Class organization
 
 <!--
     Width of picture = 1200 px

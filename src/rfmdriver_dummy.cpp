@@ -22,7 +22,7 @@ RFM2G_STATUS RFMDriver::read(RFM2G_UINT32 offset, void* buffer, RFM2G_UINT32 len
     inFile.seekg (0, std::ios::end);
     int end = inFile.tellg();
     if (end < offset+length) {
-        std::cout << "## ERROR; Size pb ###" << std::endl;
+        std::cout << "## ERROR; Size pb ###\n";
         return RFM2G_DRIVER_ERROR;
     }
 
@@ -44,7 +44,7 @@ RFM2G_STATUS RFMDriver::write(RFM2G_UINT32 offset, void* buffer, RFM2G_UINT32 le
     int end = outFile.tellp();
 
     if (end < offset+length) {
-        std::cout << "## ERROR; Size pb ###" << std::endl;
+        std::cout << "## ERROR; Size pb ###\n";
         return RFM2G_DRIVER_ERROR;
     }
 

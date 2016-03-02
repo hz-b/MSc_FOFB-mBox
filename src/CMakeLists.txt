@@ -25,3 +25,5 @@ target_link_libraries (mbox ${ARMADILLO_LIBRARIES}
                             ${PYTHON_LIBRARY}
                             ${NUMPY_LIBRARY}
 )
+
+install(TARGETS mbox DESTINATION bin)

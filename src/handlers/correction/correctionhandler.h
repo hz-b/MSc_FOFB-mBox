@@ -4,11 +4,21 @@
 #include "handlers/handler.h"
 #include "handlers/correction/correctionprocessor.h"
 
-
+/**
+ * @class CorrectionHandler
+ * @brief Implement the Handler class and delegate the mass to CorrectionProcessor.
+ */
 class CorrectionHandler : public Handler
 {
 public:
+    /**
+     * @brief Constructor
+     */
     explicit CorrectionHandler(RFMDriver *driver, DMA *dma, bool weightedCorr);
+
+    /**
+     * @brief Reads the data and ask for the processor to calculate the correction.
+     */
     virtual int make();
 
 private:

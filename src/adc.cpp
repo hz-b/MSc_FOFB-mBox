@@ -20,7 +20,7 @@ ADC::~ADC()
 
 int ADC::init()
 {
-    std::cout << "Init ADC" << std::endl;
+    std::cout << "Init ADC\n" << std::endl;
     RFM2G_INT32 ctrlBuffer[128];
 //    short Navr = DAC_freq/freq;
     ctrlBuffer[0] = 512; // RFM2G_LOOP_MAX
@@ -31,7 +31,7 @@ int ADC::init()
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
     // Write ADC CTRL
-    std::cout << "\tADC write sampling config" << std::endl;
+    std::cout << "\tADC write sampling config\n";
 
     RFM2G_UINT32 threshold = 0;
     // see if DMA threshold and buffer are intialized
@@ -50,39 +50,39 @@ int ADC::init()
        writeError = m_driver->write(0, (void*)m_dma->memory(), data_size);
     }
     if (writeError) {
-        std::cout << "  Can't write ADC config" << std::endl;
+        std::cout << "  Can't write ADC config\n";
         return 1;
     }
 
     // Enable ADC
-    std::cout << "\tADC enable sampling" << std::endl;
+    std::cout << "\tADC enable sampling\n";
     RFM2G_STATUS sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, ADC_ENABLE);
     if (sendEventError) {
-        std::cout << "\tCan't enable ADC" << std::endl;
+        std::cout << "\tCan't enable ADC\n";
         return 1;
     }
 
     // Start Sampling
-    std::cout << "\tADC start sampling" << std::endl;
+    std::cout << "\tADC start sampling\n";
     sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, ADC_START);
     if (sendEventError) {
-        std::cout << "\tCan't start sampling" << std::endl;
+        std::cout << "\tCan't start sampling\n";
         return 1;
     }
-    std::cout << "\tADC should be started" << std::endl;
+    std::cout << "\tADC should be started\n";
     return 0;
 }
 
 int ADC::stop()
 {
-    std::cout << "\tADC stop sampling." << std::endl;
+    std::cout << "\tADC stop sampling.\n";
 
     RFM2G_STATUS sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, ADC_STOP);
     if (sendEventError) {
-        std::cout << "\tCan't stop ADC." << std::endl;
+        std::cout << "\tCan't stop ADC.\n";
         return 1;
     }
-    std::cout << "\tADC should be stopped." << std::endl;
+    std::cout << "\tADC should be stopped.\n";
 
     return 0;
 }
@@ -97,12 +97,12 @@ int ADC::read()
     // Wait on an interrupt from the other Reflective Memory board
     RFM2G_STATUS waitError = this->waitForEvent(eventInfo);
     if (waitError) {
-        std::cerr << "[ADC::read] Wait Error" << std::endl;
+        std::cerr << "[ADC::read] Wait Error\n";
         return 1;
     }
 
     if ( m_dma->status() == NULL ) {
-        std::cerr << "[ADC::read] Null status" << std::endl;
+        std::cerr << "[ADC::read] Null status\n";
         return 1;
     }
 
@@ -121,7 +121,7 @@ int ADC::read()
         RFM2G_STATUS readError = m_driver->read(ADC_MEMPOS + ( m_dma->status()->loopPos * data_size),
                                                 (void*)m_buffer, data_size);
         if (readError) {
-            std::cerr << "[ADC::read] Read error" << std::endl;
+            std::cerr << "[ADC::read] Read error\n";
 
             return 1;
         }
@@ -130,7 +130,7 @@ int ADC::read()
         RFM2G_STATUS readError = m_driver->read(ADC_MEMPOS + ( m_dma->status()->loopPos * data_size),
                                                 (void*) m_dma->memory(), data_size);
         if (readError) {
-            std::cerr << "[ADC::read] Read error DMA" << std::endl;
+            std::cerr << "[ADC::read] Read error DMA\n";
 
             return 1;
         }
@@ -144,7 +144,7 @@ int ADC::read()
     // Send an interrupt to the IOC Reflective Memory board
     RFM2G_STATUS sendEventError = m_driver->sendEvent(otherNodeId, ADC_EVENT, 0);
     if (sendEventError) {
-        std::cerr << "[ADC::read] Event not sent" << std::endl;
+        std::cerr << "[ADC::read] Event not sent\n";
 
         return 1;
     }

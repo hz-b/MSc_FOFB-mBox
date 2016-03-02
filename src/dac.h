@@ -23,15 +23,41 @@ private:
     bool m_active;
 };
 
+
+/**
+ * This class is used to transmit the data (= corrector values) to the RFM.
+ */
 class DAC
 {
 public:
+    /**
+     * @brief Constructor
+     */
     explicit DAC(RFMDriver *driver, DMA *dma);
+
+    /**
+     * @brief Enable or disable the DAC and the underlying IOCs.
+     *
+     * @param status The status can be either:
+     *                  * DAC_ENABLE (= 2)
+     *                  * DAC_DISABLE (= 1)
+     */
     void changeStatus(int status);
+    
     double waveIndexXAt(int id) const { return m_waveIndexX.at(id); };
     double waveIndexYAt(int id) const { return m_waveIndexY.at(id); };
     void setWaveIndexX(std::vector<double> vect) { m_waveIndexX = vect; };
     void setWaveIndexY(std::vector<double> vect) { m_waveIndexY = vect; };
+
+    /**
+     * @brief Write to the RFM.
+     *
+     * @param[in] plane
+     * @param[in] loopDir
+     * @param[in] data Pointer to the data to write.
+     *
+     * @return Value of the error (0 = Success)
+     */
     int write(double plane, double loopDir, RFM2G_UINT32* data);
 
 
