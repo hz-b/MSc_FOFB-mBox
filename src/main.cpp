@@ -4,6 +4,7 @@
 
 #include "define.h"
 #include "mbox.h"
+#include "logger/logger.h"
 
 extern "C" void openblas_set_num_threads(int num_threads);
 

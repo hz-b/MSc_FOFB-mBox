@@ -9,6 +9,8 @@
 
 #include "logger/zmqext.h"
 
+#define _ME_ __PRETTY_FUNCTION__
+
 namespace std { class thread; }
 namespace zmq { class socket_t; }
 class RFMDriver;
@@ -22,7 +24,7 @@ namespace Logger {
 class Logger
 {
 public:
-    Logger(zmq::context_t &context);
+    explicit Logger(zmq::context_t &context);
     ~Logger();
     void init(RFMDriver *driver, DMA *dma) { m_rfmHelper = RFMHelper(driver, dma); }
     void record(std::string message);
@@ -54,6 +56,10 @@ private:
 
 
 extern Logger logger;
+
+inline std::ostream& error(std::string name) {
+    return std::cerr << "\x1b[1;33;41m[" << name << "]\x1b[0m ";
+}
 
 inline void postError(unsigned int errornr)
 {

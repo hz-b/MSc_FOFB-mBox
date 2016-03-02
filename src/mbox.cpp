@@ -39,7 +39,7 @@ void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
     m_dma = new DMA();
     if ( int res = m_dma->init(m_driver) )
     {
-        std::cerr << "[" << __PRETTY_FUNCTION__ <<"] DMA Error .... Quit\n";
+        Logger::error(_ME_) << "DMA Error .... Quit\n";
         exit(res);
     }
     Logger::logger.init(m_driver, m_dma);
@@ -53,8 +53,6 @@ void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
 
 void mBox::startLoop()
 {
-    std::cout << "[" << __PRETTY_FUNCTION__ <<"] Enter loop\n";
-
     for(;;) {
         m_driver->read(CTRL_MEMPOS, &m_runningStatus, 1);
         m_runningStatus = Running; // HACK
@@ -88,7 +86,7 @@ void mBox::startLoop()
             if (int errornr = m_handler->make()) {
                 Logger::postError(errornr);
                 m_runningState = Error;
-                std::cout << "error: " << errornr << std::endl;
+                Logger::error(_ME_) <<  "error: " << errornr << '\n';
             }
 
             // Write the status
