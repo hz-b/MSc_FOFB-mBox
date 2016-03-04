@@ -3,9 +3,9 @@
 #include "dma.h"
 #include "rfmdriver.h"
 #include "define.h"
+#include "logger/logger.h"
 
 #include <iomanip>
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -25,19 +25,24 @@ DAC::DAC(RFMDriver *driver, DMA *dma)
 void DAC::changeStatus(int status)
 {
     if (status == DAC_ENABLE) {
-        std::cout << "Starting DACs ... \n";
+        Logger::log() << "Starting DACs ... " << Logger::flush;
     } else if (status == DAC_DISABLE) {
-        std::cout << "Stopping DACs ....\n";
+        Logger::log() << "Stopping DACs ...." << Logger::flush;
     }
     for (int i = 0 ; i < 10 ; i++) {
         if (m_IOCs[i].isActive()) {
-            std::cout << "\t" << std::left << std::setw(15) << std::setfill('.') << m_IOCs[i].name();
+            std::ostringstream logStream;
+            logStream << "\t" << std::left << std::setw(15) << std::setfill('.') << m_IOCs[i].name();
+
             RFM2G_STATUS IOCError = m_driver->sendEvent( m_IOCs[i].id(), ADC_DAC_EVENT, status);
             if (IOCError) {
-                std::cout << "Error \n";
+                Logger::error(_ME_) << logStream.str() << "Error" << Logger::flush;
             } else {
-                std::cout << "Successful\n";
+                Logger::log() << logStream.str() << "Successful" << Logger::flush;
+
             }
+
+
         }
     }
 }
@@ -71,10 +76,16 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
     /* --- start timer --- */
     //t_dac_start.clock();
 
-    if (m_driver->clearEvent(DAC_EVENT))
+    RFM2G_STATUS clearEventError = m_driver->clearEvent(DAC_EVENT);
+    if (clearEventError) {
+        Logger::error(_ME_) << "clearEvent: " << m_driver->errorMsg(clearEventError) << Logger::flush;
         return 1;
-    if (m_driver->enableEvent(DAC_EVENT))
+    }
+    RFM2G_STATUS enableEventError = m_driver->enableEvent(DAC_EVENT);
+    if (enableEventError) {
+        Logger::error(_ME_) << "enableEvent: " << m_driver->errorMsg(enableEventError) << Logger::flush;
         return 1;
+    }
     //t_dac_clear.clock();
 
     // fill DAC to RFM
@@ -83,22 +94,23 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
     m_driver->getDMAThreshold( &threshold );
 
     int data_size = DAC_BUFFER_SIZE*sizeof(RFM2G_UINT32);
+    RFM2G_STATUS writeError(RFM2G_SUCCESS);
+
     if (data_size < threshold) {
          // use PIO transfer
-        RFM2G_STATUS writeError = m_driver->write(DAC_MEMPOS + (rfm2gMemNumber*data_size),
+        writeError = m_driver->write(DAC_MEMPOS + (rfm2gMemNumber*data_size),
                                                   &data, data_size);
-        if (writeError)
-            return 1;
     } else {
         RFM2G_INT32 *dst = (RFM2G_INT32*) m_dma->memory();
         for (int i = 0 ; i < DAC_BUFFER_SIZE ; ++i) {
             dst[i] = data[i];
         }
-        RFM2G_STATUS writeError = m_driver->write(DAC_MEMPOS + (rfm2gMemNumber*data_size),
+        writeError = m_driver->write(DAC_MEMPOS + (rfm2gMemNumber*data_size),
                                                   (void*) m_dma->memory(), data_size);
-        if (writeError) {
-            return 1;
-        }
+    }
+    if (writeError) {
+        Logger::error(_ME_) << "write: " << m_driver->errorMsg(writeError) << Logger::flush;
+        return 1;
     }
 
  //   t_dac_write.clock();
@@ -109,8 +121,11 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
     //usleep(300);
 
     /* tell IOC to work */
-    if (m_driver->sendEvent(RFM2G_NODE_ALL, DAC_EVENT, (RFM2G_INT32) rfm2gCtrlSeq))
+    RFM2G_STATUS sendEventError = m_driver->sendEvent(RFM2G_NODE_ALL, DAC_EVENT, (RFM2G_INT32) rfm2gCtrlSeq);
+    if (sendEventError) {
+        Logger::error(_ME_) << "sendEvent: " << m_driver->errorMsg(sendEventError) << Logger::flush;
         return 1;
+    }
     //t_dac_send.clock();
 
     // wait for at least one ack.
@@ -119,8 +134,10 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
     EventInfo.Timeout = DAC_TIMEOUT;  /* We'll wait this many milliseconds */
 
     RFM2G_STATUS waitError = m_driver->waitForEvent(&EventInfo);
-    if (waitError)
+    if (waitError) {
+        Logger::error(_ME_) << "waitForEvent: " << m_driver->errorMsg(waitError)  << Logger::flush;
         return 1;
+    }
 
     // stop timer
     //t_dac_stop.clock();

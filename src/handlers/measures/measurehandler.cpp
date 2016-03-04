@@ -4,6 +4,7 @@
 #include "adc.h"
 #include "dac.h"
 #include "dma.h"
+#include "logger/logger.h"
 
 #include <iostream>
 #include <string>
@@ -43,7 +44,7 @@ int MeasureHandler::make()
     arma::vec CMx, CMy;
     bool newInjection;
     this->getNewData(diffX, diffY, newInjection);
-    std::cout<< "data\n";
+
     int errornr = this->callPythonFunction(diffX, diffY, CMx, CMy);
 
     if (errornr) {
@@ -71,7 +72,7 @@ void MeasureHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
     int errorPythonInit = this->initPython();
 
     if (errorPythonInit) {
-        std::cout << "error in python Init\n";
+        Logger::error(_ME_) << "error" << Logger::flush ;
         m_status = Error;
     }
 }
@@ -126,12 +127,12 @@ int MeasureHandler::initPython()
         } else {
             if (PyErr_Occurred())
                 PyErr_Print();
-            std::cerr << "[MeasureHandler::initPython] Cannot find function '"<< m_functionName <<"'\n";
+            Logger::error(_ME_) << "Cannot find function '"<< m_functionName <<"'" << Logger::flush;
         }
         return 1;
     } else {
         PyErr_Print();
-        std::cerr << "[MeasureHandler::initPython] Failed to load " << m_inputFile << std::endl;
+        Logger::error(_ME_) << "Failed to load " << m_inputFile << std::endl;
         return 1;
     }
 }
@@ -157,7 +158,7 @@ int MeasureHandler::callPythonInit()
             Py_DECREF(pyBPMy_nb);
             Py_DECREF(pyCMy_nb);
             Py_DECREF(pyCMy_nb);
-            std::cerr << "[Python init] Cannot convert arguments\n";
+            Logger::error(_ME_) << "Cannot convert arguments" << Logger::flush;
             return 1;
         }
         pArgs = PyTuple_New(4);
@@ -180,7 +181,7 @@ int MeasureHandler::callPythonInit()
 
     } else {
         PyErr_Print();
-        std::cerr << "[Python init] Call failed\n";
+        Logger::error(_ME_) << "Call failed" << Logger::flush;
         return 1;
     }
 }
@@ -207,7 +208,7 @@ int MeasureHandler::callPythonFunction(const arma::vec &BPMx, const arma::vec &B
     if (!pyBPMx || !pyBPMy) {
         Py_DECREF(pyBPMx);
         Py_DECREF(pyBPMy);
-        std::cerr << "[callPythonFunction] Cannot convert argument\n";
+        Logger::error(_ME_) << "Cannot convert argument" << Logger::flush;
         return 1;
     }
 
@@ -238,7 +239,7 @@ int MeasureHandler::callPythonFunction(const arma::vec &BPMx, const arma::vec &B
 
     } else {
         PyErr_Print();
-        std::cerr << "[callPythonFunction] Call failed\n";
+        Logger::error(_ME_) << "Call failed" << Logger::flush;
         return 1;
     }
 }

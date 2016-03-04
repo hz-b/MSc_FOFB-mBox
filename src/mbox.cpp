@@ -39,10 +39,10 @@ void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
     m_dma = new DMA();
     if ( int res = m_dma->init(m_driver) )
     {
-        Logger::error(_ME_) << "DMA Error .... Quit\n";
+        Logger::error(_ME_) << "DMA Error .... Quit" << Logger::flush;
         exit(res);
     }
-    Logger::logger.initRFM(m_driver, m_dma);
+    Logger::logger.setRFM(m_driver);
 
     if (!inputFile.empty()) { // inputFile => Experiment mode
         m_handler = new MeasureHandler(m_driver, m_dma, weightedCorr, inputFile);
@@ -62,7 +62,7 @@ void mBox::startLoop()
                 m_driver->read(CTRL_MEMPOS , &m_runningStatus , 1);
                 sleep(1);
             }
-            Logger::log("LOG") << "...Wait for start..." << Logger::flush;
+            Logger::log() << "...Wait for start..." << Logger::flush;
         }
 
         // if Idle, don't do anything
@@ -76,7 +76,7 @@ void mBox::startLoop()
             m_runningState = Initialized;
 
             std::cout << ".... RUNNING .... \n";
-            Logger::log("LOG") << "MBOX running" << Logger::flush;
+            Logger::log() << "MBOX running" << Logger::flush;
         }
 
         /**
@@ -97,7 +97,7 @@ void mBox::startLoop()
          * Stop correction
          */
         if ((m_runningStatus == Idle) && (m_runningState != Preinit)) {
-            Logger::log("LOG") << "Stopped  ....." << Logger::flush;
+            Logger::log() << "Stopped  ....." << Logger::flush;
 	    m_handler->disable();
             m_runningState = Preinit;
         }
@@ -108,20 +108,20 @@ void mBox::startLoop()
 
 void mBox::initRFM(char *deviceName)
 {
-    Logger::log("LOG") << "Init RFM" << Logger::flush;
-    Logger::log("LOG") << "\tRFM Handle : " << m_driver->handle() << Logger::flush;
+    Logger::log() << "Init RFM" << Logger::flush;
+    Logger::log() << "\tRFM Handle : " << m_driver->handle() << Logger::flush;
 
     if (m_driver->open(deviceName)) {
         Logger::error(_ME_) << "\tCan't open " << deviceName << '\n' ;
-        Logger::error(_ME_) << "\tExit fron initRFM()\n";
+        Logger::error(_ME_) << "\tExit fron initRFM()" << Logger::flush;
         exit(1);
     }
 
     RFM2G_NODE nodeId(0);
     if (m_driver->nodeId(&nodeId)) {
-        Logger::error(_ME_) << "\tCan't get Node Id\n";
+        Logger::error(_ME_) << "\tCan't get Node Id" << Logger::flush;
         exit(1);
     }
-    Logger::log("LOG") << "\tRFM Node Id : " << nodeId << Logger::flush;
+    Logger::log() << "\tRFM Node Id : " << nodeId << Logger::flush;
 }
 

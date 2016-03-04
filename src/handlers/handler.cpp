@@ -34,7 +34,7 @@ Handler::~Handler()
 
 void Handler::disable()
 {
-    std::cout << "Disable handler";
+    Logger::log() << "Disable handler" << Logger::flush;
     m_adc->stop();
     m_dac->changeStatus(DAC_DISABLE);
 
@@ -45,7 +45,7 @@ void Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
     arma::vec rADCdataX(m_numBPMx), rADCdataY(m_numBPMy);
     if (m_adc->read()) {
         Logger::postError(FOFB_ERROR_ADC);
-	std::cout<< "[Handler::getNewData] ADC::read Error"<< std::endl;
+	Logger::error(_ME_) << "Read Error"<< Logger::flush;
     } else {
          for (unsigned int i = 0; i < m_numBPMx; i++) {
              unsigned int  lADCPos = m_adc->waveIndexXAt(i)-1;
@@ -74,7 +74,7 @@ void Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
 
 void Handler::init()
 {
-    std::cout << "Read Data from RFM\n";
+    Logger::log() << "Read Data from RFM"<< Logger::flush;
 
     double ADC_WaveIndexX[128];
     double ADC_WaveIndexY[128];
@@ -141,21 +141,21 @@ void Handler::init()
 
 void Handler::initIndexes(const std::vector<double> &ADC_WaveIndexX)
 {
-    std::cout << "Init Indexes" << std:: endl;
+    Logger::log() << "Init Indexes" << Logger::flush;
     //FS BUMP
     m_idxHBP2D6R  = 160; //(2*81)-1(X) -1(C)
     m_idxBPMZ6D6R = getIdx(ADC_WaveIndexX, 163);
-    std::cout << "\tidx 6D6 : " << m_idxBPMZ6D6R << std::endl;
+    Logger::log() << "\tidx 6D6 : " << m_idxBPMZ6D6R << Logger::flush;
     //ARTOF
     m_idxHBP1D5R  = 142; //(2*72)-1(x) -1(C)
     m_idxBPMZ3D5R = getIdx(ADC_WaveIndexX, 123);
-    std::cout << "\tidx 3Z5 : " << m_idxBPMZ3D5R << std::endl;
+    Logger::log() << "\tidx 3Z5 : " << m_idxBPMZ3D5R << Logger::flush;
     m_idxBPMZ4D5R = getIdx(ADC_WaveIndexX, 125);
-    std::cout << "\tidx 4Z5 : " << m_idxBPMZ4D5R << std::endl;
+    Logger::log() << "\tidx 4Z5 : " << m_idxBPMZ4D5R << Logger::flush;
     m_idxBPMZ5D5R = getIdx(ADC_WaveIndexX, 129);
-    std::cout << "\tidx 5Z5 : " << m_idxBPMZ5D5R << std::endl;
+    Logger::log() << "\tidx 5Z5 : " << m_idxBPMZ5D5R << Logger::flush;
     m_idxBPMZ6D5R = getIdx(ADC_WaveIndexX, 131);
-    std::cout << "\tidx 6Z5 : " << m_idxBPMZ6D5R << std::endl;
+    Logger::log() << "\tidx 6Z5 : " << m_idxBPMZ6D5R << Logger::flush;
 }
 
 int Handler::getIdx(const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWaveIndex)

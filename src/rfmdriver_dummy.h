@@ -49,7 +49,7 @@ public:
     virtual RFM2G_STATUS poke16(RFM2G_UINT32 offset, RFM2G_UINT16 value){ return RFM2G_SUCCESS; };
     virtual RFM2G_STATUS poke32(RFM2G_UINT32 offset, RFM2G_UINT32 value){ return RFM2G_SUCCESS; };
 
-    // Implemented only on 64 bit Operating Systems 
+    // Implemented only on 64 bit Operating Systems
     virtual RFM2G_STATUS peek64(RFM2G_UINT32 offset, RFM2G_UINT64 *value){ return RFM2G_SUCCESS; };
     virtual RFM2G_STATUS poke64(RFM2G_UINT32 offset, RFM2G_UINT64 value){ return RFM2G_SUCCESS; };
 

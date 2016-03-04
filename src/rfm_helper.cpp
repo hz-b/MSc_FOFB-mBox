@@ -1,43 +1,5 @@
 #include "rfm_helper.h"
 
-void RFMHelper::sendMessage(const char* Message, const char *error)
-{
-    unsigned long pos = MESSAGE_MEMPOS;
-    //cout << "Send To Pos: " << pos << endl;
-    struct t_header {
-        unsigned short namesize;
-        unsigned short sizey;
-        unsigned short sizex;
-        unsigned short type;
-    } header;
-    int thesize = 2 + sizeof(header)+ 6 + strlen(Message) +
-            sizeof(header)+ 5 + strlen(error) ;
-    unsigned char * mymem = (unsigned char *) malloc(thesize);
-    unsigned long structpos = 0;
-    mymem[0]=2;  mymem[1] = 0; structpos += 2;// number of Elements (message, error)
-    header.namesize=6;
-    header.sizex = strlen(Message);
-    header.sizey = 1;
-    header.type = 2;
-    memcpy(mymem+structpos,&header,sizeof(header)); structpos += sizeof(header);
-    memcpy(mymem+structpos,"status",6); structpos += 6;
-    memcpy(mymem+structpos,Message,strlen(Message)); structpos += strlen(Message);
-
-    header.namesize=5;
-    header.sizex = strlen(error);
-    header.sizey = 1;
-    header.type = 2;
-    memcpy(mymem+structpos,&header,sizeof(header)); structpos += sizeof(header);
-    memcpy(mymem+structpos,"error",5); structpos += 5;
-    memcpy(mymem+structpos,error,strlen(error)); structpos += strlen(error);
-
-    m_driver->write(pos , mymem, thesize);
-    //unsigned short l = 2;
-    //result = RFM2gWrite( RFM_Handle, pos , &l, 2); 
-    //cout << "Result" << result << endl;
-    free(mymem);
-}
-
 void RFMHelper::dumpMemory(void* data, int len) {
     unsigned char* p = (unsigned char*)data;
     std::printf("'%f'\n", *(double*)p);
@@ -67,7 +29,6 @@ void RFMHelper::prepareField(arma::vec& field, unsigned long pos, unsigned long 
     } else {
         // use DMA transfer
         m_driver->read(pos,(void*)m_dma->memory(), data_size);
-        std::cout << "vec DMA \n";
         dumpMemory(m_dma->memory(),8);
         field = arma::vec((const double *)m_dma->memory(),dim1*dim2);
     }
@@ -97,8 +58,8 @@ void RFMHelper::prepareField(arma::mat& field, unsigned long pos, unsigned long 
 
         field = arma::mat((const double *) m_dma->memory(), dim1, dim2);
     }
-    std::cout << "\t\tm5; " << field(0,0) << " " << field(0,1) << std::endl;
-    std::cout << "\t\tSize: " << field.n_cols << ":"<< field.n_rows << std::endl;
+    Logger::log() << "\t\tm5; " << field(0,0) << " " << field(0,1) << Logger::flush;
+    Logger::log() <<"\t\tSize: " << field.n_cols << ":"<< field.n_rows << Logger::flush;
 }
 
 void RFMHelper::searchField(std::string &name,

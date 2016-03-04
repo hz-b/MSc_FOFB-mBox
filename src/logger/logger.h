@@ -1,96 +1,135 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include "rfm_helper.h"
-
 #include <string>
 #include <iostream>
 #include <sstream>
 
+#include "define.h"
 #include "logger/zmqext.h"
+#include "rfmdriver.h"
 
 #define _ME_ __PRETTY_FUNCTION__
 
-namespace std { class thread; }
 namespace zmq { class socket_t; }
 class RFMDriver;
 class DMA;
 
+enum class LogType {
+    None = 0,
+    Log = 1,
+    Error = 2,
+    Value = 4
+};
 
+/**
+ * \addtogroup
+ */
 namespace Logger {
 
 struct log_stream_t {
-    std::string header;
+    LogType header;
     std::ostringstream message;
+    std:: string other;
 };
 
 class Logger
 {
 public:
-    explicit Logger(zmq::context_t &context);
+    /**
+     * @brief Constructor
+     *
+     * The ZMQ publisher socket is set here with the default port.
+     */
+    explicit Logger(zmq::context_t& context);
+
+    /**
+     * @brief Destructor
+     */
     ~Logger();
-    void initRFM(RFMDriver *driver, DMA *dma) { m_rfmHelper = RFMHelper(driver, dma); }
-    void record(std::string message);
+
+    /**
+     * @brief Set the RFM Helper.
+     */
+    void setRFM(RFMDriver* driver) { m_driver = driver; }
 
     void sendMessage(std::string message, std::string error="");
-    void sendZmq(const std::string& header, const std::string& message);
+    void sendZmq(const std::string& header, const std::string& message, const std::string& other);
+    void sendRFM(std::string message, std::string error);
 
-    log_stream_t m_logStream;
+    /**
+     * @brief Set/Unset the debug mode
+     */
+    void setDebug(const bool debug) { m_debug = debug; }
+
+    /**
+     * @brief Check if the mbox is in debug mode.
+     *
+     * @return True if debug mode, else false.
+     */
+    bool hasDebug() const { return m_debug; }
+
+    /**
+     * @brief Acess to m_logStream
+     */
+    log_stream_t& logStream() { return m_logStream; };
 
 private:
-    RFMHelper m_rfmHelper;
-    zmq_ext::socket_t *m_zmqSocket;
-    std::thread *m_thread;
-    std::string m_buffer;
+    RFMDriver* m_driver;
+
+    /**
+     * @brief ZMQ Socket used to publish logs, values, errors.
+     */
+    zmq_ext::socket_t* m_zmqSocket;
+
+    /**
+     * @brief Is the mBox in debug mode?
+     */
+    bool m_debug;
+    log_stream_t m_logStream;
 };
-
-
 
 extern Logger logger;
 
-inline std::ostream& flush(std::ostream & output)
-{
-    logger.sendZmq(logger.m_logStream.header, logger.m_logStream.message.str());
-    logger.m_logStream.header = "";
-    logger.m_logStream.message.str("");
-}
+/**
+ * @brief Global wrapper to access the setDebug(bool) method of the class Logger.
+ */
+void setDebug(bool debug);
+/**
+ * @brief
+ */
+std::ostream& flush(std::ostream& output);
 
-inline std::ostringstream& log(std::string type)
-{
-    logger.m_logStream.header = type ;
-    return logger.m_logStream.message;
-}
+/**
+ * @brief
+ */
+std::ostringstream& log(LogType type);
 
-inline std::ostream& error(std::string name) {
-    return std::cerr << "\x1b[1;33;41m[" << name << "]\x1b[0m ";
-}
+/**
+ * @brief
+ */
+std::ostringstream& log();
 
-inline void postError(unsigned int errornr)
-{
-    switch (errornr) {
-    case 0:
-        return;
-        break;
-    case FOFB_ERROR_ADC:
-        logger.sendMessage( "FOFB error", "ADC Timeout");
-        break;
-    case FOFB_ERROR_DAC:
-        logger.sendMessage( "FOFB error", "DAC Problem");
-        break;
-    case FOFB_ERROR_CM100:
-        logger.sendMessage( "FOFB error", "To much to correct");
-        break;
-    case FOFB_ERROR_NoBeam:
-        logger.sendMessage( "FOFB error", "No Current");
-        break;
-    case FOFB_ERROR_RMS:
-        logger.sendMessage( "FOFB error", "Bad RMS");
-        break;
-    default:
-        logger.sendMessage( "FOFB error", "Unknown Problem");
-        break;
-    }
-}
+/**
+ * @brief
+ */
+std::ostringstream& values();
+
+/**
+ * @brief Global wrapper to log errors.
+ *
+ * @param fctname Name of the function in which is the error.
+ * @return Stream Logger::m_logStream.message;
+ *
+ * @note Use it as:
+ * \code{.cpp}
+ *      Logger::error(_ME_) << "This is an error: << Logger::flush;
+ * \endcode
+ * A prepocessor macro `_ME_` is used for `__PRETTY_FUNCTION__`.
+ */
+std::ostringstream& error(std::string fctname);
+
+void postError(unsigned int errornr);
 
 }
 

@@ -23,7 +23,7 @@ int DMA::init(RFMDriver *driver)
     RFM2G_UINT32 rfm2gSize;
     volatile void *pPioCard = NULL;
 
-    Logger::log("LOG") << "RFM DMA Init" << Logger::flush;
+    Logger::log() << "RFM DMA Init" << Logger::flush;
 
     driver->setDMAThreshold(DMA_THRESHOLD);
 
@@ -43,10 +43,10 @@ int DMA::init(RFMDriver *driver)
         numPagesPIO++;
     }
 
-    Logger::log("LOG") << "\tpPioCard : " << pPioCard << Logger::flush;
-    Logger::log("LOG") << "\trfm2gSize : " << rfm2gSize << Logger::flush;
-    Logger::log("LOG") << "\tpageSize  : " << pageSize << Logger::flush;
-    Logger::log("LOG") << "\tnumPages DMA/PIO : " << numPagesDMA << Logger::flush;
+    Logger::log() << "\tpPioCard : " << pPioCard << Logger::flush;
+    Logger::log() << "\trfm2gSize : " << rfm2gSize << Logger::flush;
+    Logger::log() << "\tpageSize  : " << pageSize << Logger::flush;
+    Logger::log() << "\tnumPages DMA/PIO : " << numPagesDMA << Logger::flush;
 
     RFM2G_STATUS rfmMemoryError = driver->userMemory(
                                         (volatile void **) (&m_memory),
@@ -60,7 +60,7 @@ int DMA::init(RFMDriver *driver)
         return -1;
     }
 
-    Logger::log("LOG") << "doDMA: SUCCESS: mapped numPagesDMA=" << numPagesDMA
+    Logger::log() << "doDMA: SUCCESS: mapped numPagesDMA=" << numPagesDMA
                        << " at pDmaCard=" << std::hex << m_memory
                        << Logger::flush;
 
@@ -75,7 +75,7 @@ int DMA::init(RFMDriver *driver)
         return -1;
     }
 
-    Logger::log("LOG") << "doDMA: Card: PIO memory pointer = 0x" << std::hex << pPioCard
+    Logger::log() << "doDMA: Card: PIO memory pointer = 0x" << std::hex << pPioCard
                        << ", Size = 0x" << std::hex << rfm2gSize
                        << Logger::flush;
 

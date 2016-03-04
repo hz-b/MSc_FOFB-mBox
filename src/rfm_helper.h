@@ -4,18 +4,16 @@
 #include <armadillo>
 #include <iomanip>
 #include <string>
-#include <iostream>
 
 #include "dma.h"
 #include "rfmdriver.h"
 #include "define.h"
-
+#include "logger/logger.h"
 
 class RFMHelper
 {
 public:
     RFMHelper(RFMDriver *driver, DMA *dma) : m_driver(driver), m_dma(dma){};
-    void sendMessage(const char* Message, const char *error);
     void dumpMemory(void* data, int len);
     void dumpMemory(volatile void* data, int len);
     void searchField(std::string &name, unsigned long &pos,
@@ -46,14 +44,14 @@ public:
             this->searchField(name, pos, datasize1, datasize2, datasize);
 
             if (name == structname) {
-                std::cout << "\tFound Name: " << name << std::endl;
+                Logger::log() << "\tFound Name: " << name << Logger::flush;
                 this->prepareField(field, pos, datasize1, datasize2);
 
                 return;
             }
             pos += datasize;
         }
-        std::cout << "\tWARNING : " << structname << " not found !!!\n";
+        Logger::log() << "\tWARNING : " << structname << " not found !!!" << Logger::flush;
     };
 
 private:

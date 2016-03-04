@@ -20,7 +20,7 @@ namespace Correction {
         None = 0b01,
         Horizontal = 0b01,
         Vertical = 0b10,
-        All = 0b11
+        All = Horizontal | Vertical
     };
 }
 

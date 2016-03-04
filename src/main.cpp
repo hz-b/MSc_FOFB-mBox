@@ -28,7 +28,8 @@ static mBox mbox;
  */
 void SIGINT_handler(int signum)
 {
-    std::cout << "\nQuit mBox....\n" << std::flush;
+    Logger::log() << "Quit mBox..." << Logger::flush;
+    std::cout << "Quit mBox...\n";
     exit(0);
 }
 
@@ -41,7 +42,7 @@ void startError()
     std::cout << "One argument is expected: --ro, --rw.\n";
     std::cout << "Or two arguments expected: --experiment <FILE>.\n";
     std::cout << "\n";
-    std::cout << "See --help for more help.\n\n" << std::flush;
+    std::cout << "See --help for more help.\n\n";
 
     exit(-1);
 }
@@ -65,7 +66,8 @@ int main(int argc, char *argv[])
             std::cout << "    mbox --experiment <FILENAME>";
             std::cout << "             \t Read-write version for experiments: read the file <FILENAME>\n";
             std::cout << "             \t to know which values to create.\n\n";
-            std::cout << std::flush;
+            std::cout << "Other arguments (to append):\n";
+            std::cout << "    --debug  \t Print the logs on the the stderr.\n\n";
 
             return 0;
         } else if (!arg1.compare("--ro")) {
@@ -87,6 +89,11 @@ int main(int argc, char *argv[])
     } else {
         startError();
     }
+    if (!std::string(argv[argc-1]).compare("--debug")) {
+        Logger::setDebug(true);
+    }
+
+
     std::cout << "=============\n"
               << "starting MBox" << startflag << '\n'
               << "=============\n" << std::flush;
@@ -95,11 +102,11 @@ int main(int argc, char *argv[])
     bool weigthedCorr = true;
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Logger::log("LOG") << "====================" << Logger::flush;
-    Logger::log("LOG") << "Starting the MBox..." << Logger::flush;
+    Logger::log() << "====================" << Logger::flush;
+    Logger::log() << "Starting the MBox..." << Logger::flush;
     mbox.init(devicename, weigthedCorr, experimentFile);
 
-    Logger::log("LOG") << "mBox ready" << Logger::flush;
+    Logger::log() << "mBox ready" << Logger::flush;
 
     signal(SIGINT, SIGINT_handler);
     mbox.startLoop();
