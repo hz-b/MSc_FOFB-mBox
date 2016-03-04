@@ -1,7 +1,6 @@
 #include "dma.h"
 
 #include <unistd.h>  // needed for getpagesize()
-#include <iostream>
 
 #include "rfmdriver.h"
 #include "logger/logger.h"
@@ -20,7 +19,10 @@ DMA::~DMA()
 
 int DMA::init(RFMDriver *driver)
 {
-    RFM2G_UINT32 rfm2gSize;
+    if (driver == NULL)
+        return 1;
+
+    RFM2G_UINT32 rfm2gSize(0);
     volatile void *pPioCard = NULL;
 
     Logger::log() << "RFM DMA Init" << Logger::flush;
@@ -29,7 +31,7 @@ int DMA::init(RFMDriver *driver)
 
     RFM2GCONFIG rfm2gConfig;
     RFM2G_STATUS getConfigError = driver->getConfig(&rfm2gConfig);
-    if (getConfigError) {
+    if (getConfigError == RFM2G_SUCCESS) {
         pPioCard = (char*)rfm2gConfig.PciConfig.rfm2gBase;
         rfm2gSize = rfm2gConfig.PciConfig.rfm2gWindowSize;
     }
@@ -38,7 +40,7 @@ int DMA::init(RFMDriver *driver)
     unsigned int numPagesDMA = rfm2gSize / (2* pageSize);
     unsigned int numPagesPIO = rfm2gSize / (2* pageSize);
     if ((rfm2gSize % pageSize) > 0) {
-        std::cout << "Increase PIO and DMA \n";
+        Logger::log() << "\tIncrease PIO and DMA" << Logger::flush;
         numPagesDMA++;
         numPagesPIO++;
     }

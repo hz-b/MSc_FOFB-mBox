@@ -16,6 +16,9 @@
 
 
 mBox::mBox()
+    : m_dma(NULL)
+    , m_driver(NULL)
+    , m_handler(NULL)
 {
 }
 
