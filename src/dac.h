@@ -60,7 +60,6 @@ public:
      */
     int write(double plane, double loopDir, RFM2G_UINT32* data);
 
-
 private:
     DMA *m_dma;
     RFMDriver *m_driver;

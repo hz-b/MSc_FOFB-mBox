@@ -24,6 +24,8 @@ DAC::DAC(RFMDriver *driver, DMA *dma)
 
 void DAC::changeStatus(int status)
 {
+    if (READONLY) return;
+
     if (status == DAC_ENABLE) {
         Logger::log() << "Starting DACs ... " << Logger::flush;
     } else if (status == DAC_DISABLE) {
@@ -39,16 +41,16 @@ void DAC::changeStatus(int status)
                 Logger::error(_ME_) << logStream.str() << "Error" << Logger::flush;
             } else {
                 Logger::log() << logStream.str() << "Successful" << Logger::flush;
-
             }
-
-
         }
     }
 }
 
 int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
 {
+    if (READONLY)
+        return 0;
+
     int writeflag = 0;
     //plane = 4;
     switch((int) plane) {

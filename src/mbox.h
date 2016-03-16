@@ -32,7 +32,7 @@ public:
      * @param weightedCorr True if the correction is weighted
      * @param inputFile File to use for experiments (eg: Python module)
      */
-    void init(char *deviceName, bool weightedCorr,std::string inputFile);
+    void init(char *deviceName, bool weightedCorr, std::string inputFile);
 
     /**
      * @brief Start the main loop that handle the different events

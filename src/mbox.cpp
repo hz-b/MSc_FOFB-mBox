@@ -36,7 +36,6 @@ void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
 
     RFM2GHANDLE RFM_handle = 0;
     m_driver = new RFMDriver(RFM_handle);
-
     this->initRFM( deviceName );
 
     m_dma = new DMA();
@@ -58,7 +57,7 @@ void mBox::startLoop()
 {
     for(;;) {
         m_driver->read(CTRL_MEMPOS, &m_runningStatus, 1);
-        m_runningStatus = Running; // HACK
+        //m_runningStatus = Running; // HACK
         if (m_runningStatus == 33) {
             std::cout << "  !!! MDIZ4T4R was restarted !!! ... Wait for initialization \n";
             while (m_runningStatus != Idle) {
@@ -101,7 +100,7 @@ void mBox::startLoop()
          */
         if ((m_runningStatus == Idle) && (m_runningState != Preinit)) {
             Logger::log() << "Stopped  ....." << Logger::flush;
-	    m_handler->disable();
+	        m_handler->disable();
             m_runningState = Preinit;
         }
 

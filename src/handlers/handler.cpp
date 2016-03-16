@@ -24,7 +24,6 @@ Handler::Handler(RFMDriver *driver, DMA *dma, bool weightedCorr)
     }
 }
 
-
 Handler::~Handler()
 {
     this->disable();

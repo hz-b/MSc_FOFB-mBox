@@ -20,7 +20,11 @@ ADC::~ADC()
 
 int ADC::init()
 {
+    if (READONLY)
+        return 0;
+
     Logger::log() << "Init ADC" << Logger::flush;
+
     RFM2G_INT32 ctrlBuffer[128];
 //    short Navr = DAC_freq/freq;
     ctrlBuffer[0] = 512; // RFM2G_LOOP_MAX
@@ -75,6 +79,9 @@ int ADC::init()
 
 int ADC::stop()
 {
+    if (READONLY) {
+        return 0;
+
     Logger::log() << "ADC stoping sampling...." << Logger::flush;
 
     RFM2G_STATUS sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, ADC_STOP);
@@ -142,11 +149,12 @@ int ADC::read()
     }
 
     // Send an interrupt to the IOC Reflective Memory board
-    RFM2G_STATUS sendEventError = m_driver->sendEvent(otherNodeId, ADC_EVENT, 0);
-    if (sendEventError) {
-        Logger::error(_ME_) << "sendEvent: " << m_driver->errorMsg(sendEventError) << Logger::flush;
-
-        return 1;
+    if (!READONLY) {
+        RFM2G_STATUS sendEventError = m_driver->sendEvent(otherNodeId, ADC_EVENT, 0);
+        if (sendEventError) {
+            Logger::error(_ME_) << "sendEvent: " << m_driver->errorMsg(sendEventError) << Logger::flush;
+            return 1;
+        }
     }
     return 0;
 }
