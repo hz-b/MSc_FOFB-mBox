@@ -27,6 +27,7 @@ mBox::~mBox()
     delete m_handler,
            m_dma,
            m_driver;
+    Logger::log() << "mBox exited" << Logger::flush;
 }
 
 void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)

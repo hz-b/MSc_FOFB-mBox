@@ -28,7 +28,6 @@ static mBox mbox;
  */
 void SIGINT_handler(int signum)
 {
-    Logger::log() << "Quit mBox..." << Logger::flush;
     std::cout << "Quit mBox...\n";
     exit(0);
 }
@@ -103,7 +102,11 @@ int main(int argc, char *argv[])
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
     Logger::log() << Logger::flush;
-    Logger::log() << "Starting the MBox..." << Logger::flush;
+    Logger::log() << "Starting the MBox...";
+    if (!startflag.empty())
+        Logger::log() << startflag;
+    Logger::log() << Logger::flush;
+    
     mbox.init(devicename, weigthedCorr, experimentFile);
 
     Logger::log() << "mBox ready" << Logger::flush;
