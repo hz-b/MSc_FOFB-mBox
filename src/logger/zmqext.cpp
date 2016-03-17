@@ -7,7 +7,7 @@ zmq_ext::socket_t::socket_t(zmq::context_t& c, int socket_type)
 }
 
 
-bool zmq_ext::socket_t::send(RFM2G_INT16* value , int size, int flags)
+bool zmq_ext::socket_t::send(const RFM2G_INT16* value , int size, int flags)
 {
     int len = sizeof(RFM2G_INT16)*size;
     zmq::message_t msg(len);
@@ -16,7 +16,7 @@ bool zmq_ext::socket_t::send(RFM2G_INT16* value , int size, int flags)
 }
 
 
-bool zmq_ext::socket_t::send(int value, int flags)
+bool zmq_ext::socket_t::send(const int value, int flags)
 {
     int len = sizeof(int);
     zmq::message_t msg(len);
@@ -25,7 +25,7 @@ bool zmq_ext::socket_t::send(int value, int flags)
 }
 
 
-bool zmq_ext::socket_t::send(std::vector<short> & values, int flags)
+bool zmq_ext::socket_t::send(const std::vector<short> & values, int flags)
 {
     int len=sizeof(short)*values.size();
     zmq::message_t msg(len);
@@ -34,7 +34,7 @@ bool zmq_ext::socket_t::send(std::vector<short> & values, int flags)
 }
 
 
-bool zmq_ext::socket_t::send(arma::vec & values, int flags)
+bool zmq_ext::socket_t::send(const arma::vec & values, int flags)
 {
     int len = sizeof(double)*values.n_elem;
     zmq::message_t msg(len);
@@ -42,7 +42,7 @@ bool zmq_ext::socket_t::send(arma::vec & values, int flags)
     return zmq::socket_t::send(msg, flags);
 }
 
-bool zmq_ext::socket_t::send(std::string & value, int flags)
+bool zmq_ext::socket_t::send(const std::string & value, int flags)
 {
     int len = value.size()+1; // +1 need for the NULL character at the end.
     zmq::message_t msg(len);

@@ -80,7 +80,16 @@ void Logger::Logger::sendZmq(const std::string& header, const std::string& messa
     std::string formatedMessage = std::string(timeBuf) + " [" + header + "] "+ message;
     if (!other.empty())
         formatedMessage += "\t(" + other +')';
+    m_zmqSocket->send(header, ZMQ_SNDMORE);
     m_zmqSocket->send(formatedMessage);
+}
+
+void Logger::Logger::sendZmqValue(const std::string& header, const std::string& valueName, const arma::vec& value)
+{
+    m_zmqSocket->send(header, ZMQ_SNDMORE);
+    m_zmqSocket->send(valueName, ZMQ_SNDMORE);
+    m_zmqSocket->send(value);
+
 }
 
 // Global functions
@@ -128,9 +137,28 @@ std::ostringstream& Logger::log()
 }
 
 
-std::ostringstream& Logger::values()
+void Logger::values(LogValue name, const arma::vec& value)
 {
-    return log(LogType::Value);
+    std::string header = "VALUE";
+    std::string valueName;
+    switch (name) {
+    case LogValue::BPMx:
+        valueName = "BPMx";
+        break;
+    case LogValue::BPMy:
+        valueName = "BPMy";
+        break;
+    case LogValue::CMx:
+        valueName = "CMx";
+        break;
+    case LogValue::CMy:
+        valueName = "CMy";
+        break;
+    default:
+        error(_ME_) << "Tried to send values of unexpected type. RETURN";
+        return;
+    }
+    logger.sendZmqValue(header, valueName, value);
 }
 
 std::ostringstream& Logger::error(std::string fctname)

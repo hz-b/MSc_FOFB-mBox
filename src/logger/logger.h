@@ -19,9 +19,14 @@ enum class LogType {
     None = 0,
     Log = 1,
     Error = 2,
-    Value = 4
 };
-
+enum class LogValue {
+    None = 0,
+    BPMx,
+    BPMy,
+    CMx,
+    CMy
+};
 /**
  * \addtogroup
  */
@@ -55,6 +60,7 @@ public:
 
     void sendMessage(std::string message, std::string error="");
     void sendZmq(const std::string& header, const std::string& message, const std::string& other);
+    void sendZmqValue(const std::string& header, const std::string& valueName, const arma::vec& value);
     void sendRFM(std::string message, std::string error);
 
     /**
@@ -113,7 +119,7 @@ std::ostringstream& log();
 /**
  * @brief
  */
-std::ostringstream& values();
+void values(LogValue name, const arma::vec &value);
 
 /**
  * @brief Global wrapper to log errors.
