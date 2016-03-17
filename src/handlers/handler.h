@@ -93,12 +93,12 @@ protected:
      *                  * Correction::All (= `0b11`)
      * @return DACout, the pointer of values to use in writeCorrectors()
      */
-    RFM2G_UINT32 *prepareCorrectionValues(arma::vec &CMx, arma::vec &CMy, int typeCorr);
+    void prepareCorrectionValues(const arma::vec &CMx, const arma::vec &CMy, int typeCorr);
 
     /**
      * @brief Write DACout to the RFM
      */
-    void writeCorrection(RFM2G_UINT32* DACout);
+    void writeCorrection();
 
     /**
      * @brief Get the index of a given index
@@ -145,6 +145,7 @@ protected:
     arma::vec m_BPMoffsetX, m_BPMoffsetY;
 
     int m_status;
+    RFM2G_UINT32 m_DACout[DAC_BUFFER_SIZE];
 };
 
 #endif // HANDLER_H

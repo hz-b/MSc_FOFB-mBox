@@ -33,10 +33,10 @@ int CorrectionHandler::make()
         return errornr;
     }
 
-    RFM2G_UINT32 *DACout = this->prepareCorrectionValues(CMx, CMy, typeCorr);
+    this->prepareCorrectionValues(CMx, CMy, typeCorr);
 
     if (!READONLY) {
-        this->writeCorrection(DACout);
+        this->writeCorrection();
     }
     return 0;
 }

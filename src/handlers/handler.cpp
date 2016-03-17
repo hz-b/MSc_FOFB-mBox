@@ -44,7 +44,7 @@ void Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
     arma::vec rADCdataX(m_numBPMx), rADCdataY(m_numBPMy);
     if (m_adc->read()) {
         Logger::postError(FOFB_ERROR_ADC);
-	Logger::error(_ME_) << "Read Error"<< Logger::flush;
+        Logger::error(_ME_) << "Read Error"<< Logger::flush;
     } else {
          for (unsigned int i = 0; i < m_numBPMx; i++) {
              unsigned int  lADCPos = m_adc->waveIndexXAt(i)-1;
@@ -68,6 +68,9 @@ void Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
         diffX[m_idxBPMZ4D5R] -= (-0.84 * HBP1D5R);
         diffX[m_idxBPMZ5D5R] -= (+0.84 * HBP1D5R);
         diffX[m_idxBPMZ6D5R] -= (+0.42 * HBP1D5R);
+
+        Logger::values(LogValue::BPMx, diffX);
+        Logger::values(LogValue::BPMy, diffY);
     }
 }
 
@@ -101,24 +104,26 @@ void Handler::init()
     rfmHelper.readStruct("SmatX", SmatX, readStructtype_mat);
     rfmHelper.readStruct("SmatY", SmatY, readStructtype_mat);
     // Parameters
-    rfmHelper.readStruct( "GainX", m_gainX, readStructtype_vec);
-    rfmHelper.readStruct( "GainY", m_gainY, readStructtype_vec);
-    rfmHelper.readStruct( "BPMoffsetX", m_BPMoffsetX, readStructtype_vec);
-    rfmHelper.readStruct( "BPMoffsetY", m_BPMoffsetY, readStructtype_vec);
-    rfmHelper.readStruct( "scaleDigitsH", m_scaleDigitsX, readStructtype_vec);
-    rfmHelper.readStruct( "scaleDigitsV", m_scaleDigitsY, readStructtype_vec);
+    rfmHelper.readStruct("GainX", m_gainX, readStructtype_vec);
+    rfmHelper.readStruct("GainY", m_gainY, readStructtype_vec);
+    rfmHelper.readStruct("BPMoffsetX", m_BPMoffsetX, readStructtype_vec);
+    rfmHelper.readStruct("BPMoffsetY", m_BPMoffsetY, readStructtype_vec);
+    rfmHelper.readStruct("scaleDigitsH", m_scaleDigitsX, readStructtype_vec);
+    rfmHelper.readStruct("scaleDigitsV", m_scaleDigitsY, readStructtype_vec);
     // Correctors
-    rfmHelper.readStruct( "P", P, readStructtype_double);
-    rfmHelper.readStruct( "I", I, readStructtype_double);
-    rfmHelper.readStruct( "D", D, readStructtype_double);
-    rfmHelper.readStruct( "plane", m_plane, readStructtype_double);
-    rfmHelper.readStruct( "Frequency", Frequency, readStructtype_double);
+    rfmHelper.readStruct("P", P, readStructtype_double);
+    rfmHelper.readStruct("I", I, readStructtype_double);
+    rfmHelper.readStruct("D", D, readStructtype_double);
+    rfmHelper.readStruct("plane", m_plane, readStructtype_double);
+    rfmHelper.readStruct("Frequency", Frequency, readStructtype_double);
     // Singular Values
     rfmHelper.readStruct( "SingularValueX", IvecX, readStructtype_double);
     rfmHelper.readStruct( "SingularValueY", IvecY, readStructtype_double);
     // CM
-    rfmHelper.readStruct( "CMx", CMx, readStructtype_vec);
-    rfmHelper.readStruct( "CMy", CMy, readStructtype_vec);
+    rfmHelper.readStruct("CMx", CMx, readStructtype_vec);
+    rfmHelper.readStruct("CMy", CMy, readStructtype_vec);
+
+ //   rfmHelper.readStruct("DACout", m_DACout, readStructtype_pchar);
 
     m_numBPMx = SmatX.n_rows;
     m_numBPMy = SmatY.n_rows;
@@ -166,37 +171,40 @@ int Handler::getIdx(const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWa
     return ADC_BPMIndex_Pos.size();
 }
 
-RFM2G_UINT32 *Handler::prepareCorrectionValues(arma::vec& CMx, arma::vec& CMy, int typeCorr)
+void Handler::prepareCorrectionValues(const arma::vec& CMx, const arma::vec& CMy, int typeCorr)
 {
-    RFM2G_UINT32 DACout[DAC_BUFFER_SIZE];
+    Logger::values(LogValue::CMx, CMx);
+    Logger::values(LogValue::CMy, CMy);
+    arma::vec Data_CMx = CMx;
+    arma::vec Data_CMy = CMy;
 
     if ((typeCorr & Correction::Horizontal) == Correction::Horizontal) {
-        CMx = (CMx % m_scaleDigitsX) + numbers::halfDigits;
-        for (int i = 0; i <  CMx.n_elem; i++)
+        Data_CMx = (CMx % m_scaleDigitsX) + numbers::halfDigits;
+        for (int i = 0; i <  Data_CMx.n_elem; i++)
         {
             int corPos = m_dac->waveIndexXAt(i)-1;
-            DACout[corPos] = CMx(i);
+            m_DACout[corPos] = Data_CMx(i);
         }
     }
     if ((typeCorr & Correction::Vertical) == Correction::Vertical) {
-        CMy = (CMy % m_scaleDigitsY) + numbers::halfDigits;
+        Data_CMy = (CMy % m_scaleDigitsY) + numbers::halfDigits;
 
-        for (int i = 0; i < CMy.n_elem; i++) {
+        for (int i = 0; i < Data_CMy.n_elem; i++) {
             int corPos = m_dac->waveIndexYAt(i)-1;
-            DACout[corPos] = CMy(i);
+            m_DACout[corPos] = Data_CMy(i);
         }
     }
-    DACout[112] = (m_loopDir*2500000) + numbers::halfDigits;
-    DACout[113] = (m_loopDir* (-1) * 2500000) + numbers::halfDigits;
-    DACout[114] = (m_loopDir*2500000) + numbers::halfDigits;
+    m_DACout[112] = (m_loopDir*2500000) + numbers::halfDigits;
+    m_DACout[113] = (m_loopDir* (-1) * 2500000) + numbers::halfDigits;
+    m_DACout[114] = (m_loopDir*2500000) + numbers::halfDigits;
 
     m_loopDir *= -1;
 }
 
 
-void Handler::writeCorrection(RFM2G_UINT32* DACout)
+void Handler::writeCorrection()
 {
-    if (m_dac->write(m_plane, m_loopDir, DACout) > 0) {
+    if (m_dac->write(m_plane, m_loopDir, m_DACout) > 0) {
          m_dma->status()->errornr = FOFB_ERROR_DAC;
          Logger::postError(FOFB_ERROR_DAC);
     }

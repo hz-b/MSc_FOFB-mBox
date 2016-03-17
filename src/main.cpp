@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
     bool weigthedCorr = true;
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Logger::log() << "====================" << Logger::flush;
+    Logger::log() << Logger::flush;
     Logger::log() << "Starting the MBox..." << Logger::flush;
     mbox.init(devicename, weigthedCorr, experimentFile);
 
