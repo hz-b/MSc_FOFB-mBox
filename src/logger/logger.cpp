@@ -77,11 +77,17 @@ void Logger::Logger::sendZmq(const std::string& header, const std::string& messa
     char timeBuf[80];
     strftime(timeBuf, sizeof(timeBuf), "%F %T", timeinfo);
 
-    std::string formatedMessage = std::string(timeBuf) + " [" + header + "] "+ message;
-    if (!other.empty())
-        formatedMessage += "\t(" + other +')';
+    std::string time(timeBuf);
+
     m_zmqSocket->send(header, ZMQ_SNDMORE);
-    m_zmqSocket->send(formatedMessage);
+    m_zmqSocket->send(time, ZMQ_SNDMORE);
+
+    if (!other.empty()) {
+        m_zmqSocket->send(message, ZMQ_SNDMORE);
+        m_zmqSocket->send(other);
+    } else {
+        m_zmqSocket->send(message);
+    }
 }
 
 void Logger::Logger::sendZmqValue(const std::string& header, const std::string& valueName, const arma::vec& value)
@@ -174,22 +180,22 @@ void Logger::postError(unsigned int errornr)
         return;
         break;
     case FOFB_ERROR_ADC:
-        logger.sendMessage( "FOFB error", "ADC Timeout");
+        logger.sendMessage("FOFB error", "ADC Timeout");
         break;
     case FOFB_ERROR_DAC:
-        logger.sendMessage( "FOFB error", "DAC Problem");
+        logger.sendMessage("FOFB error", "DAC Problem");
         break;
     case FOFB_ERROR_CM100:
-        logger.sendMessage( "FOFB error", "To much to correct");
+        logger.sendMessage("FOFB error", "To much to correct");
         break;
     case FOFB_ERROR_NoBeam:
-        logger.sendMessage( "FOFB error", "No Current");
+        logger.sendMessage("FOFB error", "No Current");
         break;
     case FOFB_ERROR_RMS:
-        logger.sendMessage( "FOFB error", "Bad RMS");
+        logger.sendMessage("FOFB error", "Bad RMS");
         break;
     default:
-        logger.sendMessage( "FOFB error", "Unknown Problem");
+        logger.sendMessage("FOFB error", "Unknown Problem");
         break;
     }
 }
