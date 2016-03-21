@@ -78,8 +78,10 @@ protected:
      * @param diffX Values of the BPMs in the x direction (filled by the function)
      * @param diffY Values of the BPMs in the y direction (filled by the function)
      * @param newInjection True if an injection was just sent. Else False.
+     *
+     * @return error
      */
-    void getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection);
+    int getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection);
 
     /**
      * @brief Prepare the values to be written by the DAC

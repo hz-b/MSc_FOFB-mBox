@@ -39,12 +39,13 @@ void Handler::disable()
 
 }
 
-void Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
+int Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
 {
     arma::vec rADCdataX(m_numBPMx), rADCdataY(m_numBPMy);
     if (m_adc->read()) {
         Logger::postError(FOFB_ERROR_ADC);
         Logger::error(_ME_) << "Read Error"<< Logger::flush;
+        return FOFB_ERROR_ADC;
     } else {
          for (unsigned int i = 0; i < m_numBPMx; i++) {
              unsigned int  lADCPos = m_adc->waveIndexXAt(i)-1;
@@ -72,6 +73,7 @@ void Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
         Logger::values(LogValue::BPMx, diffX);
         Logger::values(LogValue::BPMy, diffY);
     }
+    return 0;
 }
 
 void Handler::init()

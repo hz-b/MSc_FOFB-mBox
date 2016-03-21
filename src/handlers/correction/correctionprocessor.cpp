@@ -61,6 +61,7 @@ int CorrectionProcessor::correct(arma::vec &diffX, arma::vec &diffY,
     {
         m_rmsErrorCnt++;
         if (m_rmsErrorCnt > 5) {
+            Logger::error(_ME_) << "RMS error, count > 5" << Logger::flush;
             return FOFB_ERROR_RMS;
         }
     } else {
@@ -78,8 +79,9 @@ int CorrectionProcessor::correct(arma::vec &diffX, arma::vec &diffY,
         dCMy = dCMy % m_CMWeightY;
     }
 
-//    if ((max(dCMx) > 0.100) || (max(dCMy) > 0.100))
-  //      return FOFB_ERROR_CM100;
+    if ((max(dCMx) > 0.100) || (max(dCMy) > 0.100))
+        Logger::error(_ME_) << "A corrector as a value above 0.100" << Logger::flush;
+        return FOFB_ERROR_CM100;
 
 
     //cout << "  calc PID" << endl;

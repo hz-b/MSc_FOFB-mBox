@@ -4,6 +4,7 @@
 #include "adc.h"
 #include "dac.h"
 #include "dma.h"
+#include "logger/logger.h"
 
 CorrectionHandler::CorrectionHandler(RFMDriver *driver, DMA *dma, bool weightedCorr)
     : Handler(driver, dma, weightedCorr)
@@ -15,7 +16,11 @@ int CorrectionHandler::make()
     arma::vec diffX, diffY;
     arma::vec CMx, CMy;
     bool newInjection;
-    this->getNewData(diffX, diffY, newInjection);
+    if (this->getNewData(diffX, diffY, newInjection))
+    {
+        Logger::error(_ME_) << "Cannot correct, error in data acquisition" << Logger::flush;
+        return 1;
+    }
     RFM2G_UINT32 rfm2gMemNumber = m_dma->status()->loopPos;
 
     int typeCorr = Correction::None;

@@ -58,7 +58,10 @@ void mBox::startLoop()
     Logger::log() << "mBox idle" << Logger::flush;
     for(;;) {
         m_driver->read(CTRL_MEMPOS, &m_runningStatus, 1);
-        // m_runningStatus = Running; // HACK
+
+#ifdef DUMMY_RFM_DRIVER
+        m_runningStatus = Running; // HACK
+#endif
         if (m_runningStatus == 33) {
             std::cout << "  !!! MDIZ4T4R was restarted !!! ... Wait for initialization \n";
             while (m_runningStatus != Idle) {
@@ -91,7 +94,7 @@ void mBox::startLoop()
             if (int errornr = m_handler->make()) {
                 Logger::postError(errornr);
                 m_runningState = Error;
-                Logger::error(_ME_) <<  "error: " << errornr << '\n';
+                Logger::error(_ME_) <<  "error: " << errornr << Logger::flush;
             }
 
             // Write the status

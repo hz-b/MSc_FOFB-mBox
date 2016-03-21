@@ -79,7 +79,7 @@ int ADC::init()
 
 int ADC::stop()
 {
-    if (READONLY) 
+    if (READONLY)
         return 0;
 
     Logger::log() << "ADC stoping sampling...." << Logger::flush;
