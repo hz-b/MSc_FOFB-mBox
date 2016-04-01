@@ -90,11 +90,12 @@ void Logger::Logger::sendZmq(const std::string& header, const std::string& messa
     }
 }
 
-void Logger::Logger::sendZmqValue(const std::string& header, const std::string& valueName, const arma::vec& value)
+void Logger::Logger::sendZmqValue(const std::string& header, const int loopPos, const arma::vec& valueX, const arma::vec& valueY)
 {
     m_zmqSocket->send(header, ZMQ_SNDMORE);
-    m_zmqSocket->send(valueName, ZMQ_SNDMORE);
-    m_zmqSocket->send(value);
+    m_zmqSocket->send(loopPos, ZMQ_SNDMORE);
+    m_zmqSocket->send(valueX, ZMQ_SNDMORE);
+    m_zmqSocket->send(valueY);
 
 }
 
@@ -143,28 +144,21 @@ std::ostringstream& Logger::log()
 }
 
 
-void Logger::values(LogValue name, const arma::vec& value)
+void Logger::values(LogValue name, const int loopPos, const arma::vec& valueX, const arma::vec& valueY)
 {
-    std::string header = "VALUE";
-    std::string valueName;
+    std::string header;
     switch (name) {
-    case LogValue::BPMx:
-        valueName = "BPMx";
+    case LogValue::BPM:
+        header = "FOFB-BPM-DATA";
         break;
-    case LogValue::BPMy:
-        valueName = "BPMy";
-        break;
-    case LogValue::CMx:
-        valueName = "CMx";
-        break;
-    case LogValue::CMy:
-        valueName = "CMy";
+    case LogValue::CM:
+         header = "FOFB-CM-DATA";
         break;
     default:
         error(_ME_) << "Tried to send values of unexpected type. RETURN";
         return;
     }
-    logger.sendZmqValue(header, valueName, value);
+    logger.sendZmqValue(header, loopPos, valueX, valueY);
 }
 
 std::ostringstream& Logger::error(std::string fctname)

@@ -194,21 +194,17 @@ int Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
         diffX[m_idxBPMZ5D5R] -= (+0.84 * HBP1D5R);
         diffX[m_idxBPMZ6D5R] -= (+0.42 * HBP1D5R);
 
-        Logger::values(LogValue::BPMx, diffX);
-        Logger::values(LogValue::BPMy, diffY);
+        Logger::values(LogValue::BPM, m_dma->status()->loopPos, diffX, diffY);
     }
     return 0;
 }
 
 void Handler::prepareCorrectionValues(const arma::vec& CMx, const arma::vec& CMy, int typeCorr)
 {
-    Logger::values(LogValue::CMx, CMx);
-    Logger::values(LogValue::CMy, CMy);
-    arma::vec Data_CMx = CMx;
-    arma::vec Data_CMy = CMy;
+    Logger::values(LogValue::CM, m_dma->status()->loopPos, CMx, CMy);
 
     if ((typeCorr & Correction::Horizontal) == Correction::Horizontal) {
-        Data_CMx = (CMx % m_scaleDigitsX) + numbers::halfDigits;
+        arma::vec Data_CMx = (CMx % m_scaleDigitsX) + numbers::halfDigits;
         for (int i = 0; i <  Data_CMx.n_elem; i++)
         {
             int corPos = m_dac->waveIndexXAt(i)-1;
@@ -216,7 +212,7 @@ void Handler::prepareCorrectionValues(const arma::vec& CMx, const arma::vec& CMy
         }
     }
     if ((typeCorr & Correction::Vertical) == Correction::Vertical) {
-        Data_CMy = (CMy % m_scaleDigitsY) + numbers::halfDigits;
+        arma::vec Data_CMy = (CMy % m_scaleDigitsY) + numbers::halfDigits;
 
         for (int i = 0; i < Data_CMy.n_elem; i++) {
             int corPos = m_dac->waveIndexYAt(i)-1;
