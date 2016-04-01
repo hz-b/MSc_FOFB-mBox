@@ -81,6 +81,7 @@ void mBox::startLoop()
          */
         if ((m_runningStatus == Running) && (m_runningState == Preinit)) {
             m_handler->init();
+            std::this_thread::sleep_for(std::chrono::nanoseconds(4000000));
             m_runningState = Initialized;
 
             std::cout << ".... RUNNING .... \n";

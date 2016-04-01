@@ -3,6 +3,7 @@
 #include "adc.h"
 #include "handlers/handler.h"
 #include "logger/logger.h"
+#include <iostream>
 
 CorrectionProcessor::CorrectionProcessor()
 {
@@ -79,10 +80,17 @@ int CorrectionProcessor::correct(arma::vec &diffX, arma::vec &diffY,
         dCMy = dCMy % m_CMWeightY;
     }
 
-    if ((max(dCMx) > 0.100) || (max(dCMy) > 0.100))
+    if ((max(dCMx) > 0.100) || (max(dCMy) > 0.100)) 
+    {
         Logger::error(_ME_) << "A corrector as a value above 0.100" << Logger::flush;
+        std::cout << "CM100 Error\n\n" << dCMx << "\n\n" << dCMy 
+                  << max(dCMx) << "\n" << (max(dCMx) > 0.100)
+                  << "\n" 
+                  << max(dCMy) << "\n" << (max(dCMy) > 0.100) 
+              << "\n\n";
+         
         return FOFB_ERROR_CM100;
-
+    }
 
     //cout << "  calc PID" << endl;
     if (m_currentP < m_P)

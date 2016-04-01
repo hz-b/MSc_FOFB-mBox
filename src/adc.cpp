@@ -7,6 +7,7 @@
 #include "logger/logger.h"
 #include "rfmdriver.h"
 
+
 ADC::ADC(RFMDriver *driver, DMA *dma)
     : m_driver(driver)
     , m_dma(dma)
@@ -32,7 +33,6 @@ int ADC::init()
     ctrlBuffer[2] = 0;
     ctrlBuffer[3] = 2;   // Navr
 
-    std::this_thread::sleep_for(std::chrono::seconds(2));
 
     // Write ADC CTRL
     Logger::log() << "\tADC write sampling config" << Logger::flush;
@@ -66,6 +66,7 @@ int ADC::init()
         return 1;
     }
 
+    std::this_thread::sleep_for(std::chrono::seconds(2));
     // Start Sampling
     Logger::log() << "\tADC start sampling." << Logger::flush;
     sendEventError = m_driver->sendEvent(m_node, ADC_DAC_EVENT, ADC_START);
@@ -74,6 +75,7 @@ int ADC::init()
         return 1;
     }
     Logger::log() << "\tADC started" << Logger::flush;
+    std::this_thread::sleep_for(std::chrono::seconds(2));
     return 0;
 }
 
