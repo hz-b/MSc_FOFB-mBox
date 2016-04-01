@@ -1,6 +1,5 @@
 import signal
 import sys
-import numpy as np
 import zmq
 
 COLORS = True
@@ -11,7 +10,6 @@ KEYS = [
         ]
 
 """
-    FRAME VALUE =  header | name of value | value
     FRAME LOG/ERROR = header | time | message | other (optional)
 """
 
@@ -83,12 +81,6 @@ if __name__ == "__main__":
                 elif count == 3:
                     log.other = read_str(message)
 
-            elif log.header == "VALUE":
-                if count == 1:  # Name of the variable
-                    name = read_str(message)
-                elif count == 2:  # Value
-                    value = np.fromstring(str(message), dtype=np.uint8)
-
             if not message.more:
                 if log.header == "LOG" or log.header == "ERROR":
                     if use_file:
@@ -97,10 +89,5 @@ if __name__ == "__main__":
                         f.close()
                     else:
                         print(log.output(color))
-                elif log.header == "VALUE":
-                    print(name)
-                    print(value)
-                break
-
             count += 1
 
