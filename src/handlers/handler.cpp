@@ -36,72 +36,6 @@ void Handler::disable()
     Logger::log() << "Disable handler" << Logger::flush;
     m_adc->stop();
     m_dac->changeStatus(DAC_DISABLE);
-
-}
-
-int Handler::make()
-{
-    arma::vec diffX, diffY;
-    arma::vec CMx, CMy;
-    bool newInjection;
-    if (this->getNewData(diffX, diffY, newInjection))
-    {
-        Logger::error(_ME_) << "Cannot correct, error in data acquisition" << Logger::flush;
-        return 1;
-    }
-
-    int typeCorr = this->typeCorrection();
-    int errornr = this->callProcessorRoutine(diffX, diffY,
-                                             newInjection,
-                                             CMx, CMy,
-                                             typeCorr);
-    if (errornr) {
-        return errornr;
-    }
-
-    this->prepareCorrectionValues(CMx, CMy, typeCorr);
-
-    if (!READONLY) {
-        this->writeCorrection();
-    }
-    return 0;
-}
-
-int Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
-{
-    arma::vec rADCdataX(m_numBPMx), rADCdataY(m_numBPMy);
-    if (m_adc->read()) {
-        Logger::postError(FOFB_ERROR_ADC);
-        Logger::error(_ME_) << "Read Error"<< Logger::flush;
-        return FOFB_ERROR_ADC;
-    } else {
-         for (unsigned int i = 0; i < m_numBPMx; i++) {
-             unsigned int  lADCPos = m_adc->waveIndexXAt(i)-1;
-             rADCdataX(i) =  m_adc->bufferAt(lADCPos);
-         }
-
-         for (unsigned int i = 0; i < m_numBPMy; i++) {
-             unsigned int lADCPos = m_adc->waveIndexYAt(i)-1;
-             rADCdataY(i) =  m_adc->bufferAt(lADCPos);
-          }
-
-        diffX = (rADCdataX % m_gainX * numbers::cf * -1 ) - m_BPMoffsetX;
-        diffY = (rADCdataY % m_gainY * numbers::cf      ) - m_BPMoffsetY;
-        //FS BUMP
-        double HBP2D6R = m_adc->bufferAt(m_idxHBP2D6R) * numbers::cf * 0.8;
-        diffX[m_idxBPMZ6D6R] -= (-0.325 * HBP2D6R);
-
-        //ARTOF
-        double HBP1D5R = m_adc->bufferAt(m_idxHBP1D5R) * numbers::cf * 0.8;
-        diffX[m_idxBPMZ3D5R] -= (-0.42 * HBP1D5R);
-        diffX[m_idxBPMZ4D5R] -= (-0.84 * HBP1D5R);
-        diffX[m_idxBPMZ5D5R] -= (+0.84 * HBP1D5R);
-        diffX[m_idxBPMZ6D5R] -= (+0.42 * HBP1D5R);
-
-        Logger::values(LogValue::BPMx, diffX);
-        Logger::values(LogValue::BPMy, diffY);
-    }
-    return 0;
 }
 
 void Handler::init()
@@ -199,6 +133,71 @@ int Handler::getIdx(const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWa
             return i;
     }
     return ADC_BPMIndex_Pos.size();
+}
+
+int Handler::make()
+{
+    arma::vec diffX, diffY;
+    arma::vec CMx, CMy;
+    bool newInjection;
+    if (this->getNewData(diffX, diffY, newInjection))
+    {
+        Logger::error(_ME_) << "Cannot correct, error in data acquisition" << Logger::flush;
+        return 1;
+    }
+
+    int typeCorr = this->typeCorrection();
+    int errornr = this->callProcessorRoutine(diffX, diffY,
+                                             newInjection,
+                                             CMx, CMy,
+                                             typeCorr);
+    if (errornr) {
+        return errornr;
+    }
+
+    this->prepareCorrectionValues(CMx, CMy, typeCorr);
+
+    if (!READONLY) {
+        this->writeCorrection();
+    }
+    return 0;
+}
+
+int Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
+{
+    arma::vec rADCdataX(m_numBPMx), rADCdataY(m_numBPMy);
+    if (m_adc->read()) {
+        Logger::postError(FOFB_ERROR_ADC);
+        Logger::error(_ME_) << "Read Error"<< Logger::flush;
+        return FOFB_ERROR_ADC;
+    } else {
+         for (unsigned int i = 0; i < m_numBPMx; i++) {
+             unsigned int  lADCPos = m_adc->waveIndexXAt(i)-1;
+             rADCdataX(i) =  m_adc->bufferAt(lADCPos);
+         }
+
+         for (unsigned int i = 0; i < m_numBPMy; i++) {
+             unsigned int lADCPos = m_adc->waveIndexYAt(i)-1;
+             rADCdataY(i) =  m_adc->bufferAt(lADCPos);
+          }
+
+        diffX = (rADCdataX % m_gainX * numbers::cf * -1 ) - m_BPMoffsetX;
+        diffY = (rADCdataY % m_gainY * numbers::cf      ) - m_BPMoffsetY;
+        //FS BUMP
+        double HBP2D6R = m_adc->bufferAt(m_idxHBP2D6R) * numbers::cf * 0.8;
+        diffX[m_idxBPMZ6D6R] -= (-0.325 * HBP2D6R);
+
+        //ARTOF
+        double HBP1D5R = m_adc->bufferAt(m_idxHBP1D5R) * numbers::cf * 0.8;
+        diffX[m_idxBPMZ3D5R] -= (-0.42 * HBP1D5R);
+        diffX[m_idxBPMZ4D5R] -= (-0.84 * HBP1D5R);
+        diffX[m_idxBPMZ5D5R] -= (+0.84 * HBP1D5R);
+        diffX[m_idxBPMZ6D5R] -= (+0.42 * HBP1D5R);
+
+        Logger::values(LogValue::BPMx, diffX);
+        Logger::values(LogValue::BPMy, diffY);
+    }
+    return 0;
 }
 
 void Handler::prepareCorrectionValues(const arma::vec& CMx, const arma::vec& CMy, int typeCorr)
