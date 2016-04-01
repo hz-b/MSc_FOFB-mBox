@@ -37,31 +37,18 @@ MeasureHandler::~MeasureHandler()
     Py_Finalize();
 }
 
-
-int MeasureHandler::make()
+int MeasureHandler::typeCorrection()
 {
-    arma::vec diffX, diffY;
-    arma::vec CMx, CMy;
-    bool newInjection;
-    this->getNewData(diffX, diffY, newInjection);
-
-    int errornr = this->callPythonFunction(diffX, diffY, CMx, CMy);
-
-    if (errornr) {
-        m_loopDir *= -1;
-        return errornr;
-    }
-
-    int typeCorr = Correction::All;
-
-    this->prepareCorrectionValues(CMx, CMy, typeCorr);
-
-    if (!READONLY) {
-        this->writeCorrection();
-    }
-    return 0;
+    return Correction::All;
 }
 
+int MeasureHandler::callProcessorRoutine(const arma::vec& diffX, const arma::vec& diffY,
+                                         const bool newInjection,
+                                         arma::vec& CMx, arma::vec& CMy,
+                                         const int typeCorr)
+{
+    return this->callPythonFunction(diffX, diffY, CMx, CMy);
+}
 
 void MeasureHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
                                   double IvecX, double IvecY,
@@ -188,8 +175,8 @@ int MeasureHandler::callPythonInit()
 }
 
 
-int MeasureHandler::callPythonFunction(const arma::vec &BPMx, const arma::vec &BPMy,
-                                       arma::vec &CMx, arma::vec &CMy)
+int MeasureHandler::callPythonFunction(const arma::vec& BPMx, const arma::vec& BPMy,
+                                       arma::vec& CMx, arma::vec& CMy)
 {
     PyObject *pArgs = NULL, *pValue = NULL;
 

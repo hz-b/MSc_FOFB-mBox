@@ -28,7 +28,10 @@ public:
      *                  * Correction::Vertical (= `0b10`)
      *                  * Correction::All (= `0b11`)
      */
-    int correct(arma::vec &diffX, arma::vec &diffY, bool newInjection, arma::vec &Data_CMx, arma::vec &Data_CMy, int type);
+    int correct(const arma::vec& diffX, const arma::vec& diffY,
+                const bool newInjection,
+                arma::vec& Data_CMx, arma::vec& Data_CMy,
+                const int type );
 
     /**
      * @brief Check if the correction is correct.
@@ -70,6 +73,7 @@ public:
     void setSmat(arma::mat &SmatX, arma::mat &SmatY, double IvecX, double IvecY, bool weightedCorr);
 
 private:
+
     /**
      * @brief Calculate the inverse of the S matrix.
      *

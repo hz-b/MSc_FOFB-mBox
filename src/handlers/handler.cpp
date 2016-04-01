@@ -39,6 +39,34 @@ void Handler::disable()
 
 }
 
+int Handler::make()
+{
+    arma::vec diffX, diffY;
+    arma::vec CMx, CMy;
+    bool newInjection;
+    if (this->getNewData(diffX, diffY, newInjection))
+    {
+        Logger::error(_ME_) << "Cannot correct, error in data acquisition" << Logger::flush;
+        return 1;
+    }
+
+    int typeCorr = this->typeCorrection();
+    int errornr = this->callProcessorRoutine(diffX, diffY,
+                                             newInjection,
+                                             CMx, CMy,
+                                             typeCorr);
+    if (errornr) {
+        return errornr;
+    }
+
+    this->prepareCorrectionValues(CMx, CMy, typeCorr);
+
+    if (!READONLY) {
+        this->writeCorrection();
+    }
+    return 0;
+}
+
 int Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
 {
     arma::vec rADCdataX(m_numBPMx), rADCdataY(m_numBPMy);

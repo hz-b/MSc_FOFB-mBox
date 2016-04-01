@@ -40,18 +40,19 @@ public:
      * @param weigthedCorr True if we use a weighted correction. Else False.
      */
     explicit Handler(RFMDriver *driver, DMA *dma, bool weigthedCorr);
+    
     ~Handler();
 
     /**
      * @brief Do what the handler is designed for (correction, setting values..)
      *
-     * This should call
+     * It calls
      *      * getNewData() to read the BPM values from the RFM
      *      * a function that do the calculations (in the Processor)
      *      * prepareCorrectionValues()
      *      * writeCorrectors() to write the results on the RFM
      */
-    virtual int make() = 0;
+    int make();
 
     /**
      * @brief Initialize the attributes and call setProcessor().
@@ -82,6 +83,31 @@ protected:
      * @return error
      */
     int getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection);
+
+    /**
+     * @brief Defines the type of correction to perform. Must be implemented in
+     * subclasses.
+     *
+     * @return type of correction
+     */
+    virtual int typeCorrection() = 0;
+
+     /**
+     * @brief Call the processor routine. Must be implemented in subclasses.
+     *
+     * @param[in] diffX differential orbit, x-axis
+     * @param[in] diffY differential orbit, y-axis
+     * @param[in] newInjection true if a new injection occured, false else
+     * @param[out] CMx correction to be calculated, x-axis
+     * @param[out] CMy correction to be calculated, y-axis
+     * @param[in] typeCorr type of correction to perform
+     *
+     * @return Error code
+     */
+    virtual int callProcessorRoutine(const arma::vec& diffX, const arma::vec& diffY,
+                                     const bool newInjection,
+                                     arma::vec& CMx, arma::vec& CMy,
+                                     const int typeCorr) = 0;
 
     /**
      * @brief Prepare the values to be written by the DAC

@@ -43,17 +43,26 @@ public:
     explicit MeasureHandler(RFMDriver *driver, DMA *dma, bool weightedCorr,
                             std::string inputFile);
     ~MeasureHandler();
-    virtual int make();
 
 private:
     /**
      * @brief Set the processor, here Python.
      */
-    void setProcessor(arma::mat SmatX, arma::mat SmatY,
-                      double IvecX, double IvecY,
-                      double Frequency,
-                      double P, double I, double D,
-                      arma::vec CMx, arma::vec CMy, bool weightedCorr);
+    virtual void setProcessor(arma::mat SmatX, arma::mat SmatY,
+                              double IvecX, double IvecY,
+                              double Frequency,
+                              double P, double I, double D,
+                              arma::vec CMx, arma::vec CMy, bool weightedCorr);
+
+    /**
+     * @brief Calls processor callProcessorRoutine
+     */
+    virtual int callProcessorRoutine(const arma::vec& diffX, const arma::vec& diffY,
+                                     const bool newInjection,
+                                     arma::vec& CMx, arma::vec& CMy,
+                                     const int typeCorr);
+
+    virtual int typeCorrection();
 
     /**
      * @brief String manipulations to define the Python module to use, based on `m_inputFile`.
@@ -78,8 +87,8 @@ private:
     /**
      * @brief Calls the python function defined in the constructor.
      */
-    int callPythonFunction(const arma::vec &BPMx, const arma::vec &BPMy,
-                           arma::vec &CMx, arma::vec &CMy);
+    int callPythonFunction(const arma::vec& BPMx, const arma::vec& BPMy,
+                           arma::vec& CMx, arma::vec& CMy);
 
     PyObject *m_pFunc;
     PyObject *m_pModule;

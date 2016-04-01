@@ -16,12 +16,20 @@ public:
      */
     explicit CorrectionHandler(RFMDriver *driver, DMA *dma, bool weightedCorr);
 
-    /**
-     * @brief Reads the data and ask for the processor to calculate the correction.
-     */
-    virtual int make();
+    ~CorrectionHandler() {};
 
 private:
+
+    /**
+     * @brief Calls processor callProcessorRoutine
+     */
+    int callProcessorRoutine(const arma::vec& diffX, const arma::vec& diffY,
+                                     const bool newInjection,
+                                     arma::vec& CMx, arma::vec& CMy,
+                                     const int typeCorr);
+
+    int typeCorrection();
+
     /**
      * @brief Set the processor: the S matrix, the PID values and other parameters are initialized here.
      */

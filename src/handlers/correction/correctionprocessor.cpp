@@ -37,10 +37,10 @@ void CorrectionProcessor::setInjectionCnt(double frequency)
     m_injectionStopCnt  = (int) frequency*60/1000;
 }
 
-int CorrectionProcessor::correct(arma::vec &diffX, arma::vec &diffY,
-                                 bool newInjection,
+int CorrectionProcessor::correct(const arma::vec &diffX, const arma::vec &diffY,
+                                 const bool newInjection,
                                  arma::vec &Data_CMx, arma::vec &Data_CMy,
-                                 int type)
+                                 const int type)
 {
     if (sum(diffX) < -10.5) {
         Logger::error(_ME_) << " ERROR: No Beam" << Logger::flush;
@@ -80,15 +80,15 @@ int CorrectionProcessor::correct(arma::vec &diffX, arma::vec &diffY,
         dCMy = dCMy % m_CMWeightY;
     }
 
-    if ((max(dCMx) > 0.100) || (max(dCMy) > 0.100)) 
+    if ((max(dCMx) > 0.100) || (max(dCMy) > 0.100))
     {
         Logger::error(_ME_) << "A corrector as a value above 0.100" << Logger::flush;
-        std::cout << "CM100 Error\n\n" << dCMx << "\n\n" << dCMy 
+        std::cout << "CM100 Error\n\n" << dCMx << "\n\n" << dCMy
                   << max(dCMx) << "\n" << (max(dCMx) > 0.100)
-                  << "\n" 
-                  << max(dCMy) << "\n" << (max(dCMy) > 0.100) 
+                  << "\n"
+                  << max(dCMy) << "\n" << (max(dCMy) > 0.100)
               << "\n\n";
-         
+
         return FOFB_ERROR_CM100;
     }
 
