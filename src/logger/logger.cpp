@@ -2,7 +2,7 @@
 
 #include <ctime>
 
-Logger::Logger::Logger(zmq::context_t &context)
+Logger::Logger::Logger(zmq::context_t& context)
     : m_driver(NULL)
 {
     m_zmqSocket = new zmq_ext::socket_t(context, ZMQ_PUB /*zmq::socket_type::pub*/);

@@ -5,6 +5,7 @@
 #include "dma.h"
 #include "rfm_helper.h"
 #include "logger/logger.h"
+#include "logger/messenger.h"
 
 #include <iostream>
 #include <string>
@@ -88,7 +89,6 @@ void Handler::init()
     rfmHelper.readStruct("CMy", CMy, readStructtype_vec);
 
  //   rfmHelper.readStruct("DACout", m_DACout, readStructtype_pchar);
-
     m_numBPMx = SmatX.n_rows;
     m_numBPMy = SmatY.n_rows;
     m_numCMx = SmatX.n_cols;
@@ -98,8 +98,25 @@ void Handler::init()
     m_dac->setWaveIndexY(std::vector<double>(DAC_WaveIndexY, DAC_WaveIndexY+128));
     m_adc->setWaveIndexX(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
     m_adc->setWaveIndexY(std::vector<double>(ADC_WaveIndexY, ADC_WaveIndexY+128));
+
     this->setProcessor(SmatX, SmatY, IvecX, IvecY, Frequency, P, I, D, CMx, CMy, m_weightedCorr);
+
     this->initIndexes(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
+
+    Messenger::updateMap("SMAT-X", SmatX);
+    Messenger::updateMap("SMAT-Y", SmatY);
+    Messenger::updateMap("IVEC-X", IvecX);
+    Messenger::updateMap("IVEC-Y", IvecY);
+    Messenger::updateMap("P", P);
+    Messenger::updateMap("I", I);
+    Messenger::updateMap("D", D);
+    Messenger::updateMap("BPM-OFFSET-X", m_BPMoffsetX);
+    Messenger::updateMap("BPM-OFFSET-Y", m_BPMoffsetY);
+    Messenger::updateMap("FREQUENCY", Frequency);
+    Messenger::updateMap("NB-BPM-X", m_numBPMx);
+    Messenger::updateMap("NB-BPM-Y", m_numBPMy);
+    Messenger::updateMap("NB-CM-X", m_numCMx);
+    Messenger::updateMap("NB-CM-Y", m_numCMy);
 
     if (!READONLY) {
         m_adc->init();

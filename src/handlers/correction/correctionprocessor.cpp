@@ -83,12 +83,12 @@ int CorrectionProcessor::correct(const arma::vec &diffX, const arma::vec &diffY,
     if ((max(dCMx) > 0.100) || (max(dCMy) > 0.100))
     {
         Logger::error(_ME_) << "A corrector as a value above 0.100" << Logger::flush;
-        std::cout << "CM100 Error\n\n" << dCMx << "\n\n" << dCMy
+        /*std::cout << "CM100 Error\n\n" << dCMx << "\n\n" << dCMy
                   << max(dCMx) << "\n" << (max(dCMx) > 0.100)
                   << "\n"
                   << max(dCMy) << "\n" << (max(dCMy) > 0.100)
               << "\n\n";
-
+        */
         return FOFB_ERROR_CM100;
     }
 

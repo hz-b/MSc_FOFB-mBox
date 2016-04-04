@@ -5,6 +5,8 @@ set(SOURCES main.cpp
             mbox.cpp
             rfm_helper.cpp
             logger/logger.cpp
+            logger/map.cpp
+            logger/messenger.cpp
             logger/zmqext.cpp
             handlers/handler.cpp
             handlers/correction/correctionhandler.cpp
@@ -24,6 +26,7 @@ target_link_libraries (mbox ${ARMADILLO_LIBRARIES}
                             ${RFM2G_LIBRARIES}
                             ${PYTHON_LIBRARY}
                             ${NUMPY_LIBRARY}
+                            ${CMAKE_THREAD_LIBS_INIT}
 )
 
 install(TARGETS mbox DESTINATION bin)

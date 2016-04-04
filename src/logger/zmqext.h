@@ -17,11 +17,11 @@ namespace zmq_ext {
     {
     public:
         explicit socket_t(zmq::context_t& c, int socket_type);
-        bool send(const RFM2G_INT16* value , int size, int flags =0);
-        bool send(const int value, int flags =0);
-        bool send(const std::vector<short> & values, int flags =0);
-        bool send(const arma::vec & values, int flags =0);
-        bool send(const std::string & value, int flags =0);
+        bool send(const RFM2G_INT16* value , int size, int flags=0);
+        bool send(const int value, int flags=0);
+        bool send(const std::vector<short> & values, int flags=0);
+        bool send(const arma::vec & values, int flags=0);
+        bool send(const std::string & value, int flags=0);
     };
 }
 

@@ -7,19 +7,24 @@
 #include "define.h"
 #include "mbox.h"
 #include "logger/logger.h"
+#include "logger/messenger.h"
 
 extern "C" void openblas_set_num_threads(int num_threads);
 
 bool READONLY;
 
 // Must be started first to be deleted last.
+zmq::context_t context(1);
 namespace Logger {
-    zmq::context_t context(1);
     Logger logger(context);
 }
 
 // Must be static so that exit() do a proper deletion.
 static mBox mbox;
+
+namespace Messenger {
+    Messenger messenger(context);
+}
 
 /**
  * @brief Function called on CTRL+C.
@@ -106,7 +111,7 @@ int main(int argc, char *argv[])
     if (!startflag.empty())
         Logger::log() << startflag;
     Logger::log() << Logger::flush;
-    
+
     mbox.init(devicename, weigthedCorr, experimentFile);
 
     Logger::log() << "mBox ready" << Logger::flush;
