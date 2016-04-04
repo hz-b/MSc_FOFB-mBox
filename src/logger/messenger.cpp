@@ -25,13 +25,11 @@ void Messenger::Messenger::servingLoop()
         int size;
         if (key == "KEYLIST") {
             std::string s = m_map.keyList();
-            std::cout << s <<'\n';
             content = static_cast<const void*>(s.data());
             size = s.size();
         } else if (m_map.has(key)) {
             content = static_cast<const void*>(m_map.get_raw(key));
             size = m_map.get_sizeof(key);
-            std::cout << size << '\n';
         } else {
             std::string s = "ERROR";
             content = static_cast<const void*>(s.data());
