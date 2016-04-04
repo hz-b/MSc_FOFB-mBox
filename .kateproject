@@ -5,14 +5,7 @@
             {
                 "directory": ".",
                 "filters": [
-                                "*.cpp",
-                                "*.h", 
-                                "*.ui", 
-                                "CMakeLists.txt", 
-                                "Find*.cmake", 
-                                "*.py", 
-                                "*.md",
-                                "TODO"
+                                "*"
                            ], 
                 "recursive": 1
             }
