@@ -13,9 +13,6 @@ KEYS = [
     FRAME LOG/ERROR = header | time | message | other (optional)
 """
 
-def read_str(s):
-    return str(s)[:-1]  # We don't want the \0 at the end.
-
 class Log:
     def __init__(self):
         self.header = str()
@@ -69,17 +66,16 @@ if __name__ == "__main__":
         log = Log()
         while True:  # Frame loop
             message = s.recv(copy=False)
-
             if count == 0:
-                log.header = read_str(message)
+                log.header = str(message)
 
             if log.header == "LOG" or log.header == "ERROR":
                 if count == 1:
-                    log.time = read_str(message)
+                    log.time = str(message)
                 elif count == 2:
-                    log.message = read_str(message)
+                    log.message = str(message)
                 elif count == 3:
-                    log.other = read_str(message)
+                    log.other = str(message)
 
             if not message.more:
                 if log.header == "LOG" or log.header == "ERROR":
@@ -89,5 +85,6 @@ if __name__ == "__main__":
                         f.close()
                     else:
                         print(log.output(color))
+                break
             count += 1
 

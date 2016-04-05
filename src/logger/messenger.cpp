@@ -25,6 +25,7 @@ void Messenger::Messenger::servingLoop()
         zmq::message_t request;
         m_socket->recv(&request);
         std::string message((char*)request.data(), request.size());
+
         const void* content;
         int size;
         if (message == "KEYLIST") {
@@ -37,10 +38,12 @@ void Messenger::Messenger::servingLoop()
             content = static_cast<const void*>(s.data());
             size = s.size();
         } else if (m_map.has(message)) {
-            content = static_cast<const void*>(m_map.get_raw(message));
-            size = m_map.get_sizeof(message);
+            int size = m_map.get_sizeof(message);
+            zmq::message_t msg(size);
+            memcpy(msg.data(), m_map.get_raw(message), size);
+            m_socket->send(msg);
         } else {
-            std::cout << "error\n";
+            std::cout << "error: unknown key/message " << message<<'\n';
             std::string s = "ERROR";
             content = static_cast<const void*>(s.data());
             size = s.size();
@@ -61,12 +64,9 @@ void Messenger::Messenger::stopServing()
 {
     Logger::log() << "Stopping server thread." << Logger::flush;
     zmq::context_t tmp_context(1);
-    zmq::socket_t socket_stop(tmp_context, ZMQ_REQ);
+    zmq_ext::socket_t socket_stop(tmp_context, ZMQ_REQ);
     socket_stop.connect("tcp://localhost:3334");
-    std::string s = STOPPING_MESSAGE;
-    const void* content = static_cast<const void*>(s.data());
-    int size = s.size();
-    socket_stop.send(content, size);
+    socket_stop.send(std::string(STOPPING_MESSAGE));
     zmq::message_t request;
     socket_stop.recv(&request);
     socket_stop.close();

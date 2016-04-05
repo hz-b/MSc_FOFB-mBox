@@ -44,7 +44,7 @@ bool zmq_ext::socket_t::send(const arma::vec & values, int flags)
 
 bool zmq_ext::socket_t::send(const std::string & value, int flags)
 {
-    int len = value.size()+1; // +1 need for the NULL character at the end.
+    int len = value.size();
     zmq::message_t msg(len);
     memcpy(msg.data(), value.c_str(), len);
     return zmq::socket_t::send(msg, flags);

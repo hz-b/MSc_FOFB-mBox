@@ -124,7 +124,6 @@ std::ostream& Logger::flush(std::ostream& output)
         std::cerr << "\x1b[1;31m[" << header << "]\x1b[0m "
                   << logger.logStream().message.str() << "\t\x1b[31m[" << logger.logStream().other << "]\x1b[0m\n";
     }
-
     logger.sendZmq(header, logger.logStream().message.str(), logger.logStream().other);
     logger.logStream().header = LogType::None;
     logger.logStream().message.str("");
