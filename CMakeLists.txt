@@ -20,7 +20,7 @@ find_package(PythonInterp 2.7 REQUIRED)
 find_package(NumPy REQUIRED)
 include_directories(${NUMPY_INCLUDE_DIRS})
 
-find_package(Threads)
+find_package(Threads REQUIRED)
 
 set(CMAKE_CXX_STANDARD 11)
 
