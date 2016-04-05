@@ -74,7 +74,6 @@ int CorrectionProcessor::correct(const arma::vec &diffX, const arma::vec &diffY,
     //cout << "  calc dCOR" << endl;
     arma::vec dCMx = m_SmatInvX * diffX;
     arma::vec dCMy = m_SmatInvY * diffY;
-
     if (m_useCMWeight) {
         dCMx = dCMx % m_CMWeightX;
         dCMy = dCMy % m_CMWeightY;
