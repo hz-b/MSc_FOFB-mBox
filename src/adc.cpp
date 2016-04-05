@@ -149,7 +149,7 @@ int ADC::read()
             m_buffer[i] = src[i];
         }
     }
-
+ 
     // Send an interrupt to the IOC Reflective Memory board
     if (!READONLY) {
         RFM2G_STATUS sendEventError = m_driver->sendEvent(otherNodeId, ADC_EVENT, 0);

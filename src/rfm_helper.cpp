@@ -29,7 +29,7 @@ void RFMHelper::prepareField(arma::vec& field, unsigned long pos, unsigned long 
     } else {
         // use DMA transfer
         m_driver->read(pos,(void*)m_dma->memory(), data_size);
-        dumpMemory(m_dma->memory(),8);
+        // dumpMemory(m_dma->memory(),8);
         field = arma::vec((const double *)m_dma->memory(),dim1*dim2);
     }
     //cout << "v5" << field << endl;
@@ -52,9 +52,9 @@ void RFMHelper::prepareField(arma::mat& field, unsigned long pos, unsigned long 
     } else {
         // use DMA transfer
         m_driver->read(pos, (void*) m_dma->memory(), data_size);
-        dumpMemory(m_dma->memory(),8);
-        dumpMemory(m_dma->memory()+8,8);
-        dumpMemory(m_dma->memory()+16,8);
+        // dumpMemory(m_dma->memory(),8);
+        // dumpMemory(m_dma->memory()+8,8);
+        // dumpMemory(m_dma->memory()+16,8);
 
         field = arma::mat((const double *) m_dma->memory(), dim1, dim2);
     }

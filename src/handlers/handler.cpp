@@ -219,7 +219,6 @@ int Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
 void Handler::prepareCorrectionValues(const arma::vec& CMx, const arma::vec& CMy, int typeCorr)
 {
     Logger::values(LogValue::CM, m_dma->status()->loopPos, CMx, CMy);
-
     if ((typeCorr & Correction::Horizontal) == Correction::Horizontal) {
         arma::vec Data_CMx = (CMx % m_scaleDigitsX) + numbers::halfDigits;
         for (int i = 0; i <  Data_CMx.n_elem; i++)
