@@ -34,7 +34,9 @@ void Messenger::Messenger::servingLoop()
             m_socket->send(s);
         } else if (m_map.has(message)) {
             int size = m_map.get_sizeof(message);
-            m_socket->zmq::socket_t::send(m_map.get_raw(message), size);
+            zmq::message_t msg(size);
+            memcpy(msg.data(), m_map.get_raw(message), size);
+            m_socket->zmq::socket_t::send(msg);
         } else {
             std::cout << "error: unknown key/message " << message<<'\n';
             std::string s = "ERROR";
