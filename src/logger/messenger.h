@@ -32,7 +32,7 @@ private:
     bool m_serve;
     std::thread m_serverThread;
     Map m_map;
-    zmq::socket_t *m_socket;
+    zmq_ext::socket_t *m_socket;
 };
 
 extern Messenger messenger;

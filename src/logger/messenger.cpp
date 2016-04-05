@@ -7,7 +7,7 @@
 Messenger::Messenger::Messenger(zmq::context_t& context)
     : m_serve(false)
 {
-    m_socket = new zmq::socket_t(context, ZMQ_REP);
+    m_socket = new zmq_ext::socket_t(context, ZMQ_REP);
     m_socket->bind("tcp://*:3334");
     this->startServing();
 }
@@ -15,7 +15,6 @@ Messenger::Messenger::Messenger(zmq::context_t& context)
 Messenger::Messenger::~Messenger()
 {
     this->stopServing();
-    m_socket->close();
     delete m_socket;
 }
 
@@ -26,29 +25,21 @@ void Messenger::Messenger::servingLoop()
         m_socket->recv(&request);
         std::string message((char*)request.data(), request.size());
 
-        const void* content;
-        int size;
         if (message == "KEYLIST") {
             std::string s = m_map.keyList();
-            content = static_cast<const void*>(s.data());
-            size = s.size();
+            m_socket->send(s);
         } else if (message == STOPPING_MESSAGE) {
             m_serve = false;
             std::string s = "ACK";
-            content = static_cast<const void*>(s.data());
-            size = s.size();
+            m_socket->send(s);
         } else if (m_map.has(message)) {
             int size = m_map.get_sizeof(message);
-            zmq::message_t msg(size);
-            memcpy(msg.data(), m_map.get_raw(message), size);
-            m_socket->send(msg);
+            m_socket->zmq::socket_t::send(m_map.get_raw(message), size);
         } else {
             std::cout << "error: unknown key/message " << message<<'\n';
             std::string s = "ERROR";
-            content = static_cast<const void*>(s.data());
-            size = s.size();
+            m_socket->send(s);
         }
-        m_socket->send(content, size);
     }
 }
 
@@ -69,8 +60,6 @@ void Messenger::Messenger::stopServing()
     socket_stop.send(std::string(STOPPING_MESSAGE));
     zmq::message_t request;
     socket_stop.recv(&request);
-    socket_stop.close();
-    tmp_context.close();
 
     m_serverThread.join();
 }
