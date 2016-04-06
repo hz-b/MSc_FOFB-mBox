@@ -17,7 +17,7 @@ namespace numbers {
 
 namespace Correction {
     enum Type {
-        None = 0b01,
+        None = 0b00,
         Horizontal = 0b01,
         Vertical = 0b10,
         All = Horizontal | Vertical
