@@ -72,6 +72,7 @@ public:
      */
     void setSmat(arma::mat &SmatX, arma::mat &SmatY, double IvecX, double IvecY, bool weightedCorr);
 
+    int m_rmsErrorCnt;
 private:
 
     /**
@@ -90,7 +91,6 @@ private:
 
     bool m_useCMWeight;
     arma::vec m_CMWeightX, m_CMWeightY;
-    int m_rmsErrorCnt;
 
     double m_P, m_I, m_D, m_currentP;
     double m_lastrmsX, m_lastrmsY;

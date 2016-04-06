@@ -156,7 +156,7 @@ int Handler::make()
 {
     arma::vec diffX, diffY;
     arma::vec CMx, CMy;
-    bool newInjection;
+    bool newInjection = false;
     if (this->getNewData(diffX, diffY, newInjection))
     {
         Logger::error(_ME_) << "Cannot correct, error in data acquisition" << Logger::flush;
@@ -189,30 +189,34 @@ int Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
         Logger::postError(FOFB_ERROR_ADC);
         Logger::error(_ME_) << "Read Error"<< Logger::flush;
         return FOFB_ERROR_ADC;
-    } else {
-         for (unsigned int i = 0; i < m_numBPMx; i++) {
-             unsigned int  lADCPos = m_adc->waveIndexXAt(i)-1;
-             rADCdataX(i) =  m_adc->bufferAt(lADCPos);
-         }
+    } 
 
-         for (unsigned int i = 0; i < m_numBPMy; i++) {
-             unsigned int lADCPos = m_adc->waveIndexYAt(i)-1;
-             rADCdataY(i) =  m_adc->bufferAt(lADCPos);
-          }
-
-        diffX = (rADCdataX % m_gainX * numbers::cf * -1 ) - m_BPMoffsetX;
-        diffY = (rADCdataY % m_gainY * numbers::cf      ) - m_BPMoffsetY;
-        //FS BUMP
-        double HBP2D6R = m_adc->bufferAt(m_idxHBP2D6R) * numbers::cf * 0.8;
-        diffX[m_idxBPMZ6D6R] -= (-0.325 * HBP2D6R);
-
-        //ARTOF
-        double HBP1D5R = m_adc->bufferAt(m_idxHBP1D5R) * numbers::cf * 0.8;
-        diffX[m_idxBPMZ3D5R] -= (-0.42 * HBP1D5R);
-        diffX[m_idxBPMZ4D5R] -= (-0.84 * HBP1D5R);
-        diffX[m_idxBPMZ5D5R] -= (+0.84 * HBP1D5R);
-        diffX[m_idxBPMZ6D5R] -= (+0.42 * HBP1D5R);
+    for (unsigned int i = 0; i < m_numBPMx; i++) {
+        unsigned int  lADCPos = m_adc->waveIndexXAt(i)-1;
+        rADCdataX(i) =  m_adc->bufferAt(lADCPos);
     }
+    
+    for (unsigned int i = 0; i < m_numBPMy; i++) {
+        unsigned int lADCPos = m_adc->waveIndexYAt(i)-1;
+        rADCdataY(i) =  m_adc->bufferAt(lADCPos);
+    }
+    
+    
+    newInjection = (m_adc->bufferAt(110) > 1000); 
+
+    diffX = (rADCdataX % m_gainX * numbers::cf * -1 ) - m_BPMoffsetX;
+    diffY = (rADCdataY % m_gainY * numbers::cf      ) - m_BPMoffsetY;
+    //FS BUMP
+    double HBP2D6R = m_adc->bufferAt(m_idxHBP2D6R) * numbers::cf * 0.8;
+    diffX[m_idxBPMZ6D6R] -= (-0.325 * HBP2D6R);
+    
+    //ARTOF
+    double HBP1D5R = m_adc->bufferAt(m_idxHBP1D5R) * numbers::cf * 0.8;
+    diffX[m_idxBPMZ3D5R] -= (-0.42 * HBP1D5R);
+    diffX[m_idxBPMZ4D5R] -= (-0.84 * HBP1D5R);
+    diffX[m_idxBPMZ5D5R] -= (+0.84 * HBP1D5R);
+    diffX[m_idxBPMZ6D5R] -= (+0.42 * HBP1D5R);
+
     return 0;
 }
 
