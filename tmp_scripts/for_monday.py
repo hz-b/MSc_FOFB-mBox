@@ -13,8 +13,7 @@ def show():
     s.subscribe(['FOFB-BPM-DATA',
                  'FOFB-CM-DATA'
                  ])
-
-    for i in range(SAMPLE_NB):
+    while True:
         # Only to be sure not to lose anything
         valuesX, valuesY, loopPos = s.receive(1)
         print(loopPos[0])
