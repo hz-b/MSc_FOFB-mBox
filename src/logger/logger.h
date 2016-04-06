@@ -134,6 +134,7 @@ void values(LogValue name, const int loopPos, const arma::vec& valueX, const arm
 std::ostringstream& error(std::string fctname);
 
 void postError(unsigned int errornr);
+std::string errorMessage(unsigned int errornr);
 
 }
 

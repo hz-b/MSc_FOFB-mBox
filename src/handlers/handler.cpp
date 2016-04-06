@@ -162,6 +162,7 @@ int Handler::make()
         Logger::error(_ME_) << "Cannot correct, error in data acquisition" << Logger::flush;
         return 1;
     }
+    Logger::values(LogValue::BPM, m_dma->status()->loopPos, diffX, diffY);
 
     int typeCorr = this->typeCorrection();
     int errornr = this->callProcessorRoutine(diffX, diffY,
@@ -172,6 +173,7 @@ int Handler::make()
         return errornr;
     }
 
+    Logger::values(LogValue::CM, m_dma->status()->loopPos, CMx, CMy);
     this->prepareCorrectionValues(CMx, CMy, typeCorr);
 
     if (!READONLY) {
@@ -210,15 +212,12 @@ int Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
         diffX[m_idxBPMZ4D5R] -= (-0.84 * HBP1D5R);
         diffX[m_idxBPMZ5D5R] -= (+0.84 * HBP1D5R);
         diffX[m_idxBPMZ6D5R] -= (+0.42 * HBP1D5R);
-
-        Logger::values(LogValue::BPM, m_dma->status()->loopPos, diffX, diffY);
     }
     return 0;
 }
 
 void Handler::prepareCorrectionValues(const arma::vec& CMx, const arma::vec& CMy, int typeCorr)
 {
-    Logger::values(LogValue::CM, m_dma->status()->loopPos, CMx, CMy);
     if ((typeCorr & Correction::Horizontal) == Correction::Horizontal) {
         arma::vec Data_CMx = (CMx % m_scaleDigitsX) + numbers::halfDigits;
         for (int i = 0; i <  Data_CMx.n_elem; i++)

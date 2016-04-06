@@ -16,12 +16,7 @@ Logger::Logger::~Logger()
 
 void Logger::Logger::sendMessage(std::string message, std::string error)
 {
-    if (READONLY) {
-        std::cout << "Message: " << message;
-        if (!error.empty())
-            std::cout << " Error: " << error;
-        std::cout << std::endl;
-    } else {
+    if (!READONLY) {
         this->sendRFM(message, error);
     }
 }
@@ -168,27 +163,36 @@ std::ostringstream& Logger::error(std::string fctname)
 
 void Logger::postError(unsigned int errornr)
 {
+    if (errornr) {
+        logger.sendMessage("FOFB error", errorMessage(errornr));
+    }
+}
+
+std::string Logger::errorMessage(unsigned int errornr)
+{
+    std::string message;
     switch (errornr) {
     case 0:
-        return;
+        message = "No Error";
         break;
     case FOFB_ERROR_ADC:
-        logger.sendMessage("FOFB error", "ADC Timeout");
+        message = "ADC Timeout";
         break;
     case FOFB_ERROR_DAC:
-        logger.sendMessage("FOFB error", "DAC Problem");
+        message = "DAC Problem";
         break;
     case FOFB_ERROR_CM100:
-        logger.sendMessage("FOFB error", "To much to correct");
+        message = "To much to correct";
         break;
     case FOFB_ERROR_NoBeam:
-        logger.sendMessage("FOFB error", "No Current");
+        message = "No Current";
         break;
     case FOFB_ERROR_RMS:
-        logger.sendMessage("FOFB error", "Bad RMS");
+        message = "Bad RMS";
         break;
     default:
-        logger.sendMessage("FOFB error", "Unknown Problem");
+        message = "Unknown Problem";
         break;
     }
+    return message;
 }
