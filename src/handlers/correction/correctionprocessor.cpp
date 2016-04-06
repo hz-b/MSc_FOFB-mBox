@@ -9,11 +9,12 @@ CorrectionProcessor::CorrectionProcessor()
 {
     m_lastrmsX = 999;
     m_lastrmsY = 999;
-    m_rmsErrorCnt = 0;
 }
 
 void CorrectionProcessor::setCMs(arma::vec CMx, arma::vec CMy)
 {
+    m_rmsErrorCnt = 0;
+
     m_CMx = CMx;
     m_CMy = CMy;
 
@@ -47,11 +48,14 @@ int CorrectionProcessor::correct(const arma::vec &diffX, const arma::vec &diffY,
         return FOFB_ERROR_NoBeam;
     }
 
-    if ( newInjection )
-    {
+    if ( newInjection ) {
         m_injectionCnt += 1;
-        if ((m_injectionCnt >= m_injectionStopCnt) && (m_injectionCnt <= m_injectionStartCnt))
+        if ((m_injectionCnt >= m_injectionStopCnt) && (m_injectionCnt <= m_injectionStartCnt)) {
+            // We want to write the old value if it is not changed
+            Data_CMx = m_CMx;
+            Data_CMy = m_CMy;
             return 0;
+        }
     }
     m_injectionCnt = 0;
 
@@ -94,7 +98,6 @@ int CorrectionProcessor::correct(const arma::vec &diffX, const arma::vec &diffY,
         m_dCORlastX = dCMx;
         m_Xsum      = m_Xsum+dCMx;
         m_CMx       = m_CMx - m_dCORxPID;
-        Data_CMx    = m_CMx;
     }
 
     if ((type & Correction::Vertical) == Correction::Vertical) {
@@ -102,8 +105,11 @@ int CorrectionProcessor::correct(const arma::vec &diffX, const arma::vec &diffY,
         m_dCORlastY = dCMy;
         m_Ysum      = m_Ysum+dCMy;
         m_CMy       = m_CMy - m_dCORyPID;
-        Data_CMy    = m_CMy;
     }
+
+    // We want to write the old value if it is not changed
+    Data_CMx = m_CMx;
+    Data_CMy = m_CMy;
 
     return 0;
 }
