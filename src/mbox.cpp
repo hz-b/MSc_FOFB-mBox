@@ -84,7 +84,7 @@ void mBox::startLoop()
             std::this_thread::sleep_for(std::chrono::nanoseconds(4000000));
             m_runningState = Initialized;
 
-            std::cout << ".... RUNNING .... \n";
+            std::cout << "Status: mBox running \n";
             Logger::log() << "mBox running" << Logger::flush;
         }
 
@@ -95,7 +95,8 @@ void mBox::startLoop()
             if (int errornr = m_handler->make()) {
                 Logger::postError(errornr);
                 m_runningState = Error;
-                Logger::error(_ME_) <<  "error: " << errornr << Logger::flush;
+                Logger::error(_ME_) <<  "error: " << Logger::errorMessage(errornr) << Logger::flush;
+                std::cout << "Status: mBox in ERROR \n";
             }
 
             // Write the status

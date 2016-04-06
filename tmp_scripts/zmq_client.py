@@ -1,3 +1,5 @@
+import numpy as np
+import struct
 import zmq
 
 class ZmqClient:
@@ -40,3 +42,24 @@ class ZmqClient:
 
         return messages
 
+class ValuesSubscriber(ZmqClient):
+    def __init__(self, thread_nb=1):
+        ZmqClient.__init__(self, thread_nb)
+
+    def receive(self, message_nb=1):
+        messages = ZmqClient.receive(self, message_nb)
+
+        valx_nb = np.fromstring(messages[0][2], dtype='double').size
+        valy_nb = np.fromstring(messages[0][3], dtype='double').size
+
+        valuesX = np.zeros((valx_nb, message_nb))
+        valuesY = np.zeros((valy_nb, message_nb))
+        loopPos = []
+
+        # parse frames in values X
+        for count, message in enumerate(messages):
+            loopPos.append(struct.unpack('i', message[1])[0])
+            valuesX[:, count] = np.fromstring(message[2], dtype='double')
+            valuesY[:, count] = np.fromstring(message[3], dtype='double')
+
+        return valuesX, valuesY, loopPos
