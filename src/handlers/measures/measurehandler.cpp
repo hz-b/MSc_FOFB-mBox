@@ -60,7 +60,7 @@ void MeasureHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
     int errorPythonInit = this->initPython();
 
     if (errorPythonInit) {
-        Logger::error(_ME_) << "error" << Logger::flush ;
+        Logger::error(_ME_) << "error";
         m_status = Error;
     }
 }
@@ -113,14 +113,15 @@ int MeasureHandler::initPython()
         if (m_pFunc && PyCallable_Check(m_pFunc)) {
             return callPythonInit();
         } else {
-            if (PyErr_Occurred())
+            if (PyErr_Occurred()) {
                 PyErr_Print();
-            Logger::error(_ME_) << "Cannot find function '"<< m_functionName <<"'" << Logger::flush;
+            }
+            Logger::error(_ME_) << "Cannot find function '"<< m_functionName <<"'";
         }
         return 1;
     } else {
         PyErr_Print();
-        Logger::error(_ME_) << "Failed to load " << m_inputFile << std::endl;
+        Logger::error(_ME_) << "Failed to load " << m_inputFile;
         return 1;
     }
 }
@@ -146,7 +147,7 @@ int MeasureHandler::callPythonInit()
             Py_DECREF(pyBPMy_nb);
             Py_DECREF(pyCMy_nb);
             Py_DECREF(pyCMy_nb);
-            Logger::error(_ME_) << "Cannot convert arguments" << Logger::flush;
+            Logger::error(_ME_) << "Cannot convert arguments";
             return 1;
         }
         pArgs = PyTuple_New(4);
@@ -169,7 +170,7 @@ int MeasureHandler::callPythonInit()
 
     } else {
         PyErr_Print();
-        Logger::error(_ME_) << "Call failed" << Logger::flush;
+        Logger::error(_ME_) << "Call failed";
         return 1;
     }
 }
@@ -196,7 +197,7 @@ int MeasureHandler::callPythonFunction(const arma::vec& BPMx, const arma::vec& B
     if (!pyBPMx || !pyBPMy) {
         Py_DECREF(pyBPMx);
         Py_DECREF(pyBPMy);
-        Logger::error(_ME_) << "Cannot convert argument" << Logger::flush;
+        Logger::error(_ME_) << "Cannot convert argument";
         return 1;
     }
 
@@ -227,7 +228,7 @@ int MeasureHandler::callPythonFunction(const arma::vec& BPMx, const arma::vec& B
 
     } else {
         PyErr_Print();
-        Logger::error(_ME_) << "Call failed" << Logger::flush;
+        Logger::error(_ME_) << "Call failed";
         return 1;
     }
 }

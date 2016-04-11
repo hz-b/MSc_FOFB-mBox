@@ -34,14 +34,14 @@ Handler::~Handler()
 
 void Handler::disable()
 {
-    Logger::log() << "Disable handler" << Logger::flush;
+    Logger::Logger() << "Disable handler";
     m_adc->stop();
     m_dac->changeStatus(DAC_DISABLE);
 }
 
 void Handler::init()
 {
-    Logger::log() << "Read Data from RFM"<< Logger::flush;
+    Logger::Logger() << "Read Data from RFM";
 
     double ADC_WaveIndexX[128];
     double ADC_WaveIndexY[128];
@@ -126,26 +126,26 @@ void Handler::init()
 
 void Handler::initIndexes(const std::vector<double> &ADC_WaveIndexX)
 {
-    Logger::log() << "Init Indexes" << Logger::flush;
+    Logger::Logger() << "Init Indexes";
     //FS BUMP
     m_idxHBP2D6R  = 160; //(2*81)-1(X) -1(C)
     m_idxBPMZ6D6R = getIdx(ADC_WaveIndexX, 163);
-    Logger::log() << "\tidx 6D6 : " << m_idxBPMZ6D6R << Logger::flush;
+    Logger::Logger() << "\tidx 6D6 : " << m_idxBPMZ6D6R;
     //ARTOF
     m_idxHBP1D5R  = 142; //(2*72)-1(x) -1(C)
     m_idxBPMZ3D5R = getIdx(ADC_WaveIndexX, 123);
-    Logger::log() << "\tidx 3Z5 : " << m_idxBPMZ3D5R << Logger::flush;
+    Logger::Logger() << "\tidx 3Z5 : " << m_idxBPMZ3D5R;
     m_idxBPMZ4D5R = getIdx(ADC_WaveIndexX, 125);
-    Logger::log() << "\tidx 4Z5 : " << m_idxBPMZ4D5R << Logger::flush;
+    Logger::Logger() << "\tidx 4Z5 : " << m_idxBPMZ4D5R;
     m_idxBPMZ5D5R = getIdx(ADC_WaveIndexX, 129);
-    Logger::log() << "\tidx 5Z5 : " << m_idxBPMZ5D5R << Logger::flush;
+    Logger::Logger() << "\tidx 5Z5 : " << m_idxBPMZ5D5R;
     m_idxBPMZ6D5R = getIdx(ADC_WaveIndexX, 131);
-    Logger::log() << "\tidx 6Z5 : " << m_idxBPMZ6D5R << Logger::flush;
+    Logger::Logger() << "\tidx 6Z5 : " << m_idxBPMZ6D5R;
 }
 
 int Handler::getIdx(const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWaveIndex)
 {
-    for (int i = 0; i < ADC_BPMIndex_Pos.size() ; i++) {
+    for (int i = 0; i < ADC_BPMIndex_Pos.size(); i++) {
         if (ADC_BPMIndex_Pos.at(i) == DeviceWaveIndex)
             return i;
     }
@@ -159,7 +159,7 @@ int Handler::make()
     bool newInjection = false;
     if (this->getNewData(diffX, diffY, newInjection))
     {
-        Logger::error(_ME_) << "Cannot correct, error in data acquisition" << Logger::flush;
+        Logger::error(_ME_) << "Cannot correct, error in data acquisition";
         return 1;
     }
     Logger::values(LogValue::BPM, m_dma->status()->loopPos, diffX, diffY);
@@ -187,7 +187,7 @@ int Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
     arma::vec rADCdataX(m_numBPMx), rADCdataY(m_numBPMy);
     if (m_adc->read()) {
         Logger::postError(FOFB_ERROR_ADC);
-        Logger::error(_ME_) << "Read Error"<< Logger::flush;
+        Logger::error(_ME_) << "Read Error";
         return FOFB_ERROR_ADC;
     } 
 

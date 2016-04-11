@@ -58,8 +58,8 @@ void RFMHelper::prepareField(arma::mat& field, unsigned long pos, unsigned long 
 
         field = arma::mat((const double *) m_dma->memory(), dim1, dim2);
     }
-    Logger::log() << "\t\tm5; " << field(0,0) << " " << field(0,1) << Logger::flush;
-    Logger::log() <<"\t\tSize: " << field.n_cols << ":"<< field.n_rows << Logger::flush;
+    Logger::Logger() << "\t\tm5; " << field(0,0) << " " << field(0,1);
+    Logger::Logger() <<"\t\tSize: " << field.n_cols << ":"<< field.n_rows;
 }
 
 void RFMHelper::searchField(std::string &name,

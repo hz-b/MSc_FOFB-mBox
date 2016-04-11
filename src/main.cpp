@@ -15,9 +15,7 @@ bool READONLY;
 
 // Must be started first to be deleted last.
 zmq::context_t context(1);
-namespace Logger {
-    Logger logger(context);
-}
+zmq_ext::socket_t logSocket(context, ZMQ_PUB /*zmq::socket_type::pub*/);
 
 // Must be static so that exit() do a proper deletion.
 static mBox mbox;
@@ -61,19 +59,26 @@ int main(int argc, char *argv[])
     if (argc > 1) {
         std::string arg1 = argv[1];
         if (!arg1.compare("--help")) {
-            std::cout << "=== mbox (2015-2016) ===\n";
-            std::cout << "Use:\n";
-            std::cout << "    mbox --ro\t Read only version: just reads the RFM and calculates\n";
-            std::cout << "             \t the correction, don't write it back.\n";
-            std::cout << "    mbox --rw\t Read-write version: reads the RFM, calculates the\n";
-            std::cout << "             \t correction and write it on the RFM.\n";
-            std::cout << "    mbox --experiment <FILENAME>";
-            std::cout << "             \t Read-write version for experiments: read the file <FILENAME>\n";
-            std::cout << "             \t to know which values to create.\n\n";
-            std::cout << "Other arguments (to append):\n";
-            std::cout << "    --debug  \t Print the logs on the the stderr.\n\n";
+            std::cout << "=== mbox (2015-2016) ===\n"
+                      << "Use:\n"
+                      << "mbox --ro\n"
+                      << "     Read only version: just reads the RFM and calculates\n"
+                      << "     the correction, don't write it back.\n"
+                      << "mbox --rw\n"
+                      << "     Read-write version: reads the RFM, calculates the\n"
+                      << "     correction and write it on the RFM.\n"
+                      << "mbox --experiment <FILENAME>\n"
+                      << "     Read-write version for experiments: read the file <FILENAME>\n"
+                      << "     to know which values to create.\n\n"
+                      << "Other arguments (to append):\n"
+                      << "--debug\n"
+                      << "     Print the logs on the the stderr.\n"
+                      << "--logport <PORT>\n"
+                      << "     Which port the log publisher should use.\n"
+                      << "--queryport <PORT>\n"
+                      << "     Which port the query messenger should use.\n\n";
 
-            return 0;
+            exit(0);
         } else if (!arg1.compare("--ro")) {
             READONLY = true;
             startflag = " [READ-ONLY VERSION]";
@@ -93,10 +98,28 @@ int main(int argc, char *argv[])
     } else {
         startError();
     }
-    if (!std::string(argv[argc-1]).compare("--debug")) {
-        Logger::setDebug(true);
+    Logger::Logger logger;
+    for (int i=1; i < argc ; i++) {
+        if (!std::string(argv[i]).compare("--debug")) {
+            logger.setDebug(true);
+        } else if (!std::string(argv[i]).compare("--logport")) {
+            if ((i+1 < argc) && atoi(argv[i+1]) < 65535 && atoi(argv[i+1]) > 1000) {
+                logger.setPort(atoi(argv[i+1]));
+            } else {
+                std::cout << "A port should be given (1000 to 65535)\n";
+                exit(-1);
+            }
+        } else if (!std::string(argv[i]).compare("--queryport")) {
+            if ((i+1 < argc) && atoi(argv[i+1]) < 65535 && atoi(argv[i+1]) > 1000 && atoi(argv[i+1]) != logger.port()) {
+                Messenger::messenger.setPort(atoi(argv[i+1]));
+            } else {
+                std::cout << "A port should be given (1000 to 65535), different from logport.\n";
+                exit(-1);
+            }
+        }
     }
 
+    Logger::setSocket(&logSocket);
 
     std::cout << "=============\n"
               << "starting MBox" << startflag << '\n'
@@ -106,15 +129,10 @@ int main(int argc, char *argv[])
     bool weigthedCorr = true;
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    Logger::log() << Logger::flush;
-    Logger::log() << "Starting the MBox...";
-    if (!startflag.empty())
-        Logger::log() << startflag;
-    Logger::log() << Logger::flush;
+
+    Logger::Logger() << "Starting the MBox..." << startflag;
 
     mbox.init(devicename, weigthedCorr, experimentFile);
-
-    Logger::log() << "mBox ready" << Logger::flush;
 
     signal(SIGINT, SIGINT_handler);
     mbox.startLoop();

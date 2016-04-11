@@ -27,9 +27,9 @@ void DAC::changeStatus(int status)
     if (READONLY) return;
 
     if (status == DAC_ENABLE) {
-        Logger::log() << "Starting DACs ... " << Logger::flush;
+        Logger::Logger() << "Starting DACs ... ";;
     } else if (status == DAC_DISABLE) {
-        Logger::log() << "Stopping DACs ...." << Logger::flush;
+        Logger::Logger() << "Stopping DACs ....";;
     }
     for (int i = 0 ; i < 10 ; i++) {
         if (m_IOCs[i].isActive()) {
@@ -38,9 +38,9 @@ void DAC::changeStatus(int status)
 
             RFM2G_STATUS IOCError = m_driver->sendEvent( m_IOCs[i].id(), ADC_DAC_EVENT, status);
             if (IOCError) {
-                Logger::error(_ME_) << logStream.str() << "Error" << Logger::flush;
+                Logger::error(_ME_) << logStream.str() << "Error";;
             } else {
-                Logger::log() << logStream.str() << "Successful" << Logger::flush;
+                Logger::Logger() << logStream.str() << "Successful";;
             }
         }
     }
@@ -80,12 +80,12 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
 
     RFM2G_STATUS clearEventError = m_driver->clearEvent(DAC_EVENT);
     if (clearEventError) {
-        Logger::error(_ME_) << "clearEvent: " << m_driver->errorMsg(clearEventError) << Logger::flush;
+        Logger::error(_ME_) << "clearEvent: " << m_driver->errorMsg(clearEventError);;
         return 1;
     }
     RFM2G_STATUS enableEventError = m_driver->enableEvent(DAC_EVENT);
     if (enableEventError) {
-        Logger::error(_ME_) << "enableEvent: " << m_driver->errorMsg(enableEventError) << Logger::flush;
+        Logger::error(_ME_) << "enableEvent: " << m_driver->errorMsg(enableEventError);;
         return 1;
     }
     //t_dac_clear.clock();
@@ -111,7 +111,7 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
                                                   (void*) m_dma->memory(), data_size);
     }
     if (writeError) {
-        Logger::error(_ME_) << "write: " << m_driver->errorMsg(writeError) << Logger::flush;
+        Logger::error(_ME_) << "write: " << m_driver->errorMsg(writeError);;
         return 1;
     }
 
@@ -125,7 +125,7 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
     /* tell IOC to work */
     RFM2G_STATUS sendEventError = m_driver->sendEvent(RFM2G_NODE_ALL, DAC_EVENT, (RFM2G_INT32) rfm2gCtrlSeq);
     if (sendEventError) {
-        Logger::error(_ME_) << "sendEvent: " << m_driver->errorMsg(sendEventError) << Logger::flush;
+        Logger::error(_ME_) << "sendEvent: " << m_driver->errorMsg(sendEventError);;
         return 1;
     }
     //t_dac_send.clock();
@@ -137,7 +137,7 @@ int DAC::write(double plane, double loopDir, RFM2G_UINT32* data)
 
     RFM2G_STATUS waitError = m_driver->waitForEvent(&EventInfo);
     if (waitError) {
-        Logger::error(_ME_) << "waitForEvent: " << m_driver->errorMsg(waitError)  << Logger::flush;
+        Logger::error(_ME_) << "waitForEvent: " << m_driver->errorMsg(waitError) ;;
         return 1;
     }
 
