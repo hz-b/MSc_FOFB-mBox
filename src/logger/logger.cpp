@@ -2,16 +2,63 @@
 
 #include <ctime>
 
-Logger::Logger::Logger(zmq::context_t& context)
-    : m_driver(NULL)
-{
-    m_zmqSocket = new zmq_ext::socket_t(context, ZMQ_PUB /*zmq::socket_type::pub*/);
-    m_zmqSocket->bind("tcp://*:3333");
-}
+bool Logger::Logger::m_debug = false;
+zmq_ext::socket_t* Logger::Logger::m_zmqSocket = NULL;
+RFMDriver* Logger::Logger::m_driver = NULL;
+int Logger::Logger::m_port = 3333;
+
+Logger::Logger::Logger(LogType type, std::string other)
+ : m_logStream( new log_stream_t(type, other) )
+ {}
 
 Logger::Logger::~Logger()
 {
-    delete m_zmqSocket;
+    if (!m_logStream->message.str().empty())
+    {
+        this->parseAndSend();
+    }
+    delete m_logStream;
+}
+
+void Logger::Logger::parseAndSend()
+{
+    std::string header;
+    switch (m_logStream->header) {
+    case LogType::Log:
+        header = "LOG";
+        if (m_debug) {
+            std::clog << '[' << header << "] "
+                      << m_logStream->message.str();
+            if (!m_logStream->other.empty())
+                std::clog << '\t' << m_logStream->other;
+            std::clog << '\n';
+        }
+        break;
+    case LogType::Error:
+        header = "ERROR";
+        std::cerr << "\x1b[1;31m[" << header << "]\x1b[0m "
+                  << m_logStream->message.str() << "\t\x1b[31m[" << m_logStream->other << "]\x1b[0m\n";
+    }
+    if (m_zmqSocket != NULL) {
+        this->sendZmq(header, m_logStream->message.str(), m_logStream->other);
+    }
+}
+
+void Logger::Logger::setSocket(zmq_ext::socket_t* socket)
+{
+    m_zmqSocket = socket;
+    std::string addr = "tcp://*:" + std::to_string(m_port);
+    m_zmqSocket->bind(addr.c_str());
+}
+
+void Logger::Logger::setPort(const int port)
+{
+    m_port = port;
+}
+
+int Logger::Logger::port() const
+{
+    return m_port;
 }
 
 void Logger::Logger::sendMessage(std::string message, std::string error)
@@ -78,10 +125,10 @@ void Logger::Logger::sendZmq(const std::string& header, const std::string& messa
     m_zmqSocket->send(time, ZMQ_SNDMORE);
 
     if (!other.empty()) {
-        m_zmqSocket->send(message, ZMQ_SNDMORE);
-        m_zmqSocket->send(other);
+        Logger::m_zmqSocket->send(message, ZMQ_SNDMORE);
+        Logger::m_zmqSocket->send(other);
     } else {
-        m_zmqSocket->send(message);
+        Logger::m_zmqSocket->send(message);
     }
 }
 
@@ -97,44 +144,20 @@ void Logger::Logger::sendZmqValue(const std::string& header, const int loopPos, 
 // Global functions
 void Logger::setDebug(bool debug)
 {
+    Logger logger;
     logger.setDebug(debug);
 }
 
-std::ostream& Logger::flush(std::ostream& output)
+void Logger::setSocket(zmq_ext::socket_t* socket)
 {
-    std::string header;
-    switch (logger.logStream().header) {
-    case LogType::Log:
-        header = "LOG";
-        if (logger.hasDebug()) {
-            std::clog << '[' << header << "] "
-                      << logger.logStream().message.str();
-            if (!logger.logStream().other.empty())
-                std::clog << '\t' << logger.logStream().other;
-            std::clog << '\n';
-        }
-        break;
-    case LogType::Error:
-        header = "ERROR";
-        std::cerr << "\x1b[1;31m[" << header << "]\x1b[0m "
-                  << logger.logStream().message.str() << "\t\x1b[31m[" << logger.logStream().other << "]\x1b[0m\n";
-    }
-    logger.sendZmq(header, logger.logStream().message.str(), logger.logStream().other);
-    logger.logStream().header = LogType::None;
-    logger.logStream().message.str("");
-    logger.logStream().other = "";
+    Logger logger;
+    logger.setSocket(socket);
 }
 
-
-std::ostringstream& Logger::log(LogType type)
+void Logger::setPort(const int port)
 {
-    logger.logStream().header = type ;
-    return logger.logStream().message;
-}
-
-std::ostringstream& Logger::log()
-{
-    return log(LogType::Log);
+    Logger logger;
+    logger.setPort(port);
 }
 
 
@@ -152,17 +175,13 @@ void Logger::values(LogValue name, const int loopPos, const arma::vec& valueX, c
         error(_ME_) << "Tried to send values of unexpected type. RETURN";
         return;
     }
+    Logger logger;
     logger.sendZmqValue(header, loopPos, valueX, valueY);
-}
-
-std::ostringstream& Logger::error(std::string fctname)
-{
-    logger.logStream().other = "in " + fctname;
-    return log(LogType::Error);
 }
 
 void Logger::postError(unsigned int errornr)
 {
+    Logger logger;
     if (errornr) {
         logger.sendMessage("FOFB error", errorMessage(errornr));
     }

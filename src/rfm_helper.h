@@ -44,14 +44,14 @@ public:
             this->searchField(name, pos, datasize1, datasize2, datasize);
 
             if (name == structname) {
-                Logger::log() << "\tFound Name: " << name << Logger::flush;
+                Logger::Logger() << "\tFound Name: " << name;
                 this->prepareField(field, pos, datasize1, datasize2);
 
                 return;
             }
             pos += datasize;
         }
-        Logger::log() << "\tWARNING : " << structname << " not found !!!" << Logger::flush;
+        Logger::Logger() << "\tWARNING : " << structname << " not found !!!";
     };
 
 private:

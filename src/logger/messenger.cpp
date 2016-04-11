@@ -8,13 +8,14 @@ Messenger::Messenger::Messenger(zmq::context_t& context)
     : m_serve(false)
 {
     m_socket = new zmq_ext::socket_t(context, ZMQ_REP);
-    m_socket->bind("tcp://*:3334");
-    this->startServing();
+    m_port = 3334;
 }
 
 Messenger::Messenger::~Messenger()
 {
-    this->stopServing();
+    if (m_serve) {
+        this->stopServing();
+    }
     delete m_socket;
 }
 
@@ -47,15 +48,16 @@ void Messenger::Messenger::servingLoop()
 
 void Messenger::Messenger::startServing()
 {
-    Logger::log() << "Starting server thread." << Logger::flush;
+    Logger::Logger() << "Starting server thread.";
+    std::string addr = "tcp://*:" + std::to_string(m_port);
+    m_socket->bind(addr.c_str());
     m_serve = true;
     m_serverThread = std::thread(&Messenger::Messenger::servingLoop, this);
-    //m_serverThread.detach();
 }
 
 void Messenger::Messenger::stopServing()
 {
-    Logger::log() << "Stopping server thread." << Logger::flush;
+    Logger::Logger() << "Stopping server thread.";
     zmq::context_t tmp_context(1);
     zmq_ext::socket_t socket_stop(tmp_context, ZMQ_REQ);
     socket_stop.connect("tcp://localhost:3334");
@@ -66,3 +68,12 @@ void Messenger::Messenger::stopServing()
     m_serverThread.join();
 }
 
+void Messenger::Messenger::setPort(const int port)
+{
+    m_port = port;
+}
+
+int Messenger::Messenger::port() const
+{
+    return m_port;
+}

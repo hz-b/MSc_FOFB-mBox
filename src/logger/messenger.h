@@ -21,6 +21,8 @@ public:
     void startServing();
     void stopServing();
 
+    void setPort(const int port);
+    int port() const;
     template <class T>
     void updateMap(const std::string& key, const T& value) {
         m_map.update(key, value);
@@ -29,6 +31,7 @@ public:
 private:
     void servingLoop();
 
+    int m_port;
     bool m_serve;
     std::thread m_serverThread;
     Map m_map;

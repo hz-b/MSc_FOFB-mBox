@@ -13,7 +13,7 @@
 #include "handlers/measures/measurehandler.h"
 
 #include "logger/logger.h"
-
+#include "logger/messenger.h"
 
 mBox::mBox()
     : m_dma(NULL)
@@ -27,7 +27,7 @@ mBox::~mBox()
     delete m_handler,
            m_dma,
            m_driver;
-    Logger::log() << "mBox exited" << Logger::flush;
+    Logger::Logger() << "mBox exited";
 }
 
 void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
@@ -41,10 +41,11 @@ void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
     m_dma = new DMA();
     if ( int res = m_dma->init(m_driver) )
     {
-        Logger::error(_ME_) << "DMA Error .... Quit" << Logger::flush;
+        Logger::error(_ME_) << "DMA Error .... Quit";
         exit(res);
     }
-    Logger::logger.setRFM(m_driver);
+    Logger::Logger logger;
+    logger.setRFM(m_driver);
 
     if (!inputFile.empty()) { // inputFile => Experiment mode
         m_handler = new MeasureHandler(m_driver, m_dma, weightedCorr, inputFile);
@@ -55,7 +56,7 @@ void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
 
 void mBox::startLoop()
 {
-    Logger::log() << "mBox idle" << Logger::flush;
+    Logger::Logger() << "mBox idle";
     for(;;) {
         m_driver->read(CTRL_MEMPOS, &m_runningStatus, 1);
 
@@ -68,7 +69,7 @@ void mBox::startLoop()
                 m_driver->read(CTRL_MEMPOS , &m_runningStatus , 1);
                 sleep(1);
             }
-            Logger::log() << "...Wait for start..." << Logger::flush;
+            Logger::Logger() << "...Wait for start...";
         }
 
         // if Idle, don't do anything
@@ -85,7 +86,7 @@ void mBox::startLoop()
             m_runningState = Initialized;
 
             std::cout << "Status: mBox running \n";
-            Logger::log() << "mBox running" << Logger::flush;
+            Logger::Logger() << "mBox running";
         }
 
         /**
@@ -95,7 +96,7 @@ void mBox::startLoop()
             if (int errornr = m_handler->make()) {
                 Logger::postError(errornr);
                 m_runningState = Error;
-                Logger::error(_ME_) <<  "error: " << Logger::errorMessage(errornr) << Logger::flush;
+                Logger::error(_ME_) <<  "error: " << Logger::errorMessage(errornr);
                 std::cout << "Status: mBox in ERROR \n";
             }
 
@@ -107,7 +108,7 @@ void mBox::startLoop()
          * Stop correction
          */
         if ((m_runningStatus == Idle) && (m_runningState != Preinit)) {
-            Logger::log() << "Stopped  ....." << Logger::flush;
+            Logger::Logger() << "Stopped  .....";
 	        m_handler->disable();
             m_runningState = Preinit;
         }
@@ -118,20 +119,22 @@ void mBox::startLoop()
 
 void mBox::initRFM(char *deviceName)
 {
-    Logger::log() << "Init RFM" << Logger::flush;
-    Logger::log() << "\tRFM Handle : " << m_driver->handle() << Logger::flush;
+    Logger::Logger() << "Init RFM";
+    Logger::Logger() << "\tRFM Handle : " << m_driver->handle();
 
     if (m_driver->open(deviceName)) {
         Logger::error(_ME_) << "\tCan't open " << deviceName << '\n' ;
-        Logger::error(_ME_) << "\tExit fron initRFM()" << Logger::flush;
+        Logger::error(_ME_) << "\tExit fron initRFM()";
         exit(1);
     }
 
     RFM2G_NODE nodeId(0);
     if (m_driver->nodeId(&nodeId)) {
-        Logger::error(_ME_) << "\tCan't get Node Id" << Logger::flush;
+        Logger::error(_ME_) << "\tCan't get Node Id";
         exit(1);
     }
-    Logger::log() << "\tRFM Node Id : " << nodeId << Logger::flush;
+    Logger::Logger() << "\tRFM Node Id : " << nodeId;
+
+    Messenger::messenger.startServing();
 }
 

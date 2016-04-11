@@ -31,6 +31,7 @@ enum class LogValue {
 namespace Logger {
 
 struct log_stream_t {
+    log_stream_t(LogType type, std::string s_other = "") : header(type), other(s_other) {}
     LogType header;
     std::ostringstream message;
     std:: string other;
@@ -44,7 +45,7 @@ public:
      *
      * The ZMQ publisher socket is set here with the default port.
      */
-    explicit Logger(zmq::context_t& context);
+    explicit Logger(LogType type = LogType::Log, std::string other="");
 
     /**
      * @brief Destructor
@@ -54,7 +55,7 @@ public:
     /**
      * @brief Set the RFM Helper.
      */
-    void setRFM(RFMDriver* driver) { m_driver = driver; }
+    void setRFM(RFMDriver* driver) { Logger::m_driver = driver; }
 
     void sendMessage(std::string message, std::string error="");
     void sendZmq(const std::string& header, const std::string& message, const std::string& other);
@@ -65,7 +66,9 @@ public:
      * @brief Set/Unset the debug mode
      */
     void setDebug(const bool debug) { m_debug = debug; }
-
+    void setSocket(zmq_ext::socket_t* socket);
+    void setPort(const int port);
+    int port() const;
     /**
      * @brief Check if the mbox is in debug mode.
      *
@@ -76,43 +79,35 @@ public:
     /**
      * @brief Acess to m_logStream
      */
-    log_stream_t& logStream() { return m_logStream; };
+    log_stream_t* logStream() { return m_logStream; };
+
+    template <typename T> Logger &operator<<(T value) { m_logStream->message << value; return *this;}
 
 private:
-    RFMDriver* m_driver;
+    void parseAndSend();
+
+    static RFMDriver* m_driver;
 
     /**
      * @brief ZMQ Socket used to publish logs, values, errors.
      */
-    zmq_ext::socket_t* m_zmqSocket;
+    static zmq_ext::socket_t* m_zmqSocket;
 
     /**
      * @brief Is the mBox in debug mode?
      */
-    bool m_debug;
-    log_stream_t m_logStream;
+    static bool m_debug;
+    log_stream_t* m_logStream;
+    static int m_port;
 };
 
-extern Logger logger;
 
 /**
  * @brief Global wrapper to access the setDebug(bool) method of the class Logger.
  */
-void setDebug(bool debug);
-/**
- * @brief
- */
-std::ostream& flush(std::ostream& output);
-
-/**
- * @brief
- */
-std::ostringstream& log(LogType type);
-
-/**
- * @brief
- */
-std::ostringstream& log();
+void setDebug(const bool debug);
+void setSocket(zmq_ext::socket_t* socket);
+void setPort(const int port);
 
 /**
  * @brief
@@ -127,11 +122,11 @@ void values(LogValue name, const int loopPos, const arma::vec& valueX, const arm
  *
  * @note Use it as:
  * \code{.cpp}
- *      Logger::error(_ME_) << "This is an error: << Logger::flush;
+ *      Logger::error(_ME_) << "This is an error:;
  * \endcode
  * A prepocessor macro `_ME_` is used for `__PRETTY_FUNCTION__`.
  */
-std::ostringstream& error(std::string fctname);
+inline Logger error(std::string fctname) { return Logger(LogType::Error, "in " + fctname); }
 
 void postError(unsigned int errornr);
 std::string errorMessage(unsigned int errornr);
