@@ -99,7 +99,7 @@ void Handler::init()
     m_adc->setWaveIndexX(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
     m_adc->setWaveIndexY(std::vector<double>(ADC_WaveIndexY, ADC_WaveIndexY+128));
 
-    this->setProcessor(SmatX, SmatY, IvecX, IvecY, Frequency, P, I, D, CMx, CMy, m_weightedCorr);
+    this->setProcessor(SmatX, SmatY, IvecX, IvecY, Frequency, P/100, I/100, D/100, CMx, CMy, m_weightedCorr);
 
     this->initIndexes(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
 
