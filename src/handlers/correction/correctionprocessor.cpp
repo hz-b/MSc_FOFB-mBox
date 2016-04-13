@@ -60,8 +60,8 @@ int CorrectionProcessor::correct(const arma::vec &diffX, const arma::vec &diffY,
     m_injectionCnt = 0;
 
     //cout << "  prove rms" << endl;
-    double rmsX = (diffX.n_elem-1) * stddev(diffX) / diffX.n_elem;
-    double rmsY = (diffY.n_elem-1) * stddev(diffY) / diffY.n_elem;
+    double rmsX = (diffX.n_elem-1) * arma::stddev(diffX) / diffX.n_elem;
+    double rmsY = (diffY.n_elem-1) * arma::stddev(diffY) / diffY.n_elem;
     if ((rmsX > m_lastrmsX*1.1) || (rmsY > m_lastrmsY*1.1))
     {
         m_rmsErrorCnt++;
@@ -94,16 +94,16 @@ int CorrectionProcessor::correct(const arma::vec &diffX, const arma::vec &diffY,
         m_currentP += 0.01;
 
     if ((type & Correction::Horizontal) == Correction::Horizontal) {
-        m_dCORxPID  = (dCMx * m_currentP) + (m_I*m_Xsum)  + (m_D*(dCMx-m_dCORlastX));
+        m_dCORxPID  = (dCMx * m_currentP) + (m_I*m_Xsum) + (m_D*(dCMx-m_dCORlastX));
         m_dCORlastX = dCMx;
-        m_Xsum      = m_Xsum+dCMx;
+        m_Xsum      = m_Xsum + dCMx;
         m_CMx       = m_CMx - m_dCORxPID;
     }
 
     if ((type & Correction::Vertical) == Correction::Vertical) {
-        m_dCORyPID  = (dCMy * m_currentP) + (m_I*m_Ysum)  + (m_D*(dCMy-m_dCORlastY));
+        m_dCORyPID  = (dCMy * m_currentP) + (m_I*m_Ysum) + (m_D*(dCMy-m_dCORlastY));
         m_dCORlastY = dCMy;
-        m_Ysum      = m_Ysum+dCMy;
+        m_Ysum      = m_Ysum + dCMy;
         m_CMy       = m_CMy - m_dCORyPID;
     }
 
