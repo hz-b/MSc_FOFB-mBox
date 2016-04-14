@@ -242,7 +242,7 @@ void CorrectionProcessor::calcSmat(const arma::mat &Smat,
     }
     if (m_useCMWeight) {
         Logger::Logger() << "\tcalc CMWeights";
-        CMWeight = 1/(arma::trans(stddev(Smat)));
+        CMWeight = 1/(arma::trans(arma::stddev(Smat)));
         Logger::Logger() << "\tInclude CMWeightX in SMat";
         for (int i = 0; i < Smat.n_cols; i++) {
             Smat_w.col(i) = Smat.col(i) * CMWeight(i);
