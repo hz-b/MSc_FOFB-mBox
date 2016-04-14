@@ -114,12 +114,8 @@ void Logger::Logger::sendRFM(std::string message, std::string error)
 
 void Logger::Logger::sendZmq(const std::string& header, const std::string& message, const std::string& other)
 {
-    time_t rawtime = time(NULL);
-    struct tm* timeinfo = localtime(&rawtime);
-    char timeBuf[80];
-    strftime(timeBuf, sizeof(timeBuf), "%F %T", timeinfo);
-
-    std::string time(timeBuf);
+    std::time_t rawtime = std::time(nullptr);
+    std::string time = std::asctime(std::localtime(&rawtime));
 
     m_zmqSocket->send(header, ZMQ_SNDMORE);
     m_zmqSocket->send(time, ZMQ_SNDMORE);
