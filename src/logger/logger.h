@@ -37,6 +37,17 @@ struct log_stream_t {
     std:: string other;
 };
 
+
+/**
+ * @class Logger
+ *
+ * Relies on some static variables (m_debug, m_port, m_socket, m_driver).
+ *
+ * @note Use it as:
+ * \code{.cpp}
+ *      Logger::Logger() << "This is an log line";
+ * \endcode
+ */
 class Logger
 {
 public:
@@ -66,9 +77,22 @@ public:
      * @brief Set/Unset the debug mode
      */
     void setDebug(const bool debug) { m_debug = debug; }
+
+    /**
+     * @brief Set the socket and bind it.
+     */
     void setSocket(zmq_ext::socket_t* socket);
+
+    /**
+     * @brief Set the port for the publisher
+     */
     void setPort(const int port);
+
+    /**
+     * @brief Get the publisher port.
+     */
     int port() const;
+
     /**
      * @brief Check if the mbox is in debug mode.
      *
@@ -106,7 +130,15 @@ private:
  * @brief Global wrapper to access the setDebug(bool) method of the class Logger.
  */
 void setDebug(const bool debug);
+
+/**
+ * @brief Global wrapper to access the setSocket(socket_t*) method of the class Logger.
+ */
 void setSocket(zmq_ext::socket_t* socket);
+
+/**
+ * @brief Global wrapper to access the setPort(int) method of the class Logger.
+ */
 void setPort(const int port);
 
 /**
@@ -122,13 +154,20 @@ void values(LogValue name, const int loopPos, const arma::vec& valueX, const arm
  *
  * @note Use it as:
  * \code{.cpp}
- *      Logger::error(_ME_) << "This is an error:;
+ *      Logger::error(_ME_) << "This is an error;
  * \endcode
  * A prepocessor macro `_ME_` is used for `__PRETTY_FUNCTION__`.
  */
 inline Logger error(std::string fctname) { return Logger(LogType::Error, "in " + fctname); }
 
+/**
+ * @brief Global function to post an error code on the RFM.
+ */
 void postError(unsigned int errornr);
+
+/**
+ * @brief Global function to express an error code in a verbose way.
+ */
 std::string errorMessage(unsigned int errornr);
 
 }
