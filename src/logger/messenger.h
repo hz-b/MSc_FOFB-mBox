@@ -67,6 +67,11 @@ private:
      */
     void servingLoop();
 
+
+    void serveSet(const std::string& key);
+
+    void serveGet(const std::string& key);
+    void serveHelp();
     /**
      * @brief Port used by the server
      */
@@ -86,6 +91,8 @@ private:
      * @brief Map / Dictionary containing the information that can be queried.
      */
     Map m_map;
+
+    std::vector<std::string> m_editableKeys;
 
     /**
      * @brief Server socket

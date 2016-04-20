@@ -1,12 +1,20 @@
 #include "logger/messenger.h"
 #include "logger/logger.h"
 
+#include <algorithm>
+
+
 // Just so that it don't get sent by  error
 #define STOPPING_MESSAGE "STOP-ME-406812310648"
 
 Messenger::Messenger::Messenger(zmq::context_t& context)
     : m_serve(false)
 {
+    m_map.update("AMPLITUDE10", (double) 0);
+    m_map.update("PHASE10", (double) 0);
+    m_editableKeys.push_back("AMPLITUDE10");
+    m_editableKeys.push_back("PHASE10");
+
     m_socket = new zmq_ext::socket_t(context, ZMQ_REP);
     m_port = 3334;
 }
@@ -21,28 +29,74 @@ Messenger::Messenger::~Messenger()
 
 void Messenger::Messenger::servingLoop()
 {
+    std::string prefixSet = "SET ";
+    std::string prefixGet = "GET ";
     while (m_serve) {
         zmq::message_t request;
         m_socket->recv(&request);
         std::string message((char*)request.data(), request.size());
-
-        if (message == "KEYLIST") {
-            std::string s = m_map.keyList();
-            m_socket->send(s);
+        std::transform(message.begin(), message.end(), message.begin(), ::toupper);
+        if (message == "KEYLIST" || message == "HELP") {
+            this->serveHelp();
         } else if (message == STOPPING_MESSAGE) {
             m_serve = false;
             std::string s = "ACK";
             m_socket->send(s);
-        } else if (m_map.has(message)) {
-            int size = m_map.get_sizeof(message);
-            zmq::message_t msg(size);
-            memcpy(msg.data(), m_map.get_raw(message), size);
-            m_socket->zmq::socket_t::send(msg);
+        } else if (!message.compare(0, prefixSet.length(), prefixSet)) {
+            std::string key = message.substr(prefixGet.length(), message.npos);
+            this->serveSet(key);
+        } else if (!message.compare(0, prefixGet.length(), prefixGet)) {
+            std::string key =  message.substr(prefixGet.length(), message.npos);
+            this->serveGet(key);
         } else {
             std::cout << "error: unknown key/message " << message<<'\n';
-            std::string s = "ERROR";
+            std::string s = "KEY ERROR";
             m_socket->send(s);
         }
+    }
+}
+
+void Messenger::Messenger::serveHelp()
+{
+    std::string s;
+    s = "Use: HELP, KEYLIST, SET <KEY>, GET <KEY>\n\n";
+    s += "AVAILABLE KEYS TO GET\n"
+         "=====================\n"
+         + m_map.keyList() + '\n';
+    s += "AVAILABLE KEYS TO SET\n"
+         "=====================\n";
+    for (const std::string& key : m_editableKeys) {
+        s += key + '\n';
+    }
+    m_socket->send(s);
+}
+void Messenger::Messenger::serveSet(const std::string& key)
+{
+    bool editable = (std::find(m_editableKeys.begin(), m_editableKeys.end(), key) != m_editableKeys.end());
+    if (m_map.has(key) && editable) {
+        std::string s = "GO";
+        m_socket->send(s);
+        zmq::message_t request;
+        m_socket->recv(&request);
+        m_map.update(key, (unsigned char*) request.data(), request.size());
+        s = "ACK";
+        m_socket->send(s);
+    } else {
+        std::string s = "KEY ERROR";
+        m_socket->send(s);
+    }
+}
+
+void Messenger::Messenger::serveGet(const std::string& key)
+{
+    if (m_map.has(key)) {
+        int size = m_map.get_sizeof(key);
+        zmq::message_t msg(size);
+        memcpy(msg.data(), m_map.get_raw(key), size);
+        m_socket->zmq::socket_t::send(msg);
+    } else {
+        std::string s = "KEY ERROR";
+        m_socket->send(s);
     }
 }
 
