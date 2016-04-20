@@ -34,18 +34,6 @@ public:
                 const int type );
 
     /**
-     * @brief Check if the correction is correct.
-     *
-     * This function should not be called in `--rw` or `--experiment` mode, as
-     * it's time consuming.
-     *
-     * @note This is an empty function: not implemented for now.
-     *
-     * @return  ???
-     */
-    int checkCorrection();
-
-    /**
      * @brief Set the PID parameters.
      */
     void setPID(double P, double I, double D) { m_P = P; m_I = I; m_D = D;};
@@ -97,7 +85,6 @@ private:
 
     arma::mat m_SmatInvX, m_SmatInvY;
     arma::vec m_CMx, m_CMy;
-    arma::vec m_dCORxPID, m_dCORyPID;
     arma::vec m_dCORlastX, m_dCORlastY;
     arma::vec m_Xsum, m_Ysum;
     arma::vec m_Data_CMx, m_Data_CMy;

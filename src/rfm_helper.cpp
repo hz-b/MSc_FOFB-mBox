@@ -16,8 +16,29 @@ void RFMHelper::dumpMemory(volatile void* data, int len) {
     }
 }
 
+
+void RFMHelper::prepareField(std::vector<double>& field, unsigned long pos, unsigned long dim1, unsigned long dim2)
+{
+    RFM2G_UINT32 threshold = 0;
+    RFM2G_UINT32 data_size = dim1*dim2*8;
+    /* see if DMA threshold and buffer are intialized */
+    m_driver->getDMAThreshold( &threshold );
+    field = std::vector<double>(dim1*dim2);
+    if (data_size<threshold) {
+        // use PIO  tranfer
+        m_driver->read(pos,(void*)field.data(), data_size);
+        //dumpMemory(field.memptr(),8);
+    } else {
+        // use DMA transfer
+        m_driver->read(pos,(void*)m_dma->memory(), data_size);
+        // dumpMemory(m_dma->memory(),8);
+        field = std::vector<double>((const double *)m_dma->memory(),(const double *)m_dma->memory()+dim1*dim2);
+    }
+}
+
 void RFMHelper::prepareField(arma::vec& field, unsigned long pos, unsigned long dim1, unsigned long dim2) {
-    RFM2G_UINT32 threshold = 0, data_size=dim1*dim2*8;
+    RFM2G_UINT32 threshold = 0;
+    RFM2G_UINT32 data_size = dim1*dim2*8;
     /* see if DMA threshold and buffer are intialized */
     m_driver->getDMAThreshold( &threshold );
 
@@ -32,11 +53,6 @@ void RFMHelper::prepareField(arma::vec& field, unsigned long pos, unsigned long 
         // dumpMemory(m_dma->memory(),8);
         field = arma::vec((const double *)m_dma->memory(),dim1*dim2);
     }
-    //cout << "v5" << field << endl;
-    //cout<<"read vec at pos "<<pos<<" raw len:"<<data_size<<" eff. len: " << data_size/8 << endl;
-    char* p=(char*)field.memptr();
-    //printf("'%x'\n",(RFM2G_UINT64)(*(pDmaMemory+pos)));
-    //cout<<field<<endl;
 }
 
 void RFMHelper::prepareField(arma::mat& field, unsigned long pos, unsigned long dim1, unsigned long dim2)

@@ -20,6 +20,7 @@ public:
                      unsigned long &datasize1, unsigned long &datasize2, unsigned long &datasize);
     void prepareField(arma::vec& field, unsigned long pos, unsigned long dim1, unsigned long dim2);
     void prepareField(arma::mat& field, unsigned long pos, unsigned long dim1, unsigned long dim2);
+    void prepareField(std::vector<double>& field, unsigned long pos, unsigned long dim1, unsigned long dim2);
 
     template <class T>
     void prepareField(T &field, unsigned long pos, unsigned long dim1, unsigned long dim2 = 0)
@@ -42,7 +43,8 @@ public:
             unsigned long datasize2(0);
             unsigned long datasize(0);
             this->searchField(name, pos, datasize1, datasize2, datasize);
-
+            if (name == "ADC_BPMIndex_PosX")
+                std::cout << datasize << " " << datasize1 << " " << datasize2<<'\n';
             if (name == structname) {
                 Logger::Logger() << "\tFound Name: " << name;
                 this->prepareField(field, pos, datasize1, datasize2);

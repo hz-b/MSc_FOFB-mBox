@@ -43,10 +43,10 @@ void Handler::init()
 {
     Logger::Logger() << "Read Data from RFM";
 
-    double ADC_WaveIndexX[128];
-    double ADC_WaveIndexY[128];
-    double DAC_WaveIndexX[128];
-    double DAC_WaveIndexY[128];
+    std::vector<double> ADC_WaveIndexX;
+    std::vector<double> ADC_WaveIndexY;
+    std::vector<double> DAC_WaveIndexX;
+    std::vector<double> DAC_WaveIndexY;
 
     arma::mat SmatX;
     arma::mat SmatY;
@@ -62,7 +62,6 @@ void Handler::init()
     // ADC/DAC
     rfmHelper.readStruct("ADC_BPMIndex_PosX", ADC_WaveIndexX, readStructtype_pchar);
     rfmHelper.readStruct("ADC_BPMIndex_PosY", ADC_WaveIndexY, readStructtype_pchar);
-
     rfmHelper.readStruct("DAC_HCMIndex", DAC_WaveIndexX, readStructtype_pchar);
     rfmHelper.readStruct("DAC_VCMIndex", DAC_WaveIndexY, readStructtype_pchar);
     // Smatrix
@@ -94,14 +93,14 @@ void Handler::init()
     m_numCMx = SmatX.n_cols;
     m_numCMy = SmatY.n_cols;
 
-    m_dac->setWaveIndexX(std::vector<double>(DAC_WaveIndexX, DAC_WaveIndexX+128));
-    m_dac->setWaveIndexY(std::vector<double>(DAC_WaveIndexY, DAC_WaveIndexY+128));
-    m_adc->setWaveIndexX(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
-    m_adc->setWaveIndexY(std::vector<double>(ADC_WaveIndexY, ADC_WaveIndexY+128));
+    m_dac->setWaveIndexX(DAC_WaveIndexX);
+    m_dac->setWaveIndexY(DAC_WaveIndexY);
+    m_adc->setWaveIndexX(ADC_WaveIndexX);
+    m_adc->setWaveIndexY(ADC_WaveIndexY);
 
     this->setProcessor(SmatX, SmatY, IvecX, IvecY, Frequency, P/100, I/100, D/100, CMx, CMy, m_weightedCorr);
 
-    this->initIndexes(std::vector<double>(ADC_WaveIndexX, ADC_WaveIndexX+128));
+    this->initIndexes(ADC_WaveIndexX);
 
     Messenger::updateMap("SMAT-X", SmatX);
     Messenger::updateMap("SMAT-Y", SmatY);

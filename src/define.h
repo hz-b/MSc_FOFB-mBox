@@ -14,6 +14,7 @@ const unsigned int CONFIG_MEMPOS = CTRL_MEMPOS + 1000;
 
 const int INJECT_TRIG = 110;
 const int TEN_HZ = 62;
+const int HBP1D5R = 142;
 
 // ADC
 const int ADC_BUFFER_SIZE = 256;
