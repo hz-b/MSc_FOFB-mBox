@@ -124,7 +124,7 @@ void Handler::init()
     }
 }
 
-void Handler::initIndexes(const std::vector<double> &ADC_WaveIndexX)
+void Handler::initIndexes(const std::vector<double>& ADC_WaveIndexX)
 {
     Logger::Logger() << "Init Indexes";
     //FS BUMP
@@ -143,13 +143,12 @@ void Handler::initIndexes(const std::vector<double> &ADC_WaveIndexX)
     Logger::Logger() << "\tidx 6Z5 : " << m_idxBPMZ6D5R;
 }
 
-int Handler::getIdx(const std::vector<double> &ADC_BPMIndex_Pos, double DeviceWaveIndex)
+int Handler::getIdx(const std::vector<double>& ADC_BPMIndex_Pos, double DeviceWaveIndex)
 {
-    for (int i = 0; i < ADC_BPMIndex_Pos.size(); i++) {
-        if (ADC_BPMIndex_Pos.at(i) == DeviceWaveIndex)
-            return i;
-    }
-    return ADC_BPMIndex_Pos.size();
+    auto it = std::find(ADC_BPMIndex_Pos.begin(), ADC_BPMIndex_Pos.end(), DeviceWaveIndex);
+    int position = it - ADC_BPMIndex_Pos.begin();
+
+    return position;
 }
 
 int Handler::make()
@@ -189,27 +188,26 @@ int Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
         Logger::postError(FOFB_ERROR_ADC);
         Logger::error(_ME_) << "Read Error";
         return FOFB_ERROR_ADC;
-    } 
+    }
 
     for (unsigned int i = 0; i < m_numBPMx; i++) {
         unsigned int  lADCPos = m_adc->waveIndexXAt(i)-1;
         rADCdataX(i) =  m_adc->bufferAt(lADCPos);
     }
-    
+
     for (unsigned int i = 0; i < m_numBPMy; i++) {
         unsigned int lADCPos = m_adc->waveIndexYAt(i)-1;
         rADCdataY(i) =  m_adc->bufferAt(lADCPos);
     }
-    
-    
-    newInjection = (m_adc->bufferAt(110) > 1000); 
+
+    newInjection = (m_adc->bufferAt(INJECT_TRIG) > 1000);
 
     diffX = (rADCdataX % m_gainX * numbers::cf * -1 ) - m_BPMoffsetX;
     diffY = (rADCdataY % m_gainY * numbers::cf      ) - m_BPMoffsetY;
     //FS BUMP
     double HBP2D6R = m_adc->bufferAt(m_idxHBP2D6R) * numbers::cf * 0.8;
     diffX[m_idxBPMZ6D6R] -= (-0.325 * HBP2D6R);
-    
+
     //ARTOF
     double HBP1D5R = m_adc->bufferAt(m_idxHBP1D5R) * numbers::cf * 0.8;
     diffX[m_idxBPMZ3D5R] -= (-0.42 * HBP1D5R);

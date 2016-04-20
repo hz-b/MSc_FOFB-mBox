@@ -6,10 +6,14 @@
 
 #define CLOCK_MODE CLOCK_MONOTONIC_RAW
 
-#define CTRL_MEMPOS       0x03000000
-#define STATUS_MEMPOS     CTRL_MEMPOS + 50
-#define MESSAGE_MEMPOS    CTRL_MEMPOS + 100
-#define CONFIG_MEMPOS     CTRL_MEMPOS + 1000
+// See http://wiki.trs.bessy.de/bin/view/OPIhelpdesk/FastOrbitFeedback
+const unsigned int CTRL_MEMPOS = 0x03000000;
+const unsigned int STATUS_MEMPOS = CTRL_MEMPOS + 50;
+const unsigned int MESSAGE_MEMPOS = CTRL_MEMPOS + 100;
+const unsigned int CONFIG_MEMPOS = CTRL_MEMPOS + 1000;
+
+const int INJECT_TRIG = 110;
+const int TEN_HZ = 62;
 
 // ADC
 const int ADC_BUFFER_SIZE = 256;
