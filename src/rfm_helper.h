@@ -43,8 +43,6 @@ public:
             unsigned long datasize2(0);
             unsigned long datasize(0);
             this->searchField(name, pos, datasize1, datasize2, datasize);
-            if (name == "ADC_BPMIndex_PosX")
-                std::cout << datasize << " " << datasize1 << " " << datasize2<<'\n';
             if (name == structname) {
                 Logger::Logger() << "\tFound Name: " << name;
                 this->prepareField(field, pos, datasize1, datasize2);
