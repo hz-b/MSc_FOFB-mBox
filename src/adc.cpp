@@ -12,6 +12,7 @@ ADC::ADC(RFMDriver *driver, DMA *dma)
     : m_driver(driver)
     , m_dma(dma)
     , m_node(ADC_NODE)
+    , m_buffer(ADC_BUFFER_SIZE)
 {}
 
 ADC::~ADC()
@@ -128,7 +129,7 @@ int ADC::read()
     if (data_size  < threshold) {
         // use PIO transfer
         RFM2G_STATUS readError = m_driver->read(ADC_MEMPOS + ( m_dma->status()->loopPos * data_size),
-                                                (void*)m_buffer, data_size);
+                                                (void*)m_buffer.data(), data_size);
         if (readError) {
             Logger::error(_ME_) << "Read error: " << m_driver->errorMsg(readError);
 
@@ -146,7 +147,7 @@ int ADC::read()
 
         RFM2G_INT16 *src = (RFM2G_INT16*) m_dma->memory();
         for (int i = 0 ; i < ADC_BUFFER_SIZE ; ++i) {
-            m_buffer[i] = src[i];
+            m_buffer.at(i) = src[i];
         }
     }
 

@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <typeinfo>
 
 #include "define.h"
 #include "logger/zmqext.h"
@@ -23,7 +24,8 @@ enum class LogType {
 enum class LogValue {
     None = 0,
     BPM,
-    CM
+    CM,
+    ADC
 };
 /**
  * \addtogroup
@@ -69,7 +71,33 @@ public:
 
     void sendMessage(std::string message, std::string error="");
     void sendZmq(const std::string& header, const std::string& message, const std::string& other);
-    void sendZmqValue(const std::string& header, const int loopPos, const arma::vec& valueX, const arma::vec& valueY);
+    //void sendZmqValue(const std::string& header, const int loopPos, const arma::vec& valueX, const arma::vec& valueY);
+    //void sendZmqValue(const std::string& header, const int loopPos, const std::vector<RFM2G_INT16>& value);
+    template <typename T>
+    void sendZmqValue(const std::string& header, const int loopPos, const std::vector<T> values)
+    {
+        if (values.size() == 0) {
+            "ERROR -- Tried to send empty values, return";
+            return;
+        }
+        m_zmqSocket->send(header, ZMQ_SNDMORE);
+        m_zmqSocket->send(loopPos, ZMQ_SNDMORE);
+        std::string type;
+        if (typeid(values.at(0).at(0)) == typeid(double)) {
+            type = "double";
+        } else if (typeid(values.at(0).at(0)) == typeid(short)) {
+            type = "short";
+        }
+        m_zmqSocket->send(type, ZMQ_SNDMORE);
+
+        // Loop until size-1 because last should not have a ZMQ_SNDMORE flag
+        for (int i = 0 ; i < values.size() - 1 ; i++) {
+            m_zmqSocket->send(values.at(i), ZMQ_SNDMORE);
+        }
+        m_zmqSocket->send(values.back());
+    }
+
+
     void sendRFM(std::string message, std::string error);
 
     /**
@@ -144,6 +172,29 @@ void setPort(const int port);
  * @brief
  */
 void values(LogValue name, const int loopPos, const arma::vec& valueX, const arma::vec& valueY);
+void values(LogValue name, const int loopPos, const std::vector<RFM2G_INT16>& value);
+
+template <typename T>
+void values(LogValue name, const int loopPos, const std::vector<T> values)
+{
+    std::string header;
+    switch (name) {
+    case LogValue::BPM:
+        header = "FOFB-BPM-DATA";
+        break;
+    case LogValue::CM:
+        header = "FOFB-CM-DATA";
+        break;
+    case LogValue::ADC:
+        header = "FOFB-ADC-DATA";
+        break;
+    default:
+        std::cout << "ERROR -- Tried to send values of unexpected type. RETURN";
+        return;
+    }
+    Logger logger;
+    logger.sendZmqValue(header, loopPos, values);
+}
 
 /**
  * @brief Global wrapper to log errors.

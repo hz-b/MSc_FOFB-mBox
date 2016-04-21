@@ -60,7 +60,6 @@ public:
      */
     void setSmat(arma::mat &SmatX, arma::mat &SmatY, double IvecX, double IvecY, bool weightedCorr);
 
-    int m_rmsErrorCnt;
 private:
 
     /**
@@ -76,7 +75,8 @@ private:
     int m_injectionCnt;
     int m_injectionStopCnt;
     int m_injectionStartCnt;
-
+    int m_rmsErrorCnt;
+    
     bool m_useCMWeight;
     arma::vec m_CMWeightX, m_CMWeightY;
 

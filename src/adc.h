@@ -47,7 +47,8 @@ public:
     /**
      * @brief Access to an element of the buffer.
      */
-    RFM2G_INT16 bufferAt(int id) const { if (id < ADC_BUFFER_SIZE) return m_buffer[id]; };
+    RFM2G_INT16 bufferAt(int id) const { if (id < m_buffer.size()) return m_buffer.at(id); };
+    std::vector<RFM2G_INT16> buffer() const { return m_buffer; };
 
     double waveIndexXAt(int id) const { return m_waveIndexX.at(id); };
     double waveIndexYAt(int id) const { return m_waveIndexY.at(id); };
@@ -58,7 +59,7 @@ private:
     RFM2G_STATUS waitForEvent(RFM2GEVENTINFO &eventInfo);
     DMA *m_dma;
     RFMDriver *m_driver;
-    RFM2G_INT16 m_buffer[ADC_BUFFER_SIZE];
+    std::vector<RFM2G_INT16> m_buffer;
     std::vector<double> m_waveIndexX;
     std::vector<double> m_waveIndexY;
     int m_node;

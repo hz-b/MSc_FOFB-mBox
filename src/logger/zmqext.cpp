@@ -6,7 +6,6 @@ zmq_ext::socket_t::socket_t(zmq::context_t& c, int socket_type)
 
 }
 
-
 bool zmq_ext::socket_t::send(const RFM2G_INT16* value , int size, int flags)
 {
     int len = sizeof(RFM2G_INT16)*size;
@@ -14,7 +13,6 @@ bool zmq_ext::socket_t::send(const RFM2G_INT16* value , int size, int flags)
     memcpy(msg.data(), value, len);
     return zmq::socket_t::send(msg, flags);
 }
-
 
 bool zmq_ext::socket_t::send(const int value, int flags)
 {
@@ -24,7 +22,6 @@ bool zmq_ext::socket_t::send(const int value, int flags)
     return zmq::socket_t::send(msg, flags);
 }
 
-
 bool zmq_ext::socket_t::send(const std::vector<short> & values, int flags)
 {
     int len=sizeof(short)*values.size();
@@ -32,7 +29,6 @@ bool zmq_ext::socket_t::send(const std::vector<short> & values, int flags)
     memcpy(msg.data(), values.data(), len);
     return zmq::socket_t::send(msg, flags);
 }
-
 
 bool zmq_ext::socket_t::send(const arma::vec & values, int flags)
 {

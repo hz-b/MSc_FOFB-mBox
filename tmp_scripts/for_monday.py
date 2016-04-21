@@ -14,7 +14,7 @@ SAMPLE_NB = 100
 def show():
     pml = PyML()
     pml.setao(pml.loadFromExtern('PyML/bessyIIinit.py','ao'))
-    
+
 #    pml.ao[Family]['Status'][
     posBPMx = pml.getfamilydata('BPMx', 'Pos')[pml.getActiveIdx('BPMx')]
     posBPMy = pml.getfamilydata('BPMy', 'Pos')[pml.getActiveIdx('BPMy')]

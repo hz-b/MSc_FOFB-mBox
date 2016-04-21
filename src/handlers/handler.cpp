@@ -160,7 +160,8 @@ int Handler::make()
         Logger::error(_ME_) << "Cannot correct, error in data acquisition";
         return 1;
     }
-    Logger::values(LogValue::BPM, m_dma->status()->loopPos, diffX, diffY);
+    Logger::values(LogValue::BPM, m_dma->status()->loopPos, std::vector<arma::vec>({diffX, diffY}));
+    Logger::values(LogValue::ADC, m_dma->status()->loopPos, std::vector<std::vector<RFM2G_INT16> >({m_adc->buffer()}));
 
     int typeCorr = this->typeCorrection();
     int errornr = this->callProcessorRoutine(diffX, diffY,
@@ -171,7 +172,7 @@ int Handler::make()
         return errornr;
     }
 
-    Logger::values(LogValue::CM, m_dma->status()->loopPos, CMx, CMy);
+    Logger::values(LogValue::CM, m_dma->status()->loopPos, std::vector<arma::vec>({CMx, CMy}));
     this->prepareCorrectionValues(CMx, CMy, typeCorr);
 
     if (!READONLY) {

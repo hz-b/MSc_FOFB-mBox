@@ -49,17 +49,23 @@ class ValuesSubscriber(ZmqClient):
     def receive(self, message_nb=1):
         messages = ZmqClient.receive(self, message_nb)
 
-        valx_nb = np.fromstring(messages[0][2], dtype='double').size
-        valy_nb = np.fromstring(messages[0][3], dtype='double').size
-
+        value_type = messages[0][2];
+        valx_nb = np.fromstring(messages[0][3], dtype=value_type).size
         valuesX = np.zeros((valx_nb, message_nb))
-        valuesY = np.zeros((valy_nb, message_nb))
+
+        if len(messages[0]) > 4:
+            valy_nb = np.fromstring(messages[0][4], dtype=value_type).size
+            valuesY = np.zeros((valy_nb, message_nb))
         loopPos = []
 
         # parse frames in values X
         for count, message in enumerate(messages):
             loopPos.append(struct.unpack('i', message[1])[0])
-            valuesX[:, count] = np.fromstring(message[2], dtype='double')
-            valuesY[:, count] = np.fromstring(message[3], dtype='double')
+            valuesX[:, count] = np.fromstring(message[3], dtype=value_type)
+            if len(messages[0]) > 4:
+                valuesY[:, count] = np.fromstring(message[4], dtype=value_type)
 
-        return valuesX, valuesY, loopPos
+        if len(messages[0]) > 4:
+            return valuesX, valuesY, loopPos
+        else:
+            return valuesX, loopPos
