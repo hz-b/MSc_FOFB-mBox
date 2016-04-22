@@ -71,10 +71,10 @@ int CorrectionProcessor::correct(const CorrectionInput_t& input,
         dCMy = dCMy % m_CMWeightY;
     }
 
-    if ((arma::max(arma::abs(dCMx)) > 0.100) || ((arma::max(arma::abs(dCMy)) > 0.100)))
-    {
+//    if ((arma::max(arma::abs(dCMx)) > 0.100) || (arma::max(arma::abs(dCMy)) > 0.100)) {
+    if ((arma::max((dCMx)) > 0.100) || (arma::max((dCMy)) > 0.100)) {
         Logger::error(_ME_) << "A corrector as a value above 0.100";
-     //   return FOFB_ERROR_CM100;
+        return FOFB_ERROR_CM100;
     }
 
     if ((input.typeCorr & Correction::Horizontal) == Correction::Horizontal) {
