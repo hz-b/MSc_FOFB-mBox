@@ -69,12 +69,12 @@ public:
      */
     void setRFM(RFMDriver* driver) { Logger::m_driver = driver; }
 
-    void sendMessage(std::string message, std::string error="");
+    void sendMessage(const std::string& message, const std::string& error="");
     void sendZmq(const std::string& header, const std::string& message, const std::string& other);
     //void sendZmqValue(const std::string& header, const int loopPos, const arma::vec& valueX, const arma::vec& valueY);
     //void sendZmqValue(const std::string& header, const int loopPos, const std::vector<RFM2G_INT16>& value);
     template <typename T>
-    void sendZmqValue(const std::string& header, const int loopPos, const std::vector<T> values)
+    void sendZmqValue(const std::string& header, const int loopPos, const std::vector<T>& values)
     {
         if (values.size() == 0) {
             "ERROR -- Tried to send empty values, return";
@@ -98,7 +98,7 @@ public:
     }
 
 
-    void sendRFM(std::string message, std::string error);
+    void sendRFM(const std::string& message, const std::string& error);
 
     /**
      * @brief Set/Unset the debug mode

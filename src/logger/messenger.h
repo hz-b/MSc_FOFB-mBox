@@ -56,9 +56,16 @@ public:
     /**
      * @brief Shortcut function to update m_map
      */
-    template <class T>
+    template <typename T>
     void updateMap(const std::string& key, const T& value) {
         m_map.update(key, value);
+    }
+
+    /**
+     * @brief Shortcut function to get m_map[key]
+     */
+    arma::vec get(const std::string& key) const {
+        return m_map.getAsVec(key);
     }
 
 private:
@@ -102,9 +109,14 @@ private:
 
 extern Messenger messenger;
 
-template <class T>
+template <typename T>
 void updateMap(const std::string& key, const T& value) {
     messenger.updateMap(key, value);
+}
+
+template <typename T>
+void get(const std::string& key, T& value) {
+    value = messenger.get(key);
 }
 
 }

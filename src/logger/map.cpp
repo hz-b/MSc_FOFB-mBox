@@ -1,4 +1,5 @@
 #include "map.h"
+#include "logger/logger.h"
 
 Map::Map()
 {
@@ -62,37 +63,75 @@ const std::vector<unsigned char> Map::get(const std::string& key) const
 
 const unsigned char* Map::get_raw(const std::string& key) const
 {
-    return m_map.at(key).data();
+    try {
+        auto v = m_map.at(key);
+        return m_map.at(key).data();
+    } catch (std::exception e) {
+        Logger::error(_ME_) << e.what() << " [" << key << "] does not exist";
+        return nullptr;
+    }
 }
 
 std::string Map::getAsString(const std::string& key) const
 {
-    return std::string( (const char*) get_raw(key), get_sizeof(key)/sizeof(char));
+    const char* ptr = (const char*) get_raw(key);
+    if (ptr == nullptr) {
+        return std::string();
+    } else {
+        return std::string(ptr, get_sizeof(key)/sizeof(char));
+    }
 }
 
 int Map::getAsInt(const std::string& key) const
 {
-    return *(int*) get_raw(key);
+    int* ptr = (int*) get_raw(key);
+    if (ptr == nullptr) {
+        return 0;
+    } else {
+        return *ptr;
+    }
 }
 
 double Map::getAsDouble(const std::string& key) const
 {
-    return *(double*) get_raw(key);
+    double* ptr = (double*) get_raw(key);
+    if (ptr == nullptr) {
+        return 0;
+    } else {
+        return *ptr;
+    }
 }
 
 arma::vec Map::getAsVec(const std::string& key) const
 {
-    return arma::vec((double*) get_raw(key), get_sizeof(key)/sizeof(double));
+    double* ptr = (double*) get_raw(key);
+    if (ptr == nullptr) {
+        return arma::vec();
+    } else {
+        return arma::vec(ptr, get_sizeof(key)/sizeof(double));
+    }
 }
 
 arma::mat Map::getAsMat(const std::string& key, int nrows, int ncols) const
 {
-    return arma::mat((double*) get_raw(key), nrows, ncols);
+    double* ptr = (double*) get_raw(key);
+    if (ptr == nullptr) {
+        return arma::mat();
+    } else {
+        return arma::mat(ptr, nrows, ncols);
+    }
 }
 
 const int Map::get_sizeof(const std::string& key) const
 {
-    return m_map.at(key).size();
+    int size(0);
+    try {
+        auto v = m_map.at(key);
+        size = v.size();
+    } catch(const std::exception& e) {
+        Logger::error(_ME_) << e.what();
+    }
+    return size;
 }
 
 #ifndef DEBUG

@@ -23,15 +23,10 @@ int CorrectionHandler::typeCorrection()
     return typeCorr;
 }
 
-int CorrectionHandler::callProcessorRoutine(const arma::vec& diffX, const arma::vec& diffY,
-                                            const bool newInjection,
-                                            arma::vec& CMx, arma::vec& CMy,
-                                            const int typeCorr)
+int CorrectionHandler::callProcessorRoutine(const CorrectionInput_t& input,
+                                            arma::vec& CMx, arma::vec& CMy)
 {
-    return m_correctionProcessor.correct(diffX, diffY,
-                                         newInjection,
-                                         CMx, CMy,
-                                         typeCorr);
+    return m_correctionProcessor.correct(input, CMx, CMy);
 }
 
 void CorrectionHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,

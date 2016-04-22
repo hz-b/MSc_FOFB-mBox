@@ -10,10 +10,15 @@
 Messenger::Messenger::Messenger(zmq::context_t& context)
     : m_serve(false)
 {
-    m_map.update("AMPLITUDE10", (double) 0);
-    m_map.update("PHASE10", (double) 0);
-    m_editableKeys.push_back("AMPLITUDE10");
-    m_editableKeys.push_back("PHASE10");
+    m_map.update("AMPLITUDES-X-10", arma::vec());
+    m_map.update("PHASES-X-10", arma::vec());
+    m_editableKeys.push_back("AMPLITUDES-X-10");
+    m_editableKeys.push_back("PHASES-X-10");
+
+    m_map.update("AMPLITUDES-Y-10", arma::vec());
+    m_map.update("PHASES-Y-10", arma::vec());
+    m_editableKeys.push_back("AMPLITUDES-Y-10");
+    m_editableKeys.push_back("PHASES-Y-10");
 
     m_socket = new zmq_ext::socket_t(context, ZMQ_REP);
     m_port = 3334;

@@ -163,17 +163,22 @@ int Handler::make()
     Logger::values(LogValue::BPM, m_dma->status()->loopPos, std::vector<arma::vec>({diffX, diffY}));
     Logger::values(LogValue::ADC, m_dma->status()->loopPos, std::vector<std::vector<RFM2G_INT16> >({m_adc->buffer()}));
 
-    int typeCorr = this->typeCorrection();
-    int errornr = this->callProcessorRoutine(diffX, diffY,
-                                             newInjection,
-                                             CMx, CMy,
-                                             typeCorr);
+    CorrectionInput_t input;
+
+    input.typeCorr = this->typeCorrection();
+
+    input.diffX = diffX;
+    input.diffY = diffY;
+    input.newInjection = newInjection;
+    input.value10Hz = m_adc->bufferAt(62);
+    
+    int errornr = this->callProcessorRoutine(input, CMx, CMy);
     if (errornr) {
         return errornr;
     }
 
     Logger::values(LogValue::CM, m_dma->status()->loopPos, std::vector<arma::vec>({CMx, CMy}));
-    this->prepareCorrectionValues(CMx, CMy, typeCorr);
+    this->prepareCorrectionValues(CMx, CMy, input.typeCorr);
 
     if (!READONLY) {
         this->writeCorrection();

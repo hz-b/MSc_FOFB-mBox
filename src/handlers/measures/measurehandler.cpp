@@ -4,6 +4,7 @@
 #include "adc.h"
 #include "dac.h"
 #include "dma.h"
+#include "handlers/structures.h"
 #include "logger/logger.h"
 
 #include <iostream>
@@ -42,12 +43,10 @@ int MeasureHandler::typeCorrection()
     return Correction::All;
 }
 
-int MeasureHandler::callProcessorRoutine(const arma::vec& diffX, const arma::vec& diffY,
-                                         const bool newInjection,
-                                         arma::vec& CMx, arma::vec& CMy,
-                                         const int typeCorr)
+int MeasureHandler::callProcessorRoutine(const CorrectionInput_t& input,
+                                         arma::vec& CMx, arma::vec& CMy)
 {
-    return this->callPythonFunction(diffX, diffY, CMx, CMy);
+    return this->callPythonFunction(input.diffX, input.diffY, CMx, CMy);
 }
 
 void MeasureHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,

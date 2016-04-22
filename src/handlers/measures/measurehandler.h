@@ -57,10 +57,8 @@ private:
     /**
      * @brief Calls processor callProcessorRoutine
      */
-    virtual int callProcessorRoutine(const arma::vec& diffX, const arma::vec& diffY,
-                                     const bool newInjection,
-                                     arma::vec& CMx, arma::vec& CMy,
-                                     const int typeCorr);
+    virtual int callProcessorRoutine(const CorrectionInput_t& input,
+                                     arma::vec& CMx, arma::vec& CMy);
 
     virtual int typeCorrection();
 

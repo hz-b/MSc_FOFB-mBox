@@ -1,10 +1,21 @@
 #ifndef CORRECTIONPROCESSOR_H
 #define CORRECTIONPROCESSOR_H
 
+#include "handlers/structures.h"
+
 #include <armadillo>
 
 class ADC;
 class RFM;
+
+struct PID_t {
+    double P;
+    double I;
+    double D;
+    double currentP;
+    arma::vec correctionSum;
+    arma::vec lastCorrection;
+};
 
 class CorrectionProcessor
 {
@@ -28,15 +39,13 @@ public:
      *                  * Correction::Vertical (= `0b10`)
      *                  * Correction::All (= `0b11`)
      */
-    int correct(const arma::vec& diffX, const arma::vec& diffY,
-                const bool newInjection,
-                arma::vec& Data_CMx, arma::vec& Data_CMy,
-                const int type );
+    int correct(const CorrectionInput_t& input,
+                arma::vec& Data_CMx, arma::vec& Data_CMy);
 
     /**
      * @brief Set the PID parameters.
      */
-    void setPID(double P, double I, double D) { m_P = P; m_I = I; m_D = D;};
+    void setPID(double P, double I, double D);
 
     /**
      * @brief Set the correctors.
@@ -71,12 +80,16 @@ private:
      * @param[out] SmatInv Inversed matrix
      */
     void calcSmat(const arma::mat &Smat, double Ivec, arma::vec &CMWeight, arma::mat &SmatInv);
+    bool isInjectionTime(const bool newInjection);
+    int checkRMS(const arma::vec& diffX, const arma::vec& diffY);
+    arma::vec PIDcorr(const arma::vec& dCM, PID_t& pid);
+
 
     int m_injectionCnt;
     int m_injectionStopCnt;
     int m_injectionStartCnt;
     int m_rmsErrorCnt;
-    
+
     bool m_useCMWeight;
     arma::vec m_CMWeightX, m_CMWeightY;
 
@@ -85,6 +98,8 @@ private:
 
     arma::mat m_SmatInvX, m_SmatInvY;
     arma::vec m_CMx, m_CMy;
+    PID_t m_pidX;
+    PID_t m_pidY;
     arma::vec m_dCORlastX, m_dCORlastY;
     arma::vec m_Xsum, m_Ysum;
     arma::vec m_Data_CMx, m_Data_CMy;

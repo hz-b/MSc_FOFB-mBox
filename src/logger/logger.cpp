@@ -61,14 +61,14 @@ int Logger::Logger::port() const
     return m_port;
 }
 
-void Logger::Logger::sendMessage(std::string message, std::string error)
+void Logger::Logger::sendMessage(const std::string& message, const std::string& error)
 {
     if (!READONLY) {
         this->sendRFM(message, error);
     }
 }
 
-void Logger::Logger::sendRFM(std::string message, std::string error)
+void Logger::Logger::sendRFM(const std::string& message, const std::string& error)
 {
     unsigned long pos = MESSAGE_MEMPOS;
     //cout << "Send To Pos: " << pos << endl;

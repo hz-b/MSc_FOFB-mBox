@@ -2,6 +2,7 @@
 #define HANDLER_H
 
 #include "define.h"
+#include "handlers/structures.h"
 
 #include <armadillo>
 
@@ -40,7 +41,7 @@ public:
      * @param weigthedCorr True if we use a weighted correction. Else False.
      */
     explicit Handler(RFMDriver *driver, DMA *dma, bool weigthedCorr);
-    
+
     ~Handler();
 
     /**
@@ -104,10 +105,8 @@ protected:
      *
      * @return Error code
      */
-    virtual int callProcessorRoutine(const arma::vec& diffX, const arma::vec& diffY,
-                                     const bool newInjection,
-                                     arma::vec& CMx, arma::vec& CMy,
-                                     const int typeCorr) = 0;
+    virtual int callProcessorRoutine(const CorrectionInput_t& input,
+                                     arma::vec& CMx, arma::vec& CMy) = 0;
 
     /**
      * @brief Prepare the values to be written by the DAC
