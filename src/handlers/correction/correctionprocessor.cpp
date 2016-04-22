@@ -92,7 +92,7 @@ int CorrectionProcessor::correct(const CorrectionInput_t& input,
     Messenger::get("PHASES-X-10", phaseX10);
     arma::vec ampX10;
     Messenger::get("AMPLITUDES-X-10",ampX10);
-    if ((ampX10.n_elem == m_CMx.n_elem) && (phaseX10.n_elem == m_CMx.n_elem)) {
+    if ((ampX10.n_elem == Data_CMx.n_elem) && (phaseX10.n_elem == Data_CMy.n_elem)) {
         arma::vec dynamicCorrX = ampX10 % (input.value10Hz * arma::cos(phaseX10)
                               + 1-std::pow(input.value10Hz, 2) * arma::sin(phaseX10));
         Data_CMx += dynamicCorrX;
@@ -101,7 +101,7 @@ int CorrectionProcessor::correct(const CorrectionInput_t& input,
     Messenger::get("PHASES-Y-10", phaseY10);
     arma::vec ampY10;
     Messenger::get("AMPLITUDES-Y-10",ampY10);
-    if ((ampY10.n_elem == m_CMy.n_elem) && (phaseY10.n_elem == m_CMy.n_elem)) {
+    if ((ampY10.n_elem == Data_CMy.n_elem) && (phaseY10.n_elem == Data_CMy.n_elem)) {
         arma::vec dynamicCorrY = ampY10 % (input.value10Hz * arma::cos(phaseY10)
                               + 1-std::pow(input.value10Hz, 2) * arma::sin(phaseY10));
         Data_CMy += dynamicCorrY;
