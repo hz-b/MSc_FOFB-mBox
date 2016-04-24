@@ -153,7 +153,8 @@ int Handler::getIdx(const std::vector<double>& ADC_BPMIndex_Pos, double DeviceWa
 int Handler::make()
 {
     arma::vec diffX, diffY;
-    arma::vec CMx, CMy;
+    arma::vec CMx = arma::zeros<arma::vec>(m_numCMx);
+    arma::vec CMy = arma::zeros<arma::vec>(m_numCMy);;
     bool newInjection = false;
     if (this->getNewData(diffX, diffY, newInjection))
     {
@@ -176,7 +177,8 @@ int Handler::make()
     if (errornr) {
         return errornr;
     }
-
+    std::cout << CMx;
+    std::cout << CMy;
     Logger::values(LogValue::CM, m_dma->status()->loopPos, std::vector<arma::vec>({CMx, CMy}));
     this->prepareCorrectionValues(CMx, CMy, input.typeCorr);
 
