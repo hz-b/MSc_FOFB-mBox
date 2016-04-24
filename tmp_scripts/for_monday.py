@@ -9,7 +9,7 @@ from zmq_client import ValuesSubscriber
 from PyML import PyML
 
 SAMPLE_NB = 100
-
+EVERYX = 70
 
 def show():
     pml = PyML()
@@ -28,32 +28,29 @@ def show():
                  'FOFB-CM-DATA'
                  ])
     fig = plt.figure(figsize=(10,5))
+    f1 = fig.add_subplot(2,1,1)
+    f2 = fig.add_subplot(2,1,2)
     plt.ion()
     plt.show()
-    p1X = None
-    p2X = None
     t = 0
     while True:
         # Only to be sure not to lose anything
         valuesX, valuesY, loopPos = s.receive(1)
-        if t < 100:
+
+        if t < EVERYX:
             t += 1
             continue
         if valuesX.size > 64: # it's a bpm value
-            f1 = fig.add_subplot(2,1,1)
-            if p1X is not None:
-                p1X.pop(0).remove()
-                p1Y.pop(0).remove()
-            p1X = plt.plot(posBPMx, valuesX[:,0], '-b')
-            p1Y = plt.plot(posBPMy, valuesY[:,0], '-g')
+            f1.clear()
+            f1.plot(posBPMx, valuesX[:,0], '-g')
+            f1.plot(posBPMy, valuesY[:,0], '-b')
+            f1.autoscale()
         else:
-            f2 = plt.subplot(2,1,2)
             t = 0
-            if p2X is not None:
-                p2X.pop(0).remove()
-                p2Y.pop(0).remove()
-            p2X = plt.plot(posCMx, valuesX[:,0], '-b')
-            p2Y = plt.plot(posCMy,valuesY[:,0], '-g')
+            f2.clear()
+            f2.plot(posCMx, valuesX[:,0], '-g')
+            f2.plot(posCMy, valuesY[:,0], '-b')
+            f2.autoscale()
         plt.draw()
         print(loopPos[0])
 
