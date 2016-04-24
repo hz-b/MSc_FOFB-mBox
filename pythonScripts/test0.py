@@ -7,7 +7,8 @@ import time
 # Values
 fs = float(150)  # Hz
 f_max = 10
-f = (np.arange(0, f_max*5)/float(5)).tolist()
+#f = (np.arange(0, f_max*5)/float(5)).tolist()
+f = [5, 10]
 t_max = 2
 t = (np.arange(t_max*fs)/fs).tolist()
 filename = "results"
@@ -97,7 +98,7 @@ def corr_value(BPMx, BPMy):
 
 def set_output(t, f, CM_id, axis):
     global gBPMx_nb, gBPMy_nb, gCMx_nb, gCMy_nb
-    v = np.sin(2*np.pi*f*t)
+    v = 0.1*np.sin(2*np.pi*f*t)
 
     CMx = np.zeros(gCMx_nb)
     CMy = np.zeros(gCMy_nb)
@@ -107,6 +108,8 @@ def set_output(t, f, CM_id, axis):
     else:
         CMy[CM_id] = v
 
+    print('python x')
+    print(CMx)
     return CMx, CMy
 
 
