@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     ctx = zmq.Context(1)
     s = ctx.socket(zmq.SUB)
-    s.connect("tcp://localhost:9999")
+    s.connect("tcp://localhost:3333")
     for key in KEYS:
         s.setsockopt(zmq.SUBSCRIBE, key)
 
