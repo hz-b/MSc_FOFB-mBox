@@ -30,7 +30,7 @@ mBox::~mBox()
     Logger::Logger() << "mBox exited";
 }
 
-void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
+void mBox::init(const char* deviceName, const bool weightedCorr)
 {
     m_runningState = Preinit;
     m_runningStatus = Idle;
@@ -47,8 +47,8 @@ void mBox::init(char *deviceName, bool weightedCorr, std::string inputFile)
     Logger::Logger logger;
     logger.setRFM(m_driver);
 
-    if (!inputFile.empty()) { // inputFile => Experiment mode
-        m_handler = new MeasureHandler(m_driver, m_dma, weightedCorr, inputFile);
+    if (!m_inputFile.empty()) { // inputFile => Experiment mode
+        m_handler = new MeasureHandler(m_driver, m_dma, weightedCorr, m_inputFile);
     } else {
         m_handler = new CorrectionHandler(m_driver, m_dma, weightedCorr);
     }
@@ -117,12 +117,12 @@ void mBox::startLoop()
     }
 }
 
-void mBox::initRFM(char *deviceName)
+void mBox::initRFM(const char* deviceName)
 {
     Logger::Logger() << "Init RFM";
     Logger::Logger() << "\tRFM Handle : " << m_driver->handle();
 
-    if (m_driver->open(deviceName)) {
+    if (m_driver->open(const_cast<char*>(deviceName))) {
         Logger::error(_ME_) << "\tCan't open " << deviceName << '\n' ;
         Logger::error(_ME_) << "\tExit fron initRFM()";
         exit(1);
@@ -138,3 +138,94 @@ void mBox::initRFM(char *deviceName)
     Messenger::messenger.startServing();
 }
 
+void mBox::parseArgs(int argc, char* argv[])
+{
+    std::string startflag = "";
+    m_inputFile = "";
+    if (argc > 1) {
+        std::string arg1 = argv[1];
+        if (!arg1.compare("--help")) {
+            std::cout << "=== mbox (2015-2016) ===\n"
+                      << "Use:\n"
+                      << "mbox --ro\n"
+                      << "     Read only version: just reads the RFM and calculates\n"
+                      << "     the correction, don't write it back.\n"
+                      << "mbox --rw\n"
+                      << "     Read-write version: reads the RFM, calculates the\n"
+                      << "     correction and write it on the RFM.\n"
+                      << "mbox --experiment <FILENAME>\n"
+                      << "     Read-write version for experiments: read the file <FILENAME>\n"
+                      << "     to know which values to create.\n\n"
+                      << "Other arguments (to append):\n"
+                      << "--debug\n"
+                      << "     Print the logs on the the stderr.\n"
+                      << "--logport <PORT>\n"
+                      << "     Which port the log publisher should use.\n"
+                      << "--queryport <PORT>\n"
+                      << "     Which port the query messenger should use.\n\n";
+
+            exit(0);
+        } else if (!arg1.compare("--ro")) {
+            READONLY = true;
+            startflag = " [READ-ONLY VERSION]";
+        } else if (!arg1.compare("--rw")) {
+            READONLY = false;
+        } else if (!arg1.compare("--experiment")) {
+            if (argc >= 3) {
+                READONLY = false;
+                m_inputFile = argv[2];
+                if (std::ifstream(m_inputFile).good()) {
+                    startflag = "[EXPERIMENT MODE] FILE = " + m_inputFile;
+                } else {
+                    std::cout << "ERROR: " << m_inputFile << " is not a valid file\n\n";
+                    startError();
+                }
+            } else {
+                startError();
+            }
+        } else {
+            startError();
+        }
+    } else {
+        startError();
+    }
+    Logger::Logger logger;
+    for (int i=1; i < argc ; i++) {
+        if (!std::string(argv[i]).compare("--debug")) {
+            logger.setDebug(true);
+        } else if (!std::string(argv[i]).compare("--logport")) {
+            if ((i+1 < argc) && atoi(argv[i+1]) < 65535 && atoi(argv[i+1]) > 1000) {
+                logger.setPort(atoi(argv[i+1]));
+            } else {
+                std::cout << "A port should be given (1000 to 65535)\n";
+                exit(-1);
+            }
+        } else if (!std::string(argv[i]).compare("--queryport")) {
+            if ((i+1 < argc) && atoi(argv[i+1]) < 65535 && atoi(argv[i+1]) > 1000 && atoi(argv[i+1]) != logger.port()) {
+                Messenger::messenger.setPort(atoi(argv[i+1]));
+            } else {
+                std::cout << "A port should be given (1000 to 65535), different from logport.\n";
+                exit(-1);
+            }
+        }
+    }
+    std::string startMessage = "Starting the mBox " + startflag;
+    std::cout << std::string(startMessage.size(),'=') << '\n'
+              << startMessage << '\n'
+              << std::string(startMessage.size(),'=') << '\n' << '\n';
+    Logger::Logger() << startMessage;
+}
+
+/**
+ * @brief Small help text printed when the program is called with wrong arguments.
+ */
+void mBox::startError()
+{
+    std::cout << "=== mbox (2015-2016) ===\n";
+    std::cout << "One argument is expected: --ro, --rw.\n";
+    std::cout << "Or two arguments expected: --experiment <FILE>.\n";
+    std::cout << "\n";
+    std::cout << "See --help for more help.\n\n";
+
+    exit(-1);
+}

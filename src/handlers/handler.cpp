@@ -172,13 +172,12 @@ int Handler::make()
     input.diffY = diffY;
     input.newInjection = newInjection;
     input.value10Hz = m_adc->bufferAt(62);
-    
+
     int errornr = this->callProcessorRoutine(input, CMx, CMy);
     if (errornr) {
         return errornr;
     }
-    std::cout << CMx;
-    std::cout << CMy;
+
     Logger::values(LogValue::CM, m_dma->status()->loopPos, std::vector<arma::vec>({CMx, CMy}));
     this->prepareCorrectionValues(CMx, CMy, input.typeCorr);
 

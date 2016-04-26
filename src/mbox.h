@@ -26,13 +26,17 @@ public:
     ~mBox();
 
     /**
-     * @brief Initialiwe the mBox.
+     * @brief Parse the commandline arguments
+     */
+    void parseArgs(int argc, char* argv[]);
+
+    /**
+     * @brief Initialize the mBox.
      *
      * @param deviceName Name of the RFM device (to be passed to RFMDriver)
      * @param weightedCorr True if the correction is weighted
-     * @param inputFile File to use for experiments (eg: Python module)
      */
-    void init(char *deviceName, bool weightedCorr, std::string inputFile);
+    void init(const char* deviceName, const bool weightedCorr);
 
     /**
      * @brief Start the main loop that handle the different events
@@ -45,8 +49,14 @@ private:
      * @brief Initialize the RFM.
      * @param deviceName Name of the RFM device
      */
-    void initRFM(char *deviceName);
+    void initRFM(const char* deviceName);
 
+    /**
+     * @brief Small help text printed when the program is called with wrong arguments.
+     */
+    void startError();
+
+    std::string m_inputFile;
     RunState m_runningState;
     RunStatus m_runningStatus;
     DMA *m_dma;

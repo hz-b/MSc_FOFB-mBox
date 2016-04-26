@@ -116,6 +116,7 @@ void Logger::Logger::sendZmq(const std::string& header, const std::string& messa
 {
     std::time_t rawtime = std::time(nullptr);
     std::string time = std::asctime(std::localtime(&rawtime));
+    time = time.substr(0, time.size()-1); // Remove '\n' at the end of the string
 
     m_zmqSocket->send(header, ZMQ_SNDMORE);
     m_zmqSocket->send(time, ZMQ_SNDMORE);

@@ -6,6 +6,9 @@
 
 #define CLOCK_MODE CLOCK_MONOTONIC_RAW
 
+const char DEVICE_NAME[] = "/dev/rfm2g0";
+const bool WEIGHTED_CORR = true;
+
 // See http://wiki.trs.bessy.de/bin/view/OPIhelpdesk/FastOrbitFeedback
 const unsigned int CTRL_MEMPOS = 0x03000000;
 const unsigned int STATUS_MEMPOS = CTRL_MEMPOS + 50;
