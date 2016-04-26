@@ -43,13 +43,13 @@ const int LINUX_DMA_FLAG = 0x01;
 const int LINUX_DMA_FLAG2 = 0;
 const int DMA_THRESHOLD = 128;
 
-#define FOFB_ERROR_ADC      1
-#define FOFB_ERROR_DAC      2
-#define FOFB_ERROR_CM100    4
-#define FOFB_ERROR_NoBeam   5
-#define FOFB_ERROR_RMS      6
-#define FOFB_ERROR_ADCReset 8
-#define FOFB_ERROR_Unkonwn  7
+const unsigned int FOFB_ERROR_ADC = 1;
+const unsigned int FOFB_ERROR_DAC = 2;
+const unsigned int FOFB_ERROR_CM100 = 4;
+const unsigned int FOFB_ERROR_NoBeam = 5;
+const unsigned int FOFB_ERROR_RMS = 6;
+const unsigned int FOFB_ERROR_ADCReset = 8;
+const unsigned int FOFB_ERROR_Unkonwn = 7;
 
 const int readStructtype_pchar = 0;
 const int readStructtype_mat = 1;
