@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cstring>
 
-RFM2G_STATUS RFMDriver::open(char *devicePath)
+RFM2G_STATUS RFMDriver::open(char* devicePath)
 {
     std::ifstream infile("dump_rmf.dat");
     if(infile.good())
@@ -56,7 +56,7 @@ RFM2G_STATUS RFMDriver::write(RFM2G_UINT32 offset, void* buffer, RFM2G_UINT32 le
     return RFM2G_SUCCESS;
 }
 
-RFM2G_STATUS RFMDriver::getDMAThreshold(RFM2G_UINT32 *threshold)
+RFM2G_STATUS RFMDriver::getDMAThreshold(RFM2G_UINT32* threshold)
 {
     *threshold = 1000000;//m_DMAthreshold;
     return RFM2G_SUCCESS;

@@ -15,7 +15,7 @@ public:
     /**
      * File Open/Close
      */
-    virtual RFM2G_STATUS open(char *devicePath)
+    virtual RFM2G_STATUS open(char* devicePath)
     {
         return RFM2gOpen(devicePath, &m_handle);
     };
@@ -27,7 +27,7 @@ public:
     /**
      * Configuration
      */
-    virtual RFM2G_STATUS getConfig(RFM2GCONFIG *config)
+    virtual RFM2G_STATUS getConfig(RFM2GCONFIG* config)
     {
         return RFM2gGetConfig(m_handle, config);
     };
@@ -47,35 +47,35 @@ public:
     {
         return RFM2gUserMemoryBytes(m_handle, userMemoryPtr, offset, bytes);
     };
-    virtual RFM2G_STATUS nodeId(RFM2G_NODE *nodeIdPtr)
+    virtual RFM2G_STATUS nodeId(RFM2G_NODE* nodeIdPtr)
     {
         return RFM2gNodeID(m_handle, nodeIdPtr);
     };
-    virtual RFM2G_STATUS boardId(RFM2G_UINT8 *boardIdPtr)
+    virtual RFM2G_STATUS boardId(RFM2G_UINT8* boardIdPtr)
     {
         return RFM2gBoardID(m_handle, boardIdPtr);
     };
-    virtual RFM2G_STATUS size(RFM2G_UINT32 *sizePtr)
+    virtual RFM2G_STATUS size(RFM2G_UINT32* sizePtr)
     {
         return RFM2gSize(m_handle, sizePtr);
     };
-        virtual RFM2G_STATUS first(RFM2G_UINT32 *firstPtr)
+        virtual RFM2G_STATUS first(RFM2G_UINT32* firstPtr)
     {
         return RFM2gFirst(m_handle, firstPtr);
     };
-    virtual RFM2G_STATUS deviceName(char *namePtr)
+    virtual RFM2G_STATUS deviceName(char* namePtr)
     {
         return RFM2gDeviceName(m_handle, namePtr);
     };
-    virtual RFM2G_STATUS dllVersion(char *versionPtr)
+    virtual RFM2G_STATUS dllVersion(char* versionPtr)
     {
         return RFM2gDllVersion(m_handle, versionPtr);
     };
-    virtual RFM2G_STATUS driverVersion(char *versionPtr)
+    virtual RFM2G_STATUS driverVersion(char* versionPtr)
     {
         return RFM2gDriverVersion(m_handle, versionPtr);
     };
-    virtual RFM2G_STATUS getDMAThreshold(RFM2G_UINT32 *threshold)
+    virtual RFM2G_STATUS getDMAThreshold(RFM2G_UINT32* threshold)
     {
         return RFM2gGetDMAThreshold(m_handle, threshold);
     };
@@ -87,7 +87,7 @@ public:
     {
         return RFM2gSetDMAByteSwap(m_handle, byteSwap);
     };
-    virtual RFM2G_STATUS getDMAByteSwap(RFM2G_BOOL *byteSwap)
+    virtual RFM2G_STATUS getDMAByteSwap(RFM2G_BOOL* byteSwap)
     {
         return RFM2gGetDMAByteSwap(m_handle, byteSwap);
     };
@@ -95,7 +95,7 @@ public:
     {
         return RFM2gSetPIOByteSwap(m_handle, byteSwap);
     };
-    virtual RFM2G_STATUS getPIOByteSwap(RFM2G_BOOL *byteSwap)
+    virtual RFM2G_STATUS getPIOByteSwap(RFM2G_BOOL* byteSwap)
     {
         return RFM2gGetPIOByteSwap(m_handle, byteSwap);
     };
@@ -103,29 +103,29 @@ public:
     /**
      * Data Transferts
      */
-    virtual RFM2G_STATUS read(RFM2G_UINT32 offset, void *buffer, RFM2G_UINT32 length)
+    virtual RFM2G_STATUS read(RFM2G_UINT32 offset, void* buffer, RFM2G_UINT32 length)
     {
         return RFM2gRead(m_handle, offset, buffer, length);
     };
-    virtual RFM2G_STATUS write(RFM2G_UINT32 offset, void *buffer, RFM2G_UINT32 length)
+    virtual RFM2G_STATUS write(RFM2G_UINT32 offset, void* buffer, RFM2G_UINT32 length)
     {
         return RFM2gWrite(m_handle, offset, buffer, length);
     };
-    virtual RFM2G_STATUS peek8(RFM2G_UINT32 offset, RFM2G_UINT8  *value)
+    virtual RFM2G_STATUS peek8(RFM2G_UINT32 offset, RFM2G_UINT8 * value)
     {
         return RFM2gPeek8(m_handle, offset, value);
     };
-    virtual RFM2G_STATUS peek16(RFM2G_UINT32 offset, RFM2G_UINT16 *value)
+    virtual RFM2G_STATUS peek16(RFM2G_UINT32 offset, RFM2G_UINT16* value)
     {
         return RFM2gPeek16(m_handle, offset, value);
     };
-    virtual RFM2G_STATUS peek32(RFM2G_UINT32 offset, RFM2G_UINT32 *value)
+    virtual RFM2G_STATUS peek32(RFM2G_UINT32 offset, RFM2G_UINT32* value)
     {
         return RFM2gPeek32(m_handle, offset, value);
     };
     virtual RFM2G_STATUS poke8(RFM2G_UINT32 offset, RFM2G_UINT8 value)
     {
-        return RFM2gPoke8(m_handle, offset, value);	
+        return RFM2gPoke8(m_handle, offset, value);
     };
     virtual RFM2G_STATUS poke16(RFM2G_UINT32 offset, RFM2G_UINT16 value)
     {
@@ -136,8 +136,8 @@ public:
         return RFM2gPoke32(m_handle, offset, value);
     };
 
-    // Implemented only on 64 bit Operating Systems 
-    virtual RFM2G_STATUS peek64(RFM2G_UINT32 offset, RFM2G_UINT64 *value)
+    // Implemented only on 64 bit Operating Systems
+    virtual RFM2G_STATUS peek64(RFM2G_UINT32 offset, RFM2G_UINT64* value)
     {
         return RFM2gPeek64(m_handle, offset, value);
     };
@@ -145,9 +145,9 @@ public:
     {
         return RFM2gPoke64(m_handle, offset, value);
     };
-    
+
     /**
-     * Interrupt Event Functions
+     *  Interrupt Event Functions
      */
     virtual RFM2G_STATUS enableEvent(RFM2GEVENTTYPE eventType)
     {
@@ -161,7 +161,7 @@ public:
     {
         return RFM2gSendEvent(m_handle, toNode, eventType, extendedData);
     };
-    virtual RFM2G_STATUS waitForEvent(RFM2GEVENTINFO *eventInfo)
+    virtual RFM2G_STATUS waitForEvent(RFM2GEVENTINFO* eventInfo)
     {
         return RFM2gWaitForEvent(m_handle, eventInfo);
     };
@@ -185,19 +185,19 @@ public:
     {
         return RFM2gClearEventCount(m_handle, eventType);
     };
-    virtual RFM2G_STATUS getEventCount(RFM2GEVENTTYPE eventType, RFM2G_UINT32 *count)
+    virtual RFM2G_STATUS getEventCount(RFM2GEVENTTYPE eventType, RFM2G_UINT32* count)
     {
         return RFM2gGetEventCount(m_handle, eventType, count);
     };
 
     /**
-     * Utility
+     *  Utility
      */
     virtual char* errorMsg(RFM2G_STATUS errorCode)
     {
         return RFM2gErrorMsg(errorCode);
     };
-    virtual RFM2G_STATUS getLed(RFM2G_BOOL *led)
+    virtual RFM2G_STATUS getLed(RFM2G_BOOL* led)
     {
         return RFM2gGetLed(m_handle, led);
     };
@@ -209,7 +209,7 @@ public:
     {
         return RFM2gCheckRingCont(m_handle);
     };
-    virtual RFM2G_STATUS getDarkOnDark(RFM2G_BOOL *state)
+    virtual RFM2G_STATUS getDarkOnDark(RFM2G_BOOL* state)
     {
         return RFM2gGetDarkOnDark(m_handle, state);
     };
@@ -217,11 +217,11 @@ public:
     {
         return RFM2gSetDarkOnDark(m_handle, state);
     };
-    virtual RFM2G_STATUS clearOwnData(RFM2G_BOOL *state)
+    virtual RFM2G_STATUS clearOwnData(RFM2G_BOOL* state)
     {
         return RFM2gClearOwnData(m_handle, state);
     };
-    virtual RFM2G_STATUS getTransmit(RFM2G_BOOL *state)
+    virtual RFM2G_STATUS getTransmit(RFM2G_BOOL* state)
     {
         return RFM2gGetTransmit(m_handle, state);
     };
@@ -229,7 +229,7 @@ public:
     {
         return RFM2gSetTransmit(m_handle, state);
     };
-    virtual RFM2G_STATUS getLoopback(RFM2G_BOOL *state)
+    virtual RFM2G_STATUS getLoopback(RFM2G_BOOL* state)
     {
         return RFM2gGetLoopback(m_handle, state);
     };
@@ -237,7 +237,7 @@ public:
     {
         return RFM2gSetLoopback(m_handle, state);
     };
-    virtual RFM2G_STATUS getParityEnable(RFM2G_BOOL *state)
+    virtual RFM2G_STATUS getParityEnable(RFM2G_BOOL* state)
     {
         return RFM2gGetParityEnable(m_handle, state);
     };
@@ -245,7 +245,7 @@ public:
     {
         return RFM2gSetParityEnable(m_handle, state);
     };
-    virtual RFM2G_STATUS getMemoryOffset(RFM2G_MEM_OFFSETTYPE *offset)
+    virtual RFM2G_STATUS getMemoryOffset(RFM2G_MEM_OFFSETTYPE* offset)
     {
         return RFM2gGetMemoryOffset(m_handle, offset);
     };
@@ -253,7 +253,7 @@ public:
     {
         return RFM2gSetMemoryOffset(m_handle, offset);
     };
-    virtual RFM2G_STATUS getSlidingWindow(RFM2G_UINT32 *offset, RFM2G_UINT32 *size)
+    virtual RFM2G_STATUS getSlidingWindow(RFM2G_UINT32* offset, RFM2G_UINT32* size)
     {
         return RFM2gGetSlidingWindow(m_handle, offset, size);
     };
