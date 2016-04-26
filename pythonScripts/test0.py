@@ -8,8 +8,8 @@ import time
 fs = float(150)  # Hz
 f_max = 10
 #f = (np.arange(0, f_max*5)/float(5)).tolist()
-f = [5, 10]
-t_max = 2
+f = [0, 5, 10, 15, 20]
+t_max = 5
 t = (np.arange(t_max*fs)/fs).tolist()
 filename = "results"
 
@@ -83,22 +83,28 @@ def corr_value(BPMx, BPMy):
         if f_id < len(f)-1:
             f_id += 1
         else:
-            f_id = 0
-            if CM_id < CM_nb[axis]-1:
-                CM_id += 1
-            else:
-                CM_id = 0
-                if axis == 0:
-                    axis = 1
-                else:
-                    status = Status.Done
+            status = Status.Done
+ # THIS IS IF WE MEASURE FOR ALL
+ #       else:
+ #           f_id = 0
+ #           if CM_id < CM_nb[axis]-1:
+ #               CM_id += 1
+ #           else:
+ #               CM_id = 0
+ #               if axis == 0:
+ #                   axis = 1
+ #               else:
+ #                   status = Status.Done
 
     return set_output(t[t_id], f[f_id], CM_id, axis)
 
 
 def set_output(t, f, CM_id, axis):
     global gBPMx_nb, gBPMy_nb, gCMx_nb, gCMy_nb
-    v = 0.1*np.sin(2*np.pi*f*t)
+    if  f == 0:
+        v = 0.1
+    else:
+        v = 0.1*np.sin(2*np.pi*f*t)
 
     CMx = np.zeros(gCMx_nb)
     CMy = np.zeros(gCMy_nb)

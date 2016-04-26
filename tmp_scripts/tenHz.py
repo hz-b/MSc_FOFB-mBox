@@ -1,7 +1,6 @@
 import sys
 import math
 import numpy as np
-import matplotlib.pyplot as plt
 
 sys.path.append('search_kicks')
 import zmq_client as zc
@@ -78,21 +77,21 @@ phY = np.angle(CorrY) - ph10
 
 if pack.unpack_string(sreq.ask('SET AMPLITUDES-X-10')) == "GO":
     sreq.ask(pack.pack_vec(ampX))
-else: 
+else:
     print("error on amplitudesX")
 
 if pack.unpack_string(sreq.ask('SET PHASES-X-10')) == "GO":
     sreq.ask(pack.pack_vec(phX))
-else: 
+else:
     print("error on phasesX")
 
 if pack.unpack_string(sreq.ask('SET AMPLITUDES-Y-10')) == "GO":
     sreq.ask(pack.pack_vec(ampX))
-else: 
+else:
     print("error on amplitudesY")
 
 if pack.unpack_string(sreq.ask('SET PHASES-Y-10')) == "GO":
     sreq.ask(pack.pack_vec(ampX))
-else: 
+else:
     print("error on phasesY")
 
