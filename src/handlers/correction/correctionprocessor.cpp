@@ -74,7 +74,11 @@ int CorrectionProcessor::correct(const CorrectionInput_t& input,
 //    if ((arma::max(arma::abs(dCMx)) > 0.100) || (arma::max(arma::abs(dCMy)) > 0.100)) {
     if ((arma::max((dCMx)) > 0.100) || (arma::max((dCMy)) > 0.100)) {
         Logger::error(_ME_) << "A corrector as a value above 0.100";
+#ifdef DUMMY_RFM_DRIVER
+        Logger::error(_ME_) << "Not considered because DUMMY_RFM_DRIVER is true";
+#else
         return FOFB_ERROR_CM100;
+#endif
     }
 
     if ((input.typeCorr & Correction::Horizontal) == Correction::Horizontal) {

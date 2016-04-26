@@ -145,25 +145,7 @@ void mBox::parseArgs(int argc, char* argv[])
     if (argc > 1) {
         std::string arg1 = argv[1];
         if (!arg1.compare("--help")) {
-            std::cout << "=== mbox (2015-2016) ===\n"
-                      << "Use:\n"
-                      << "mbox --ro\n"
-                      << "     Read only version: just reads the RFM and calculates\n"
-                      << "     the correction, don't write it back.\n"
-                      << "mbox --rw\n"
-                      << "     Read-write version: reads the RFM, calculates the\n"
-                      << "     correction and write it on the RFM.\n"
-                      << "mbox --experiment <FILENAME>\n"
-                      << "     Read-write version for experiments: read the file <FILENAME>\n"
-                      << "     to know which values to create.\n\n"
-                      << "Other arguments (to append):\n"
-                      << "--debug\n"
-                      << "     Print the logs on the the stderr.\n"
-                      << "--logport <PORT>\n"
-                      << "     Which port the log publisher should use.\n"
-                      << "--queryport <PORT>\n"
-                      << "     Which port the query messenger should use.\n\n";
-
+            this->printHelp();
             exit(0);
         } else if (!arg1.compare("--ro")) {
             READONLY = true;
@@ -216,9 +198,6 @@ void mBox::parseArgs(int argc, char* argv[])
     Logger::Logger() << startMessage;
 }
 
-/**
- * @brief Small help text printed when the program is called with wrong arguments.
- */
 void mBox::startError()
 {
     std::cout << "=== mbox (2015-2016) ===\n";
@@ -228,4 +207,26 @@ void mBox::startError()
     std::cout << "See --help for more help.\n\n";
 
     exit(-1);
+}
+
+void mBox::printHelp()
+{
+    std::cout << "=== mbox (2015-2016) ===\n"
+              << "Use:\n"
+              << "mbox --ro\n"
+              << "     Read only version: just reads the RFM and calculates\n"
+              << "     the correction, don't write it back.\n"
+              << "mbox --rw\n"
+              << "     Read-write version: reads the RFM, calculates the\n"
+              << "     correction and write it on the RFM.\n"
+              << "mbox --experiment <FILENAME>\n"
+              << "     Read-write version for experiments: read the file <FILENAME>\n"
+              << "     to know which values to create.\n\n"
+              << "Other arguments (to append):\n"
+              << "--debug\n"
+              << "     Print the logs on the the stderr.\n"
+              << "--logport <PORT>\n"
+              << "     Which port the log publisher should use.\n"
+              << "--queryport <PORT>\n"
+              << "     Which port the query messenger should use.\n\n";
 }

@@ -52,9 +52,14 @@ private:
     void initRFM(const char* deviceName);
 
     /**
-     * @brief Small help text printed when the program is called with wrong arguments.
+     * @brief Show a small help text and quits. Used when the program is called with wrong arguments.
      */
     void startError();
+
+    /**
+     * @brief Print the full help text.
+     */
+    void printHelp();
 
     std::string m_inputFile;
     RunState m_runningState;
