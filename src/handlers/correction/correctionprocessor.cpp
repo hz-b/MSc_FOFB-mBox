@@ -96,11 +96,12 @@ int CorrectionProcessor::correct(const CorrectionInput_t& input,
     Messenger::get("PHASES-X-10", phaseX10);
     arma::vec ampX10;
     Messenger::get("AMPLITUDES-X-10",ampX10);
-    if ((ampX10.n_elem == Data_CMx.n_elem) && (phaseX10.n_elem == Data_CMy.n_elem)) {
+    if ((ampX10.n_elem == Data_CMx.n_elem) && (phaseX10.n_elem == Data_CMx.n_elem)) {
         arma::vec dynamicCorrX = ampX10 % (input.value10Hz * arma::cos(phaseX10)
                               + 1-std::pow(input.value10Hz, 2) * arma::sin(phaseX10));
         Data_CMx += dynamicCorrX;
     }
+
     arma::vec phaseY10;
     Messenger::get("PHASES-Y-10", phaseY10);
     arma::vec ampY10;
