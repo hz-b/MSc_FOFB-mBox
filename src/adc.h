@@ -8,7 +8,21 @@ class RFMDriver;
 class DMA;
 
 /**
- * This class is used to read the data (= BPM values) to the RFM.
+ * @brief Read the data (= BPM values) from the RFM.
+ *
+ * It must first be asked to read, which copies the data to a local buffer,
+ * then use the buffer.
+ *
+ * \code{.cpp}
+ * // Initialize
+ * ADC adc(driver, dma);
+ * adc.init();
+ *
+ * // Then each time needed
+ * adc.read();
+ * RFM2G_INT16 value = adc.bufferAt(12); // To get the 12th element
+ * std::vector<RFM2G_INT16> buffer = adc.buffer() // To get the full buffer
+ * \endcode
  */
 class ADC
 {
@@ -50,14 +64,14 @@ public:
      * @param id Index of the buffer element to return
      * @return Buffer element
      */
-    RFM2G_INT16 bufferAt(int id) const { if (id < m_buffer.size()) return m_buffer.at(id); };
+    const RFM2G_INT16 bufferAt(int id) const { if (id < m_buffer.size()) return m_buffer.at(id); };
 
     /**
      * @brief Return the full buffer vector.
      *
      * @return The buffer vector
      */
-    std::vector<RFM2G_INT16> buffer() const { return m_buffer; };
+    const std::vector<RFM2G_INT16>& buffer() const { return m_buffer; };
 
     double waveIndexXAt(int id) const { return m_waveIndexX.at(id); };
     double waveIndexYAt(int id) const { return m_waveIndexY.at(id); };
