@@ -216,7 +216,7 @@ int MeasureHandler::callPythonFunction(const arma::vec& BPMx, const arma::vec& B
         // use the constructor vec(ptr, nb_elements)
         // with ptr = (double*) PyArray_DATA(pyCMx)
         CMx = arma::vec((double*) PyArray_DATA(pyCMx), m_numCMx);
-        CMy = arma::vec((double*) PyArray_DATA(pyCMx), m_numCMy);
+        CMy = arma::vec((double*) PyArray_DATA(pyCMy), m_numCMy);
 
         // Everything must be unreferenced
         Py_DECREF(pValue);
