@@ -54,6 +54,7 @@ void startError()
  */
 int main(int argc, char *argv[])
 {
+    //mbox.parseArgs(argc, argv);
     std::string startflag = "";
     std::string experimentFile = "";
     if (argc > 1) {
@@ -85,10 +86,15 @@ int main(int argc, char *argv[])
         } else if (!arg1.compare("--rw")) {
             READONLY = false;
         } else if (!arg1.compare("--experiment")) {
-            if (argc == 3) {
+            if (argc >= 3) {
                 READONLY = false;
                 experimentFile = argv[2];
-                startflag = " [EXPERIMENT MODE]\n FILE = " + experimentFile;
+                if (std::ifstream(experimentFile).good()) {
+                    startflag = " [EXPERIMENT MODE]\n FILE = " + experimentFile;
+                } else {
+                    std::cout << "ERROR: " << experimentFile << " is not a valid file\n\n";
+                    startError();
+                }
             } else {
                 startError();
             }
