@@ -6,14 +6,6 @@ zmq_ext::socket_t::socket_t(zmq::context_t& c, int socket_type)
 
 }
 
-bool zmq_ext::socket_t::send(const RFM2G_INT16* value , int size, int flags)
-{
-    int len = sizeof(RFM2G_INT16)*size;
-    zmq::message_t msg(len);
-    memcpy(msg.data(), value, len);
-    return zmq::socket_t::send(msg, flags);
-}
-
 bool zmq_ext::socket_t::send(const int value, int flags)
 {
     int len = sizeof(int);

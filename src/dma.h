@@ -5,10 +5,20 @@
 
 class RFMDriver;
 
+/**
+ * @brief Represent the Direct Memory Access.
+ */
 class DMA
 {
 public:
+    /**
+     * @brief Constructor
+     */
     explicit DMA();
+
+    /**
+     * @brief Destructor
+     */
     ~DMA();
 
     /**

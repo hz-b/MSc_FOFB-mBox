@@ -16,28 +16,38 @@ public:
      */
     explicit CorrectionHandler(RFMDriver *driver, DMA *dma, bool weightedCorr);
 
+    /**
+     * @brief Destructor
+     */
     ~CorrectionHandler() {};
 
 private:
 
     /**
-     * @brief Calls processor callProcessorRoutine
+     * @brief Call processor callProcessorRoutine.
      */
-    int callProcessorRoutine(const CorrectionInput_t& input,
-                             arma::vec& CMx, arma::vec& CMy);
-
-    int typeCorrection();
+    virtual int callProcessorRoutine(const CorrectionInput_t& input,
+                                     arma::vec& CMx, arma::vec& CMy);
 
     /**
-     * @brief Set the processor: the S matrix, the PID values and other parameters are initialized here.
+     * @brief Return the type of correction wanted.
      */
-    void setProcessor(arma::mat SmatX, arma::mat SmatY,
-                      double IvecX, double IvecY,
-                      double Frequency,
-                      double P, double I, double D,
-                      arma::vec CMx, arma::vec CMy,
-                      bool weightedCorr);
+    virtual int typeCorrection();
 
+    /**
+     * @brief Set the processor: the S matrix, the PID values and other
+     * parameters are initialized here.
+     */
+    virtual void setProcessor(arma::mat SmatX, arma::mat SmatY,
+                              double IvecX, double IvecY,
+                              double Frequency,
+                              double P, double I, double D,
+                              arma::vec CMx, arma::vec CMy,
+                              bool weightedCorr);
+
+    /**
+     * @brief Processor, i.e. what does the maths.
+     */
     CorrectionProcessor m_correctionProcessor;
 
 };

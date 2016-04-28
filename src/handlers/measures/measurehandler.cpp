@@ -11,11 +11,18 @@
 #include <string>
 #include <math.h>
 #include <Python.h>
+
+/**
+ * @brief Just to remove some compiler warnings.
+ */
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
 
-// HACK: using import_array() with Python2 doesn't work... We should definetely move to Python3
+/**
+ * @brief: Hack: using import_array() with Python2 doesn't work... We should
+ * definetely move to Python3
+ */
 #define my_import_array() {int r =_import_array();  \
 if (r < 0) {PyErr_Print(); PyErr_SetString(PyExc_ImportError, "numpy.core.multiarray failed to import");} }
 
@@ -24,7 +31,6 @@ MeasureHandler::MeasureHandler(RFMDriver *driver, DMA *dma, bool weightedCorr,
     : Handler(driver, dma, weightedCorr)
 {
     m_inputFile = inputFile;
-    m_functionName = "corr_value";
     int timeValue = 0;
 
     this->setModule();
@@ -46,7 +52,7 @@ int MeasureHandler::typeCorrection()
 int MeasureHandler::callProcessorRoutine(const CorrectionInput_t& input,
                                          arma::vec& CMx, arma::vec& CMy)
 {
-    return this->callPythonFunction(input.diffX, input.diffY, CMx, CMy);
+    return this->callPythonFunction(input.diff.x, input.diff.x, CMx, CMy);
 }
 
 void MeasureHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
@@ -60,7 +66,6 @@ void MeasureHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
 
     if (errorPythonInit) {
         Logger::error(_ME_) << "error";
-        m_status = Error;
     }
 }
 
@@ -107,7 +112,7 @@ int MeasureHandler::initPython()
     Py_DECREF(pName);
 
     if (m_pModule != NULL) {
-        m_pFunc = PyObject_GetAttrString(m_pModule, m_functionName.c_str());
+        m_pFunc = PyObject_GetAttrString(m_pModule, PYTHON_CORRECTION_FUNCTION.c_str());
 
         if (m_pFunc && PyCallable_Check(m_pFunc)) {
             return callPythonInit();
@@ -115,7 +120,7 @@ int MeasureHandler::initPython()
             if (PyErr_Occurred()) {
                 PyErr_Print();
             }
-            Logger::error(_ME_) << "Cannot find function '"<< m_functionName <<"'";
+            Logger::error(_ME_) << "Cannot find function '"<< PYTHON_CORRECTION_FUNCTION <<"'";
         }
         return 1;
     } else {
@@ -131,10 +136,10 @@ int MeasureHandler::callPythonInit()
     PyObject *pFunc = PyObject_GetAttrString(m_pModule, "init");
 
     if (pFunc && PyCallable_Check(pFunc)) {
-        PyObject *pyBPMx_nb = PyLong_FromLong(m_numBPMx);
-        PyObject *pyBPMy_nb = PyLong_FromLong(m_numBPMy);
-        PyObject *pyCMx_nb = PyLong_FromLong(m_numCMx);
-        PyObject *pyCMy_nb = PyLong_FromLong(m_numCMy);
+        PyObject *pyBPMx_nb = PyLong_FromLong(m_numBPM.x);
+        PyObject *pyBPMy_nb = PyLong_FromLong(m_numBPM.y);
+        PyObject *pyCMx_nb = PyLong_FromLong(m_numCM.x);
+        PyObject *pyCMy_nb = PyLong_FromLong(m_numCM.y);
 
         Py_INCREF(pyBPMx_nb);
         Py_INCREF(pyBPMy_nb);
@@ -180,10 +185,10 @@ int MeasureHandler::callPythonFunction(const arma::vec& BPMx, const arma::vec& B
 {
     PyObject *pArgs = NULL, *pValue = NULL;
 
-    npy_intp BPMx_s[] = {m_numBPMx};
-    npy_intp BPMy_s[] = {m_numBPMy};
-    npy_intp CMx_s[] = {m_numCMx};
-    npy_intp CMy_s[] = {m_numCMy};
+    npy_intp BPMx_s[] = {m_numBPM.x};
+    npy_intp BPMy_s[] = {m_numBPM.y};
+    npy_intp CMx_s[] = {m_numCM.x};
+    npy_intp CMy_s[] = {m_numCM.y};
 
     PyObject *pyBPMx = PyArray_SimpleNewFromData(1, BPMx_s,
                                                  NPY_DOUBLE, (double*) BPMx.memptr());
@@ -215,8 +220,8 @@ int MeasureHandler::callPythonFunction(const arma::vec& BPMx, const arma::vec& B
 
         // use the constructor vec(ptr, nb_elements)
         // with ptr = (double*) PyArray_DATA(pyCMx)
-        CMx = arma::vec((double*) PyArray_DATA(pyCMx), m_numCMx);
-        CMy = arma::vec((double*) PyArray_DATA(pyCMy), m_numCMy);
+        CMx = arma::vec((double*) PyArray_DATA(pyCMx), m_numCM.x);
+        CMy = arma::vec((double*) PyArray_DATA(pyCMy), m_numCM.y);
 
         // Everything must be unreferenced
         Py_DECREF(pValue);

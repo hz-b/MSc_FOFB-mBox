@@ -4,7 +4,7 @@
 #include <algorithm>
 
 
-// Just so that it don't get sent by  error
+/** Just so that it don't get sent by  error */
 #define STOPPING_MESSAGE "STOP-ME-406812310648"
 
 Messenger::Messenger::Messenger(zmq::context_t& context)

@@ -12,11 +12,21 @@ class DMA;
 class RFMDriver;
 
 namespace numbers {
+    /**
+     * @brief Coefficient to multiply the ADC values with to get real numbers.
+     */
     const double cf = 0.3051758e-3;
+
+    /**
+     * @brief Offset to get the 0.
+     */
     const double halfDigits   = 1<<23;
 }
 
 namespace Correction {
+    /**
+     * @brief Type of correction
+     */
     enum Type {
         None = 0b00,
         Horizontal = 0b01,
@@ -66,11 +76,6 @@ public:
      * @brief Disaqble te ADC and the DAC.
      */
     void disable();
-
-    /**
-     * @note This function should disappear.
-     */
-    int status() { return m_status; }
 
 protected:
     /**
@@ -164,14 +169,13 @@ protected:
         m_idxBPMZ6D5R;
     double m_loopDir;
     double m_plane;
-    arma::vec m_scaleDigitsX, m_scaleDigitsY;
+    Pair_t<arma::vec> m_scaleDigits;
 
-    arma::vec m_gainX, m_gainY;
-    int m_numBPMx, m_numBPMy;
-    int m_numCMx, m_numCMy;
-    arma::vec m_BPMoffsetX, m_BPMoffsetY;
+    Pair_t<arma::vec> m_gain;
+    Pair_t<int> m_numBPM;
+    Pair_t<int> m_numCM;
+    Pair_t<arma::vec> m_BPMoffset;
 
-    int m_status;
     RFM2G_UINT32 m_DACout[DAC_BUFFER_SIZE];
 };
 

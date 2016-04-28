@@ -10,13 +10,20 @@
 #include "logger/map.h"
 #include "logger/zmqext.h"
 
+
 namespace Messenger {
 
+/**
+ * @class Messenger
+ * @brief ZMQ server to exchange parameters with other applications.
+ */
 class Messenger
 {
 public:
+
     /**
      * @brief Constructor. Initialize the socket.
+     * @param context
      */
     Messenger(zmq::context_t& context);
 
@@ -74,11 +81,25 @@ private:
      */
     void servingLoop();
 
-
+    /**
+     * @brief Process a `SET` request.
+     *
+     * @param key Key of the value to set.
+     */
     void serveSet(const std::string& key);
 
+    /**
+     * @brief Process a `GET` request.
+     *
+     * @param key Key of the value to provide
+     */
     void serveGet(const std::string& key);
+
+    /**
+     * @brief Send the help text.
+     */
     void serveHelp();
+
     /**
      * @brief Port used by the server
      */
@@ -99,6 +120,9 @@ private:
      */
     Map m_map;
 
+    /**
+     * @brief Return all the keys that can be edited throught the server.
+     */
     std::vector<std::string> m_editableKeys;
 
     /**
@@ -107,13 +131,28 @@ private:
     zmq_ext::socket_t *m_socket;
 };
 
+/**
+ * @brief Messenger object to used in the global shortcut functions
+ */
 extern Messenger messenger;
 
+/**
+ * @brief Global shortcut to Messenger::updateMap method.
+ *
+ * @param key Key to update
+ * @param value Value to set
+ */
 template <typename T>
 void updateMap(const std::string& key, const T& value) {
     messenger.updateMap(key, value);
 }
 
+/**
+ * @brief Global shortcut to Messenger::get method.
+ *
+ * @param[in] key Key of the value to get
+ * @param[out] value Value to return
+ */
 template <typename T>
 void get(const std::string& key, T& value) {
     value = messenger.get(key);

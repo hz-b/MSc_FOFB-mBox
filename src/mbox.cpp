@@ -32,8 +32,8 @@ mBox::~mBox()
 
 void mBox::init(const char* deviceName, const bool weightedCorr)
 {
-    m_runningState = Preinit;
-    m_runningStatus = Idle;
+    m_currentState = State::Preinit;
+    m_mBoxStatus = Status::Idle;
     RFM2GHANDLE RFM_handle = 0;
     m_driver = new RFMDriver(RFM_handle);
     this->initRFM( deviceName );
@@ -58,32 +58,33 @@ void mBox::startLoop()
 {
     Logger::Logger() << "mBox idle";
     for(;;) {
-        m_driver->read(CTRL_MEMPOS, &m_runningStatus, 1);
+        m_driver->read(CTRL_MEMPOS, &m_mBoxStatus, 1);
 
 #ifdef DUMMY_RFM_DRIVER
-        m_runningStatus = Running; // HACK
+        // In case of DUMMY_RFM_DRIVER we'll never get an order from the cBox.
+        m_mBoxStatus = Status::Running;
 #endif
-        if (m_runningStatus == 33) {
+        if (m_mBoxStatus == Status::RestartedThing) {
             std::cout << "  !!! MDIZ4T4R was restarted !!! ... Wait for initialization \n";
-            while (m_runningStatus != Idle) {
-                m_driver->read(CTRL_MEMPOS , &m_runningStatus , 1);
+            while (m_mBoxStatus != Status::Idle) {
+                m_driver->read(CTRL_MEMPOS , &m_mBoxStatus, 1);
                 sleep(1);
             }
             Logger::Logger() << "...Wait for start...";
         }
 
         // if Idle, don't do anything
-        if ((m_runningStatus == Idle) && (m_runningState == Preinit))
+        if ((m_mBoxStatus == Status::Idle) && (m_currentState == State::Preinit))
         {
         }
 
         /**
          * Initialize correction
          */
-        if ((m_runningStatus == Running) && (m_runningState == Preinit)) {
+        if ((m_mBoxStatus == Status::Running) && (m_currentState == State::Preinit)) {
             m_handler->init();
             std::this_thread::sleep_for(std::chrono::nanoseconds(4000000));
-            m_runningState = Initialized;
+            m_currentState = State::Initialized;
 
             std::cout << "Status: mBox running \n";
             Logger::Logger() << "mBox running";
@@ -92,10 +93,10 @@ void mBox::startLoop()
         /**
          * Read and correct
          */
-        if ((m_runningStatus == Running) && (m_runningState == Initialized)) {
+        if ((m_mBoxStatus == Status::Running) && (m_currentState == State::Initialized)) {
             if (int errornr = m_handler->make()) {
                 Logger::postError(errornr);
-                m_runningState = Error;
+                m_currentState = State::Error;
                 Logger::error(_ME_) <<  "error: " << Logger::errorMessage(errornr);
                 std::cout << "Status: mBox in ERROR \n";
             }
@@ -107,10 +108,10 @@ void mBox::startLoop()
         /**
          * Stop correction
          */
-        if ((m_runningStatus == Idle) && (m_runningState != Preinit)) {
+        if ((m_mBoxStatus == Status::Idle) && (m_currentState != State::Preinit)) {
             Logger::Logger() << "Stopped  .....";
 	        m_handler->disable();
-            m_runningState = Preinit;
+            m_currentState = State::Preinit;
         }
 
         std::this_thread::sleep_for(std::chrono::nanoseconds(1000000));

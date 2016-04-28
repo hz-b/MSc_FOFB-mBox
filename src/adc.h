@@ -73,9 +73,36 @@ public:
      */
     const std::vector<RFM2G_INT16>& buffer() const { return m_buffer; };
 
+        /**
+     * @brief Getter for m_waveIndexX element.
+     *
+     * @param id Id of which we want the position.
+     *
+     * @return position in the RFM of the requested element.
+     */
     double waveIndexXAt(int id) const { return m_waveIndexX.at(id); };
+
+    /**
+     * @brief Getter for m_waveIndexY element.
+     *
+     * @param id Id of which we want the position.
+     *
+     * @return position in the RFM of the requested element.
+     */
     double waveIndexYAt(int id) const { return m_waveIndexY.at(id); };
+
+    /**
+     * @brief Setter for m_waveIndexX element.
+     *
+     * @param vect Vector to copy and save.
+     */
     void setWaveIndexX(std::vector<double> vect) { m_waveIndexX = vect; };
+
+    /**
+     * @brief Setter for m_waveIndexY element.
+     *
+     * @param vect Vector to copy and save.
+     */
     void setWaveIndexY(std::vector<double> vect) { m_waveIndexY = vect; };
 
 private:
@@ -89,12 +116,12 @@ private:
     RFM2G_STATUS waitForEvent(RFM2GEVENTINFO &eventInfo);
 
     /**
-     * @brief Pointer to the DMA object.
+     * @brief Pointer to a DMA object.
      */
     DMA *m_dma;
 
     /**
-     * @brief Pointer to the RFMDriver object.
+     * @brief Pointer to a RFMDriver object.
      */
     RFMDriver *m_driver;
 
@@ -103,7 +130,14 @@ private:
      */
     std::vector<RFM2G_INT16> m_buffer;
 
+    /**
+     * @brief Look-Up Table for indexes: m_waveIndexX[CMx_index] = position of in RFM.
+     */
     std::vector<double> m_waveIndexX;
+
+    /**
+     * @brief Look-Up Table for indexes: m_waveIndexY[CMy_index] = position of in RFM.
+     */
     std::vector<double> m_waveIndexY;
 
     /**

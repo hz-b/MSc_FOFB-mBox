@@ -11,11 +11,35 @@ class ADC;
 class DAC;
 class DMA;
 
+/**
+ * @brief Status defined by the cBox
+ */
+enum class Status
+{
+    Idle = 0,
+    Running = 1,
+    RestartedThing = 33,
+};
+
+/**
+ * @brief State of the mBox (the mBox is a state machine)
+ */
+enum class State
+{
+    Preinit = 0,
+    Initialized = 1,
+    Error = 2
+};
+
+/**
+ * @class mBox
+ * @brief Main class: manages the full app
+ */
 class mBox
 {
 public:
 
-    /**
+    /**m_runningState
      * @brief Constructor
      */
     explicit mBox();
@@ -61,9 +85,20 @@ private:
      */
     void printHelp();
 
+    /**
+     * @brief Input file: used only in --experiment mode.
+     */
     std::string m_inputFile;
-    RunState m_runningState;
-    RunStatus m_runningStatus;
+
+    /**
+     * @brief Current state of the mBox (state machine).
+     */
+    State m_currentState;
+
+    /**
+     * @brief Status of the mBox (Running? Idle? ...).
+     */
+    Status m_mBoxStatus;
     DMA *m_dma;
     Handler *m_handler;
     RFMDriver *m_driver;

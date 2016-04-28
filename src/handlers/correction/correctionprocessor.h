@@ -8,13 +8,25 @@
 class ADC;
 class RFM;
 
+/**
+ * @brief Structure containing every values to process a PID
+ */
 struct PID_t {
-    double P;
-    double I;
-    double D;
-    double currentP;
-    arma::vec correctionSum;
-    arma::vec lastCorrection;
+    double P; /**< Gain */
+    double I; /**< Coefficient of the integrator */
+    double D; /**< Coefficient of the derivator */
+    double currentP; /**< Current gain (to modify the P without losing it) */
+    arma::vec correctionSum; /**< Sum of the previous corrections */
+    arma::vec lastCorrection; /**< Last correction */
+};
+
+/**
+ * @brief Structure containing values concerning the injection
+ */
+struct Injection_t {
+    int count; /**< Current number of injection since reset */
+    int countStart; /**< Number of injection, low threshold */
+    int countStop; /**< Number of injection, high threshold */
 };
 
 class CorrectionProcessor
@@ -80,29 +92,20 @@ private:
      * @param[out] SmatInv Inversed matrix
      */
     void calcSmat(const arma::mat &Smat, double Ivec, arma::vec &CMWeight, arma::mat &SmatInv);
+
     bool isInjectionTime(const bool newInjection);
     int checkRMS(const arma::vec& diffX, const arma::vec& diffY);
     arma::vec PIDcorr(const arma::vec& dCM, PID_t& pid);
 
+    Injection_t m_injection; /**< @brief Injection count values */
+    int m_rmsErrorCnt; /**< @brief Number of RMS error counted */
+    Pair_t<double> m_lastRMS;  /**< @brief Last of RMS */
 
-    int m_injectionCnt;
-    int m_injectionStopCnt;
-    int m_injectionStartCnt;
-    int m_rmsErrorCnt;
-
-    bool m_useCMWeight;
-    arma::vec m_CMWeightX, m_CMWeightY;
-
-    double m_P, m_I, m_D, m_currentP;
-    double m_lastrmsX, m_lastrmsY;
-
-    arma::mat m_SmatInvX, m_SmatInvY;
-    arma::vec m_CMx, m_CMy;
-    PID_t m_pidX;
-    PID_t m_pidY;
-    arma::vec m_dCORlastX, m_dCORlastY;
-    arma::vec m_Xsum, m_Ysum;
-    arma::vec m_Data_CMx, m_Data_CMy;
+    bool m_useCMWeight; /**< @brief Should we use weights in the corrections? */
+    Pair_t<arma::vec> m_CMWeight; /**< @brief  Weights */
+    Pair_t<arma::mat> m_SmatInv; /**< @brief Inverse of the Smatrix */
+    Pair_t<PID_t> m_PID; /**< @brief PID parameters */
+    Pair_t<arma::vec> m_CM; /** < @brief Current corrector values */
 };
 
 #endif // CORRECTIONPROCESSOR_H

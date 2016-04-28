@@ -15,60 +15,60 @@ CorrectionProcessor::CorrectionProcessor()
 void CorrectionProcessor::setCMs(arma::vec CMx, arma::vec CMy)
 {
     m_rmsErrorCnt = 0;
-    m_lastrmsX = 999;
-    m_lastrmsY = 999;
+    m_lastRMS.x = 999;
+    m_lastRMS.y = 999;
 
-    m_CMx = CMx;
-    m_CMy = CMy;
+    m_CM.x = CMx;
+    m_CM.y = CMy;
 
-    m_pidX.lastCorrection = arma::zeros<arma::vec>(m_CMx.n_elem);
-    m_pidX.correctionSum = arma::zeros<arma::vec>(m_CMx.n_elem);
+    m_PID.x.lastCorrection = arma::zeros<arma::vec>(m_CM.x.n_elem);
+    m_PID.x.correctionSum = arma::zeros<arma::vec>(m_CM.x.n_elem);
 
-    m_pidY.lastCorrection = arma::zeros<arma::vec>(m_CMy.n_elem);
-    m_pidY.correctionSum = arma::zeros<arma::vec>(m_CMy.n_elem);
+    m_PID.y.lastCorrection = arma::zeros<arma::vec>(m_CM.y.n_elem);
+    m_PID.y.correctionSum = arma::zeros<arma::vec>(m_CM.y.n_elem);
 }
 
 void CorrectionProcessor::setSmat(arma::mat &SmatX, arma::mat &SmatY, double IvecX, double IvecY, bool weightedCorr)
 {
     m_useCMWeight = weightedCorr;
-    this->calcSmat(SmatX, IvecX, m_CMWeightX, m_SmatInvX);
-    this->calcSmat(SmatY, IvecY, m_CMWeightY, m_SmatInvY);
+    this->calcSmat(SmatX, IvecX, m_CMWeight.x, m_SmatInv.x);
+    this->calcSmat(SmatY, IvecY, m_CMWeight.y, m_SmatInv.y);
 }
 
 void CorrectionProcessor::setInjectionCnt(double frequency)
 {
-    m_injectionCnt = 0;
-    m_injectionStartCnt = (int) frequency/1000;
-    m_injectionStopCnt  = (int) frequency*60/1000;
+    m_injection.count = 0;
+    m_injection.countStart = (int) frequency/1000;
+    m_injection.countStop  = (int) frequency*60/1000;
 }
 
 int CorrectionProcessor::correct(const CorrectionInput_t& input,
                                  arma::vec &Data_CMx, arma::vec &Data_CMy)
 {
 
-    if (sum(input.diffX) < -10.5) {
+    if (sum(input.diff.x) < -10.5) {
         Logger::error(_ME_) << " ERROR: No Beam";
         return FOFB_ERROR_NoBeam;
     }
 
     if (this->isInjectionTime(input.newInjection)) {
         // We want to write the old value if it is not changed
-        Data_CMx = m_CMx;
-        Data_CMy = m_CMy;
+        Data_CMx = m_CM.x;
+        Data_CMy = m_CM.y;
         return 0;
     }
 
-    int rmsError = this->checkRMS(input.diffX, input.diffY);
+    int rmsError = this->checkRMS(input.diff.x, input.diff.x);
     if (rmsError) {
         return rmsError;
     }
 
     //cout << "  calc dCOR" << endl;
-    arma::vec dCMx = m_SmatInvX * input.diffX;
-    arma::vec dCMy = m_SmatInvY * input.diffY;
+    arma::vec dCMx = m_SmatInv.x * input.diff.x;
+    arma::vec dCMy = m_SmatInv.y * input.diff.x;
     if (m_useCMWeight) {
-        dCMx = dCMx % m_CMWeightX;
-        dCMy = dCMy % m_CMWeightY;
+        dCMx = dCMx % m_CMWeight.x;
+        dCMy = dCMy % m_CMWeight.y;
     }
 
 //    if ((arma::max(arma::abs(dCMx)) > 0.100) || (arma::max(arma::abs(dCMy)) > 0.100)) {
@@ -82,15 +82,15 @@ int CorrectionProcessor::correct(const CorrectionInput_t& input,
     }
 
     if ((input.typeCorr & Correction::Horizontal) == Correction::Horizontal) {
-        m_CMx -= this->PIDcorr(dCMx, m_pidX);
+        m_CM.x -= this->PIDcorr(dCMx, m_PID.x);
     }
 
     if ((input.typeCorr & Correction::Vertical) == Correction::Vertical) {
-        m_CMy -= this->PIDcorr(dCMy, m_pidY);
+        m_CM.y -= this->PIDcorr(dCMy, m_PID.y);
     }
     // We want to write the old value if it is not changed
-    Data_CMx = m_CMx;
-    Data_CMy = m_CMy;
+    Data_CMx = m_CM.x;
+    Data_CMy = m_CM.y;
 
     arma::vec phaseX10;
     Messenger::get("PHASES-X-10", phaseX10);
@@ -118,7 +118,7 @@ int CorrectionProcessor::checkRMS(const arma::vec& diffX, const arma::vec& diffY
 {
     double rmsX = (diffX.n_elem-1) * arma::stddev(diffX) / diffX.n_elem;
     double rmsY = (diffY.n_elem-1) * arma::stddev(diffY) / diffY.n_elem;
-    if ((rmsX > m_lastrmsX*1.1) || (rmsY > m_lastrmsY*1.1))
+    if ((rmsX > m_lastRMS.x*1.1) || (rmsY > m_lastRMS.y*1.1))
     {
         m_rmsErrorCnt++;
         if (m_rmsErrorCnt > 5) {
@@ -129,8 +129,8 @@ int CorrectionProcessor::checkRMS(const arma::vec& diffX, const arma::vec& diffY
         m_rmsErrorCnt = 0;
     }
 
-    m_lastrmsX = rmsX;
-    m_lastrmsY = rmsY;
+    m_lastRMS.x = rmsX;
+    m_lastRMS.y = rmsY;
 
     return 0;
 }
@@ -191,26 +191,26 @@ void CorrectionProcessor::calcSmat(const arma::mat &Smat,
 
 void CorrectionProcessor::setPID(double P, double I, double D)
 {
-    m_pidX.P = P;
-    m_pidX.I = I;
-    m_pidX.D = D;
-    m_pidX.currentP = 0;
+    m_PID.x.P = P;
+    m_PID.x.I = I;
+    m_PID.x.D = D;
+    m_PID.x.currentP = 0;
 
-    m_pidY.P = P;
-    m_pidY.I = I;
-    m_pidY.D = D;
-    m_pidX.currentP = 0;
+    m_PID.y.P = P;
+    m_PID.y.I = I;
+    m_PID.y.D = D;
+    m_PID.y.currentP = 0;
 }
 
 bool CorrectionProcessor::isInjectionTime(const bool newInjection)
 {
     if ( newInjection ) {
-        m_injectionCnt += 1;
-        if ((m_injectionCnt >= m_injectionStopCnt) && (m_injectionCnt <= m_injectionStartCnt)) {
+        m_injection.count += 1;
+        if ((m_injection.count >= m_injection.countStop) && (m_injection.count <= m_injection.countStart)) {
             return true;
         }
     } else {
-        m_injectionCnt = 0;
+        m_injection.count = 0;
     }
     return false;
 }

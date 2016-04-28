@@ -5,6 +5,10 @@
 
 #include <Python.h>
 
+/**
+ * @brief Name of the function to call
+ */
+const std::string PYTHON_CORRECTION_FUNCTION = "corr_value";
 
 /**
  * @class MeasureHandler
@@ -40,8 +44,15 @@
 class MeasureHandler : public Handler
 {
 public:
+    /**
+     * @brief Constructor
+     */
     explicit MeasureHandler(RFMDriver *driver, DMA *dma, bool weightedCorr,
                             std::string inputFile);
+
+    /**
+     * @brief Destructor
+     */
     ~MeasureHandler();
 
 private:
@@ -60,6 +71,9 @@ private:
     virtual int callProcessorRoutine(const CorrectionInput_t& input,
                                      arma::vec& CMx, arma::vec& CMy);
 
+    /**
+     * @brief Return the type of Correction wanted.
+     */
     virtual int typeCorrection();
 
     /**
@@ -88,12 +102,31 @@ private:
     int callPythonFunction(const arma::vec& BPMx, const arma::vec& BPMy,
                            arma::vec& CMx, arma::vec& CMy);
 
+    /**
+     * @brief Python object representing the function to be called for the
+     * correction.
+     */
     PyObject *m_pFunc;
+
+    /**
+     * @brief Python object representing the module where m_pFunc can be found.
+     */
     PyObject *m_pModule;
+
+    /**
+     * @brief Full path of the input file (e.g. `path/to/input_file.py`).
+     */
     std::string m_inputFile;
+
+    /**
+     * @brief Path of the input file (e.g. `path/to`).
+     */
     std::string m_inputPath;
+
+    /**
+     * @brief Name of the Python module = file (e.g `input_file.py`)
+     */
     std::string m_inputModule;
-    std::string m_functionName;
 };
 
 #endif // MEASUREHANDLER_H

@@ -68,12 +68,12 @@ void Handler::init()
     rfmHelper.readStruct("SmatX", SmatX, readStructtype_mat);
     rfmHelper.readStruct("SmatY", SmatY, readStructtype_mat);
     // Parameters
-    rfmHelper.readStruct("GainX", m_gainX, readStructtype_vec);
-    rfmHelper.readStruct("GainY", m_gainY, readStructtype_vec);
-    rfmHelper.readStruct("BPMoffsetX", m_BPMoffsetX, readStructtype_vec);
-    rfmHelper.readStruct("BPMoffsetY", m_BPMoffsetY, readStructtype_vec);
-    rfmHelper.readStruct("scaleDigitsH", m_scaleDigitsX, readStructtype_vec);
-    rfmHelper.readStruct("scaleDigitsV", m_scaleDigitsY, readStructtype_vec);
+    rfmHelper.readStruct("GainX", m_gain.x, readStructtype_vec);
+    rfmHelper.readStruct("GainY", m_gain.y, readStructtype_vec);
+    rfmHelper.readStruct("BPMoffsetX", m_BPMoffset.x, readStructtype_vec);
+    rfmHelper.readStruct("BPMoffsetY", m_BPMoffset.y, readStructtype_vec);
+    rfmHelper.readStruct("scaleDigitsH", m_scaleDigits.x, readStructtype_vec);
+    rfmHelper.readStruct("scaleDigitsV", m_scaleDigits.y, readStructtype_vec);
     // Correctors
     rfmHelper.readStruct("P", P, readStructtype_double);
     rfmHelper.readStruct("I", I, readStructtype_double);
@@ -88,10 +88,10 @@ void Handler::init()
     rfmHelper.readStruct("CMy", CMy, readStructtype_vec);
 
  //   rfmHelper.readStruct("DACout", m_DACout, readStructtype_pchar);
-    m_numBPMx = SmatX.n_rows;
-    m_numBPMy = SmatY.n_rows;
-    m_numCMx = SmatX.n_cols;
-    m_numCMy = SmatY.n_cols;
+    m_numBPM.x = SmatX.n_rows;
+    m_numBPM.y = SmatY.n_rows;
+    m_numCM.x = SmatX.n_cols;
+    m_numCM.y = SmatY.n_cols;
 
     m_dac->setWaveIndexX(DAC_WaveIndexX);
     m_dac->setWaveIndexY(DAC_WaveIndexY);
@@ -109,13 +109,13 @@ void Handler::init()
     Messenger::updateMap("P", P);
     Messenger::updateMap("I", I);
     Messenger::updateMap("D", D);
-    Messenger::updateMap("BPM-OFFSET-X", m_BPMoffsetX);
-    Messenger::updateMap("BPM-OFFSET-Y", m_BPMoffsetY);
+    Messenger::updateMap("BPM-OFFSET-X", m_BPMoffset.x);
+    Messenger::updateMap("BPM-OFFSET-Y", m_BPMoffset.y);
     Messenger::updateMap("FREQUENCY", Frequency);
-    Messenger::updateMap("NB-BPM-X", m_numBPMx);
-    Messenger::updateMap("NB-BPM-Y", m_numBPMy);
-    Messenger::updateMap("NB-CM-X", m_numCMx);
-    Messenger::updateMap("NB-CM-Y", m_numCMy);
+    Messenger::updateMap("NB-BPM-X", m_numBPM.x);
+    Messenger::updateMap("NB-BPM-Y", m_numBPM.y);
+    Messenger::updateMap("NB-CM-X", m_numCM.x);
+    Messenger::updateMap("NB-CM-Y", m_numCM.y);
 
     if (!READONLY) {
         m_adc->init();
@@ -153,8 +153,8 @@ int Handler::getIdx(const std::vector<double>& ADC_BPMIndex_Pos, double DeviceWa
 int Handler::make()
 {
     arma::vec diffX, diffY;
-    arma::vec CMx = arma::zeros<arma::vec>(m_numCMx);
-    arma::vec CMy = arma::zeros<arma::vec>(m_numCMy);;
+    arma::vec CMx = arma::zeros<arma::vec>(m_numCM.x);
+    arma::vec CMy = arma::zeros<arma::vec>(m_numCM.y);;
     bool newInjection = false;
     if (this->getNewData(diffX, diffY, newInjection))
     {
@@ -168,8 +168,8 @@ int Handler::make()
 
     input.typeCorr = this->typeCorrection();
 
-    input.diffX = diffX;
-    input.diffY = diffY;
+    input.diff.x = diffX;
+    input.diff.y = diffY;
     input.newInjection = newInjection;
     input.value10Hz = m_adc->bufferAt(62);
 
@@ -189,27 +189,27 @@ int Handler::make()
 
 int Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
 {
-    arma::vec rADCdataX(m_numBPMx), rADCdataY(m_numBPMy);
+    arma::vec rADCdataX(m_numBPM.x), rADCdataY(m_numBPM.y);
     if (m_adc->read()) {
         Logger::postError(FOFB_ERROR_ADC);
         Logger::error(_ME_) << "Read Error";
         return FOFB_ERROR_ADC;
     }
 
-    for (unsigned int i = 0; i < m_numBPMx; i++) {
+    for (unsigned int i = 0; i < m_numBPM.x; i++) {
         unsigned int  lADCPos = m_adc->waveIndexXAt(i)-1;
         rADCdataX(i) =  m_adc->bufferAt(lADCPos);
     }
 
-    for (unsigned int i = 0; i < m_numBPMy; i++) {
+    for (unsigned int i = 0; i < m_numBPM.y; i++) {
         unsigned int lADCPos = m_adc->waveIndexYAt(i)-1;
         rADCdataY(i) =  m_adc->bufferAt(lADCPos);
     }
 
     newInjection = (m_adc->bufferAt(INJECT_TRIG) > 1000);
 
-    diffX = (rADCdataX % m_gainX * numbers::cf * -1 ) - m_BPMoffsetX;
-    diffY = (rADCdataY % m_gainY * numbers::cf      ) - m_BPMoffsetY;
+    diffX = (rADCdataX % m_gain.x * numbers::cf * -1 ) - m_BPMoffset.x;
+    diffY = (rADCdataY % m_gain.y * numbers::cf      ) - m_BPMoffset.y;
     //FS BUMP
     double HBP2D6R = m_adc->bufferAt(m_idxHBP2D6R) * numbers::cf * 0.8;
     diffX[m_idxBPMZ6D6R] -= (-0.325 * HBP2D6R);
@@ -227,7 +227,7 @@ int Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
 void Handler::prepareCorrectionValues(const arma::vec& CMx, const arma::vec& CMy, int typeCorr)
 {
     if ((typeCorr & Correction::Horizontal) == Correction::Horizontal) {
-        arma::vec Data_CMx = (CMx % m_scaleDigitsX) + numbers::halfDigits;
+        arma::vec Data_CMx = (CMx % m_scaleDigits.x) + numbers::halfDigits;
         for (int i = 0; i <  Data_CMx.n_elem; i++)
         {
             int corPos = m_dac->waveIndexXAt(i)-1;
@@ -235,7 +235,7 @@ void Handler::prepareCorrectionValues(const arma::vec& CMx, const arma::vec& CMy
         }
     }
     if ((typeCorr & Correction::Vertical) == Correction::Vertical) {
-        arma::vec Data_CMy = (CMy % m_scaleDigitsY) + numbers::halfDigits;
+        arma::vec Data_CMy = (CMy % m_scaleDigits.y) + numbers::halfDigits;
 
         for (int i = 0; i < Data_CMy.n_elem; i++) {
             int corPos = m_dac->waveIndexYAt(i)-1;

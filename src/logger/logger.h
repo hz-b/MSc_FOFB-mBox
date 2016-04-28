@@ -10,17 +10,24 @@
 #include "logger/zmqext.h"
 #include "rfmdriver.h"
 
-#define _ME_ __PRETTY_FUNCTION__
+#define _ME_ __PRETTY_FUNCTION__ /**< Just to save some typing... */
 
 namespace zmq { class socket_t; }
 class RFMDriver;
 class DMA;
 
+/**
+ * @brief Type of Log
+ */
 enum class LogType {
     None = 0,
     Log = 1,
     Error = 2,
 };
+
+/**
+ * @brief Type of value
+ */
 enum class LogValue {
     None = 0,
     BPM,
@@ -97,7 +104,11 @@ public:
         m_zmqSocket->send(values.back());
     }
 
-
+    /**
+     * @brief Send message to the RFM.
+     * @param message The message
+     * @param errornr Error number
+     */
     void sendRFM(const std::string& message, const std::string& error);
 
     /**
@@ -132,6 +143,12 @@ public:
      */
     log_stream_t* logStream() { return m_logStream; };
 
+    /**
+     * @brief Append to the message buffer.
+     *
+     * @param value value to add to the buffer.
+     * @return A Logger object
+     */
     template <typename T> Logger &operator<<(T value) { m_logStream->message << value; return *this;}
 
 private:
@@ -169,9 +186,13 @@ void setSocket(zmq_ext::socket_t* socket);
 void setPort(const int port);
 
 /**
- * @brief
+ * @brief Send a value over ZMQ.
  */
 void values(LogValue name, const int loopPos, const arma::vec& valueX, const arma::vec& valueY);
+
+/**
+ * @brief Send a value over ZMQ.
+ */
 void values(LogValue name, const int loopPos, const std::vector<RFM2G_INT16>& value);
 
 template <typename T>
