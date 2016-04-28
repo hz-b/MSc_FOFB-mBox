@@ -71,5 +71,5 @@ following argument (or anything relevant):
     1st link is for Doxygen
     2nd for gitlab/github/direct markdown
 -->
-![ ](../img/mBox_classDiagram.png "Diagramme")
+![ ](mBox_classDiagram.png "Diagramme")
 ![ ](doc/img/mBox_classDiagram.png "Diagramme")
