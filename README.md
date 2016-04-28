@@ -20,8 +20,7 @@ Experiment-mode:
 
     mbox --experiment <NAME_OF_PYTHON_FILE>
 
-The Python file should contain
-
+See `mbox --help` for all the commands.
 
 ## <a name="deps"></a> Dependencies
  * armadillo
@@ -38,7 +37,7 @@ Go on the root of the project, create a build folder and go in it:
     mkdir build
     cd build
 
-Then configure the compilation. If a dependency is missing, you'll be told.
+Then configure the compilation. If a dependency is missing, you will be told.
 
 In debug mode with the dummy driver:
 
