@@ -101,12 +101,9 @@ protected:
      /**
      * @brief Call the processor routine. Must be implemented in subclasses.
      *
-     * @param[in] diffX differential orbit, x-axis
-     * @param[in] diffY differential orbit, y-axis
-     * @param[in] newInjection true if a new injection occured, false else
+     * @param[in] input inputs
      * @param[out] CMx correction to be calculated, x-axis
      * @param[out] CMy correction to be calculated, y-axis
-     * @param[in] typeCorr type of correction to perform
      *
      * @return Error code
      */

@@ -24,7 +24,7 @@ public:
 private:
 
     /**
-     * @brief Call processor callProcessorRoutine.
+     * @brief Call processor routine that do correction.
      */
     virtual int callProcessorRoutine(const CorrectionInput_t& input,
                                      arma::vec& CMx, arma::vec& CMy);
