@@ -66,10 +66,4 @@ following argument (or anything relevant):
 
 ## <a name="diagram"></a> Class organization
 
-<!--
-    Width of picture = 1200 px
-    1st link is for Doxygen
-    2nd for gitlab/github/direct markdown
--->
-![ ](mBox_classDiagram.png "Diagramme")
 ![ ](doc/img/mBox_classDiagram.png "Diagramme")
