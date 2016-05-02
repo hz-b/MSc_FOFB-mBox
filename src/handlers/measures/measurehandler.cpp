@@ -53,6 +53,14 @@ int MeasureHandler::callProcessorRoutine(const CorrectionInput_t& input,
                                          arma::vec& CMx, arma::vec& CMy)
 {
     return this->callPythonFunction(input.diff.x, input.diff.x, CMx, CMy);
+
+    // Add to previous values
+    m_CM.x += CMx;
+    m_CM.y += CMy;
+
+    // Save back to the values to return
+    CMx = m_CM.x;
+    CMy = m_CM.y;
 }
 
 void MeasureHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
@@ -63,6 +71,8 @@ void MeasureHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
                                   bool weightedCorr)
 {
     int errorPythonInit = this->initPython();
+    m_CM.x = CMx;
+    m_CM.y = CMy;
 
     if (errorPythonInit) {
         Logger::error(_ME_) << "error";

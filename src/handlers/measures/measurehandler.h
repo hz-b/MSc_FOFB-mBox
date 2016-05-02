@@ -127,6 +127,11 @@ private:
      * @brief Name of the Python module = file (e.g `input_file.py`)
      */
     std::string m_inputModule;
+
+    /**
+     * @brief Corrector values
+     */
+    Pair_t<arma::vec> m_CM;
 };
 
 #endif // MEASUREHANDLER_H
