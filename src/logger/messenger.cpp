@@ -124,7 +124,8 @@ void Messenger::Messenger::stopServing()
     Logger::Logger() << "Stopping server thread.";
     zmq::context_t tmp_context(1);
     zmq_ext::socket_t socket_stop(tmp_context, ZMQ_REQ);
-    socket_stop.connect("tcp://localhost:3334");
+    std::string address = "tcp://localhost:" + std::to_string(m_port);
+    socket_stop.connect(address.c_str());
     socket_stop.send(std::string(STOPPING_MESSAGE));
     zmq::message_t request;
     socket_stop.recv(&request);

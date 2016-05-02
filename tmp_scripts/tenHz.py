@@ -94,12 +94,12 @@ else:
     print("error on phasesX")
 
 if pack.unpack_string(sreq.ask('SET AMPLITUDES-Y-10')) == "GO":
-    sreq.ask(pack.pack_vec(ampX))
+    sreq.ask(pack.pack_vec(ampY))
 else:
     print("error on amplitudesY")
 
 if pack.unpack_string(sreq.ask('SET PHASES-Y-10')) == "GO":
-    sreq.ask(pack.pack_vec(ampX))
+    sreq.ask(pack.pack_vec(ampY))
 else:
     print("error on phasesY")
 
