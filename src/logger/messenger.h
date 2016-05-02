@@ -71,8 +71,15 @@ public:
     /**
      * @brief Shortcut function to get m_map[key]
      */
-    arma::vec get(const std::string& key) const {
-        return m_map.getAsVec(key);
+    void get(const std::string& key, arma::vec& value) const {
+        value = m_map.getAsVec(key);
+    }
+   
+    /**
+     * @brief Shortcut function to get m_map[key]
+     */
+    void get(const std::string& key, double& value) const {
+        value = m_map.getAsDouble(key);
     }
 
 private:
@@ -155,7 +162,7 @@ void updateMap(const std::string& key, const T& value) {
  */
 template <typename T>
 void get(const std::string& key, T& value) {
-    value = messenger.get(key);
+    messenger.get(key, value);
 }
 
 }

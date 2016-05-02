@@ -69,11 +69,19 @@ valuesY = acosY + 1j*asinY
 CorrX = np.dot(Sxx_inv, valuesX)
 CorrY = np.dot(Syy_inv, valuesY)
 
-ampX = np.abs(CorrX) / amp10
-phX = np.angle(CorrX) - ph10
+ampX = np.abs(CorrX)
+phX = np.angle(CorrX)
 
-ampY = np.abs(CorrY) / amp10
-phY = np.angle(CorrY) - ph10
+ampY = np.abs(CorrY)
+phY = np.angle(CorrY)
+if pack.unpack_string(sreq.ask('SET AMPLITUDE-REF-10')) == "GO":
+    sreq.ask(pack.pack_vec(amp10))
+else:
+    print("error on amplitude10")
+if pack.unpack_string(sreq.ask('SET PHASE-REF-10')) == "GO":
+    sreq.ask(pack.pack_vec(ph10))
+else:
+    print("error on phase10")
 
 if pack.unpack_string(sreq.ask('SET AMPLITUDES-X-10')) == "GO":
     sreq.ask(pack.pack_vec(ampX))
@@ -95,3 +103,11 @@ if pack.unpack_string(sreq.ask('SET PHASES-Y-10')) == "GO":
 else:
     print("error on phasesY")
 
+print('ampX')
+print(ampX)
+print('ampY')
+print(ampY)
+print('phX')
+print(phX)
+print('phY')
+print(phY)

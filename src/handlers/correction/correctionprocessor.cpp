@@ -58,14 +58,14 @@ int CorrectionProcessor::correct(const CorrectionInput_t& input,
         return 0;
     }
 
-    int rmsError = this->checkRMS(input.diff.x, input.diff.x);
+    int rmsError = this->checkRMS(input.diff.x, input.diff.y);
     if (rmsError) {
         return rmsError;
     }
 
     //cout << "  calc dCOR" << endl;
     arma::vec dCMx = m_SmatInv.x * input.diff.x;
-    arma::vec dCMy = m_SmatInv.y * input.diff.x;
+    arma::vec dCMy = m_SmatInv.y * input.diff.y;
     if (m_useCMWeight) {
         dCMx = dCMx % m_CMWeight.x;
         dCMy = dCMy % m_CMWeight.y;
@@ -92,13 +92,18 @@ int CorrectionProcessor::correct(const CorrectionInput_t& input,
     Data_CMx = m_CM.x;
     Data_CMy = m_CM.y;
 
+    double ampref;
+    double phref;
+    Messenger::get("AMPLITUDE-REF-10", ampref);
+    Messenger::get("PHASE-REF-10", phref);
+
     arma::vec phaseX10;
     Messenger::get("PHASES-X-10", phaseX10);
     arma::vec ampX10;
-    Messenger::get("AMPLITUDES-X-10",ampX10);
+    Messenger::get("AMPLITUDES-X-10", ampX10);
     if ((ampX10.n_elem == Data_CMx.n_elem) && (phaseX10.n_elem == Data_CMx.n_elem)) {
-        arma::vec dynamicCorrX = ampX10 % (input.value10Hz * arma::cos(phaseX10)
-                              + 1-std::pow(input.value10Hz, 2) * arma::sin(phaseX10));
+        arma::vec dynamicCorrX = ampX10 % (input.value10Hz/ampref * arma::cos(phaseX10-phref)
+                              + std::sqrt(1-std::pow(input.value10Hz/ampref, 2)) * arma::sin(phaseX10-phref));
         Data_CMx += dynamicCorrX;
     }
 
@@ -107,8 +112,8 @@ int CorrectionProcessor::correct(const CorrectionInput_t& input,
     arma::vec ampY10;
     Messenger::get("AMPLITUDES-Y-10",ampY10);
     if ((ampY10.n_elem == Data_CMy.n_elem) && (phaseY10.n_elem == Data_CMy.n_elem)) {
-        arma::vec dynamicCorrY = ampY10 % (input.value10Hz * arma::cos(phaseY10)
-                              + 1-std::pow(input.value10Hz, 2) * arma::sin(phaseY10));
+        arma::vec dynamicCorrY = ampY10 % (input.value10Hz/ampref * arma::cos(phaseY10-phref)
+                              + std::sqrt(1-std::pow(input.value10Hz/ampref, 2)) * arma::sin(phaseY10-phref));
         Data_CMy += dynamicCorrY;
     }
     return 0;

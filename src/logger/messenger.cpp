@@ -20,6 +20,11 @@ Messenger::Messenger::Messenger(zmq::context_t& context)
     m_editableKeys.push_back("AMPLITUDES-Y-10");
     m_editableKeys.push_back("PHASES-Y-10");
 
+    m_map.update("AMPLITUDE-REF-10", static_cast<double>(1));
+    m_map.update("PHASE-REF-10", static_cast<double>(0));
+    m_editableKeys.push_back("AMPLITUDE-REF-10");
+    m_editableKeys.push_back("PHASE-REF-10");
+
     m_socket = new zmq_ext::socket_t(context, ZMQ_REP);
     m_port = 3334;
 }
