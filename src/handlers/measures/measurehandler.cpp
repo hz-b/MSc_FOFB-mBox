@@ -52,15 +52,14 @@ int MeasureHandler::typeCorrection()
 int MeasureHandler::callProcessorRoutine(const CorrectionInput_t& input,
                                          arma::vec& CMx, arma::vec& CMy)
 {
-    return this->callPythonFunction(input.diff.x, input.diff.x, CMx, CMy);
 
-    // Add to previous values
-    m_CM.x += CMx;
-    m_CM.y += CMy;
+    int error = this->callPythonFunction(input.diff.x, input.diff.x, CMx, CMy);
+    
+    // Add to init values
+    CMx += m_CM.x;
+    CMy += m_CM.y;
 
-    // Save back to the values to return
-    CMx = m_CM.x;
-    CMy = m_CM.y;
+    return error;
 }
 
 void MeasureHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
@@ -74,6 +73,7 @@ void MeasureHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
     m_CM.x = CMx;
     m_CM.y = CMy;
 
+    std::cout << m_CM.x[1] << '\n';
     if (errorPythonInit) {
         Logger::error(_ME_) << "error";
     }

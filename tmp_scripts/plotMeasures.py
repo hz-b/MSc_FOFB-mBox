@@ -16,7 +16,7 @@ freqs = data['freqs']
 amps = data['amplitudes']
 ph = data['phases']
 
-print abs(amps['xx'][:,:,0])
+#print abs(amps['xx'][:,:,0])
 plt.figure()
 plt.subplot(2,1,1)
 

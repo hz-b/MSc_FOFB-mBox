@@ -65,7 +65,7 @@ def corr_value(BPMx, BPMy):
 
     if status == Status.Done:
         print('done')
-        return set_output(0,0,0,0)
+        return np.zeros(gCMx_nb), np.zeros(gCMy_nb)
 
     if status == Status.Idle:
         # Means that it's the first time the function is called
@@ -82,29 +82,30 @@ def corr_value(BPMx, BPMy):
         t_id = 0
         if f_id < len(f)-1:
             f_id += 1
-        else:
-            status = Status.Done
+    #    else:
+    #        status = Status.Done
  # THIS IS IF WE MEASURE FOR ALL
- #       else:
- #           f_id = 0
- #           if CM_id < CM_nb[axis]-1:
- #               CM_id += 1
- #           else:
- #               CM_id = 0
- #               if axis == 0:
- #                   axis = 1
- #               else:
- #                   status = Status.Done
+        else:
+            f_id = 0
+            if CM_id < CM_nb[axis]-1:
+                CM_id += 1
+            else:
+                CM_id = 0
+                if axis == 0:
+                    axis = 1
+                else:
+                    status = Status.Done
 
     return set_output(t[t_id], f[f_id], CM_id, axis)
 
 
 def set_output(t, f, CM_id, axis):
     global gBPMx_nb, gBPMy_nb, gCMx_nb, gCMy_nb
+    AMP_CSTE = 0.02
     if  f == 0:
-        v = 0.1
+        v = AMP_CSTE
     else:
-        v = 0.1*np.sin(2*np.pi*f*t)
+        v = AMP_CSTE*np.sin(2*np.pi*f*t)
 
     CMx = np.zeros(gCMx_nb)
     CMy = np.zeros(gCMy_nb)
@@ -114,8 +115,6 @@ def set_output(t, f, CM_id, axis):
     else:
         CMy[CM_id] = v
 
-    print('python x')
-    print(CMx)
     return CMx, CMy
 
 
