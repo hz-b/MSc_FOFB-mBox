@@ -110,6 +110,7 @@ void mBox::startLoop()
          */
         if ((m_mBoxStatus == Status::Idle) && (m_currentState != State::Preinit)) {
             Logger::Logger() << "Stopped  .....";
+            std::cout << "Status: mBox in stopped \n";
 	        m_handler->disable();
             m_currentState = State::Preinit;
         }
