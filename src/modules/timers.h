@@ -22,11 +22,13 @@ public:
     void print(Unit unit);
     double rms();
     void reset();
+    double timeSpan() const;
 
 private:
     void doArithmetic(double duration);
     std::string m_name;
     std::chrono::steady_clock::time_point m_start;
+    double m_timeSpan;
     double m_min;
     double m_max;
     double m_sum;

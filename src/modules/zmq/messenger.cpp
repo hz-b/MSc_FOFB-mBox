@@ -118,16 +118,18 @@ void Messenger::Messenger::serveGet(const std::string& key)
 
 void Messenger::Messenger::startServing()
 {
-    Logger::Logger() << "Starting server thread.";
+    Logger::Logger() << "Starting server thread...";
     std::string addr = "tcp://*:" + std::to_string(m_port);
     m_socket->bind(addr.c_str());
     m_serve = true;
     m_serverThread = std::thread(&Messenger::Messenger::servingLoop, this);
+    Logger::Logger() << "Server started.";
+
 }
 
 void Messenger::Messenger::stopServing()
 {
-    Logger::Logger() << "Stopping server thread.";
+    Logger::Logger() << "Stopping server thread...";
     zmq::context_t tmp_context(1);
     zmq_ext::socket_t socket_stop(tmp_context, ZMQ_REQ);
     std::string address = "tcp://localhost:" + std::to_string(m_port);
@@ -140,6 +142,7 @@ void Messenger::Messenger::stopServing()
     socket_stop.recv(&request);
 
     m_serverThread.join();
+    Logger::Logger() << "Server stopped, thread joined.";
 }
 
 void Messenger::Messenger::setPort(const int port)

@@ -57,8 +57,13 @@ void mBox::init(const char* deviceName, const bool weightedCorr)
 
 void mBox::startLoop()
 {
-    Logger::Logger() << "mBox idle";
+    Logger::Logger() << "...Wait for start...";
+    std::cout << "...Wait for start... \n";
     for(;;) {
+#ifdef DUMMY_RFM_DRIVER
+        Timer looptimer;
+        looptimer.start();
+#endif
         m_driver->read(CTRL_MEMPOS, &m_mBoxStatus, 1);
 
 #ifdef DUMMY_RFM_DRIVER
@@ -111,13 +116,17 @@ void mBox::startLoop()
          */
         if ((m_mBoxStatus == Status::Idle) && (m_currentState != State::Preinit)) {
             Logger::Logger() << "Stopped  .....";
-            std::cout << "Status: mBox in stopped \n";
+            std::cout << "Status: mBox stopped \n";
             m_handler->disable();
             m_currentState = State::Preinit;
         }
 
         TimingModule::printAll(Timer::Unit::ms, 1000);
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
+#ifdef DUMMY_RFM_DRIVER
+        looptimer.stop();
+        std::this_thread::sleep_for(std::chrono::nanoseconds(static_cast<int>((1/150.-looptimer.timeSpan())*1e9)));
+#endif
     }
 }
 

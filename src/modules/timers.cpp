@@ -25,8 +25,8 @@ void Timer::stop()
 
     steady_clock::time_point stop = steady_clock::now();
     duration<double> duration_time = duration_cast<duration<double> >(stop - m_start);
-    double time_s = duration_time.count();
-    this->doArithmetic(time_s);
+    m_timeSpan = duration_time.count();
+    this->doArithmetic(m_timeSpan);
 }
 
 void Timer::doArithmetic(double duration)
@@ -45,6 +45,11 @@ void Timer::doArithmetic(double duration)
 double Timer::rms()
 {
     return std::sqrt( m_sum2/m_callNb - std::pow( m_sum/m_callNb, 2));
+}
+
+double Timer::timeSpan() const
+{
+    return m_timeSpan;
 }
 
 void Timer::reset()
