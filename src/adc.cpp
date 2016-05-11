@@ -4,7 +4,7 @@
 #include <thread>
 
 #include "dma.h"
-#include "logger/logger.h"
+#include "modules/zmq/logger.h"
 #include "rfmdriver.h"
 
 

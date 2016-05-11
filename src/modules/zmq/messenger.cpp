@@ -1,11 +1,12 @@
-#include "logger/messenger.h"
-#include "logger/logger.h"
+#include "modules/zmq/messenger.h"
+#include "modules/zmq/logger.h"
 
 #include <algorithm>
 
 
 /** Just so that it don't get sent by  error */
-#define STOPPING_MESSAGE "STOP-ME-406812310648"
+#define STOP_MESSAGE "STOP-NOW"
+#define STOP_SOCKET "406812310648"
 
 Messenger::Messenger::Messenger(zmq::context_t& context)
     : m_serve(false)
@@ -25,7 +26,7 @@ Messenger::Messenger::Messenger(zmq::context_t& context)
     m_editableKeys.push_back("AMPLITUDE-REF-10");
     m_editableKeys.push_back("PHASE-REF-10");
 
-    m_socket = new zmq_ext::socket_t(context, ZMQ_REP);
+    m_socket = new zmq_ext::socket_t(context, ZMQ_ROUTER);
     m_port = 3334;
 }
 
@@ -42,19 +43,28 @@ void Messenger::Messenger::servingLoop()
     std::string prefixSet = "SET ";
     std::string prefixGet = "GET ";
     while (m_serve) {
-        zmq::message_t request;
-        m_socket->recv(&request);
-        std::string message((char*)request.data(), request.size());
+        std::vector<zmq::message_t> request(3);
+        m_socket->recv(&request[0]);
+        m_socket->recv(&request[1]); // empty delimiter => drop
+        while (m_socket->recv(&(request.back()), ZMQ_RCVMORE)) {
+            request.push_back(zmq::message_t());
+        }
+        std::string identity((char*)request[0].data(), request[0].size());
+        std::string message((char*)request[2].data(), request[2].size());
         std::transform(message.begin(), message.end(), message.begin(), ::toupper);
+
+        m_socket->send(identity, ZMQ_SNDMORE);
+        m_socket->send(std::string(""), ZMQ_SNDMORE); // empty delimiter
+
         if (message == "KEYLIST" || message == "HELP") {
             this->serveHelp();
-        } else if (message == STOPPING_MESSAGE) {
+        } else if (message == STOP_MESSAGE && identity == STOP_SOCKET) {
             m_serve = false;
             std::string s = "ACK";
             m_socket->send(s);
-        } else if (!message.compare(0, prefixSet.length(), prefixSet)) {
+        } else if (!message.compare(0, prefixSet.length(), prefixSet) && request.size() > 3) {
             std::string key = message.substr(prefixGet.length(), message.npos);
-            this->serveSet(key);
+            this->serveSet(key, request[4]);
         } else if (!message.compare(0, prefixGet.length(), prefixGet)) {
             std::string key =  message.substr(prefixGet.length(), message.npos);
             this->serveGet(key);
@@ -69,7 +79,7 @@ void Messenger::Messenger::servingLoop()
 void Messenger::Messenger::serveHelp()
 {
     std::string s;
-    s = "Use: HELP, KEYLIST, SET <KEY>, GET <KEY>\n\n";
+    s = "Use: HELP, KEYLIST, SET <KEY> <VALUE>, GET <KEY>\n\n";
     s += "AVAILABLE KEYS TO GET\n"
          "=====================\n"
          + m_map.keyList() + '\n';
@@ -80,16 +90,12 @@ void Messenger::Messenger::serveHelp()
     }
     m_socket->send(s);
 }
-void Messenger::Messenger::serveSet(const std::string& key)
+void Messenger::Messenger::serveSet(const std::string& key, const zmq::message_t& request)
 {
     bool editable = (std::find(m_editableKeys.begin(), m_editableKeys.end(), key) != m_editableKeys.end());
     if (m_map.has(key) && editable) {
-        std::string s = "GO";
-        m_socket->send(s);
-        zmq::message_t request;
-        m_socket->recv(&request);
         m_map.update(key, (unsigned char*) request.data(), request.size());
-        s = "ACK";
+        std::string s = "ACK";
         m_socket->send(s);
     } else {
         std::string s = "KEY ERROR";
@@ -125,8 +131,11 @@ void Messenger::Messenger::stopServing()
     zmq::context_t tmp_context(1);
     zmq_ext::socket_t socket_stop(tmp_context, ZMQ_REQ);
     std::string address = "tcp://localhost:" + std::to_string(m_port);
+    std::string id = STOP_SOCKET;
+    socket_stop.setsockopt(ZMQ_IDENTITY, id.c_str(), id.length());
+
     socket_stop.connect(address.c_str());
-    socket_stop.send(std::string(STOPPING_MESSAGE));
+    socket_stop.send(std::string(STOP_MESSAGE));
     zmq::message_t request;
     socket_stop.recv(&request);
 

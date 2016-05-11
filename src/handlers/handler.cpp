@@ -4,8 +4,9 @@
 #include "dac.h"
 #include "dma.h"
 #include "rfm_helper.h"
-#include "logger/logger.h"
-#include "logger/messenger.h"
+#include "modules/timers.h"
+#include "modules/zmq/logger.h"
+#include "modules/zmq/messenger.h"
 
 #include <iostream>
 #include <string>
@@ -152,15 +153,21 @@ int Handler::getIdx(const std::vector<double>& ADC_BPMIndex_Pos, double DeviceWa
 
 int Handler::make()
 {
+    TimingModule::addTimer(_ME_);
+
     arma::vec diffX, diffY;
     arma::vec CMx = arma::zeros<arma::vec>(m_numCM.x);
     arma::vec CMy = arma::zeros<arma::vec>(m_numCM.y);;
     bool newInjection = false;
+
+    TimingModule::addTimer("ADC_Full");
     if (this->getNewData(diffX, diffY, newInjection))
     {
         Logger::error(_ME_) << "Cannot correct, error in data acquisition";
         return 1;
     }
+    TimingModule::timer("ADC_Full").stop();
+
     Logger::values(LogValue::BPM, m_dma->status()->loopPos, std::vector<arma::vec>({diffX, diffY}));
     Logger::values(LogValue::ADC, m_dma->status()->loopPos, std::vector<std::vector<RFM2G_INT16> >({m_adc->buffer()}));
 
@@ -173,17 +180,25 @@ int Handler::make()
     input.newInjection = newInjection;
     input.value10Hz = m_adc->bufferAt(62);
 
+    TimingModule::addTimer("Computation");
     int errornr = this->callProcessorRoutine(input, CMx, CMy);
+    TimingModule::timer("Computation").stop();
     if (errornr) {
         return errornr;
     }
 
     Logger::values(LogValue::CM, m_dma->status()->loopPos, std::vector<arma::vec>({CMx, CMy}));
+
+    TimingModule::addTimer("DAC_Full");
     this->prepareCorrectionValues(CMx, CMy, input.typeCorr);
 
     if (!READONLY) {
         this->writeCorrection();
     }
+    TimingModule::timer("DAC_Full").stop();
+
+    TimingModule::timer(_ME_).stop();
+
     return 0;
 }
 

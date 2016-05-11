@@ -1,5 +1,5 @@
 #include "map.h"
-#include "logger/logger.h"
+#include "modules/zmq/logger.h"
 
 Map::Map()
 {

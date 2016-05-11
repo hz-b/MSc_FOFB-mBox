@@ -4,7 +4,7 @@
 #include "adc.h"
 #include "dac.h"
 #include "dma.h"
-#include "logger/logger.h"
+#include "modules/zmq/logger.h"
 
 CorrectionHandler::CorrectionHandler(RFMDriver *driver, DMA *dma, bool weightedCorr)
     : Handler(driver, dma, weightedCorr)

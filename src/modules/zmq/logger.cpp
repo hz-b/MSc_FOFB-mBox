@@ -1,4 +1,4 @@
-#include  "logger/logger.h"
+#include  "modules/zmq/logger.h"
 
 #include <ctime>
 
@@ -40,7 +40,7 @@ void Logger::Logger::parseAndSend()
                   << m_logStream->message.str() << "\t\x1b[31m[" << m_logStream->other << "]\x1b[0m\n";
     }
     if (m_zmqSocket != NULL) {
-        this->sendZmq(header, m_logStream->message.str(), m_logStream->other);
+       // this->sendZmq(header, m_logStream->message.str(), m_logStream->other);
     }
 }
 

@@ -7,7 +7,7 @@
 #include <typeinfo>
 
 #include "define.h"
-#include "logger/zmqext.h"
+#include "modules/zmq/zmqext.h"
 #include "rfmdriver.h"
 
 #define _ME_ __PRETTY_FUNCTION__ /**< Just to save some typing... */
@@ -78,8 +78,7 @@ public:
 
     void sendMessage(const std::string& message, const std::string& error="");
     void sendZmq(const std::string& header, const std::string& message, const std::string& other);
-    //void sendZmqValue(const std::string& header, const int loopPos, const arma::vec& valueX, const arma::vec& valueY);
-    //void sendZmqValue(const std::string& header, const int loopPos, const std::vector<RFM2G_INT16>& value);
+
     template <typename T>
     void sendZmqValue(const std::string& header, const int loopPos, const std::vector<T>& values)
     {
@@ -87,21 +86,29 @@ public:
             "ERROR -- Tried to send empty values, return";
             return;
         }
-        m_zmqSocket->send(header, ZMQ_SNDMORE);
-        m_zmqSocket->send(loopPos, ZMQ_SNDMORE);
-        std::string type;
-        if (typeid(values.at(0).at(0)) == typeid(double)) {
-            type = "double";
-        } else if (typeid(values.at(0).at(0)) == typeid(short)) {
-            type = "short";
-        }
-        m_zmqSocket->send(type, ZMQ_SNDMORE);
 
-        // Loop until size-1 because last should not have a ZMQ_SNDMORE flag
-        for (int i = 0 ; i < values.size() - 1 ; i++) {
-            m_zmqSocket->send(values.at(i), ZMQ_SNDMORE);
+        try {
+            m_zmqSocket->send(header, ZMQ_SNDMORE);
+            m_zmqSocket->send(loopPos, ZMQ_SNDMORE);
+            std::string type;
+            if (typeid(values.at(0).at(0)) == typeid(double)) {
+                type = "double";
+            } else if (typeid(values.at(0).at(0)) == typeid(short)) {
+                type = "short";
+            }
+            m_zmqSocket->send(type, ZMQ_SNDMORE);
+
+            // Loop until size-1 because last should not have a ZMQ_SNDMORE flag
+            for (int i = 0 ; i < values.size() - 1 ; i++) {
+                m_zmqSocket->send(values.at(i), ZMQ_SNDMORE);
+            }
+            m_zmqSocket->send(values.back());
+
+        } catch (zmq::error_t &e) {
+            if (e.num() != EINTR) {
+                throw;
+            }
         }
-        m_zmqSocket->send(values.back());
     }
 
     /**

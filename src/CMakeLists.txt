@@ -4,14 +4,15 @@ set(SOURCES main.cpp
             dma.cpp
             mbox.cpp
             rfm_helper.cpp
-            logger/logger.cpp
-            logger/map.cpp
-            logger/messenger.cpp
-            logger/zmqext.cpp
             handlers/handler.cpp
             handlers/correction/correctionhandler.cpp
             handlers/correction/correctionprocessor.cpp
             handlers/measures/measurehandler.cpp
+            modules/timers.cpp
+            modules/zmq/logger.cpp
+            modules/zmq/map.cpp
+            modules/zmq/messenger.cpp
+            modules/zmq/zmqext.cpp
 )
 
 if (${DUMMY_RFM_DRIVER})

@@ -11,9 +11,9 @@
 #include "rfm_helper.h"
 #include "handlers/correction/correctionhandler.h"
 #include "handlers/measures/measurehandler.h"
-
-#include "logger/logger.h"
-#include "logger/messenger.h"
+#include "modules/zmq/logger.h"
+#include "modules/zmq/messenger.h"
+#include "modules/timers.h"
 
 mBox::mBox()
     : m_dma(NULL)
@@ -52,6 +52,7 @@ void mBox::init(const char* deviceName, const bool weightedCorr)
     } else {
         m_handler = new CorrectionHandler(m_driver, m_dma, weightedCorr);
     }
+    Messenger::messenger.startServing();
 }
 
 void mBox::startLoop()
@@ -111,11 +112,12 @@ void mBox::startLoop()
         if ((m_mBoxStatus == Status::Idle) && (m_currentState != State::Preinit)) {
             Logger::Logger() << "Stopped  .....";
             std::cout << "Status: mBox in stopped \n";
-	        m_handler->disable();
+            m_handler->disable();
             m_currentState = State::Preinit;
         }
 
-        std::this_thread::sleep_for(std::chrono::nanoseconds(1000000));
+        TimingModule::printAll(Timer::Unit::ms, 1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
 
@@ -136,8 +138,6 @@ void mBox::initRFM(const char* deviceName)
         exit(1);
     }
     Logger::Logger() << "\tRFM Node Id : " << nodeId;
-
-    Messenger::messenger.startServing();
 }
 
 void mBox::parseArgs(int argc, char* argv[])

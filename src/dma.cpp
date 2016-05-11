@@ -3,7 +3,7 @@
 #include <unistd.h>  // needed for getpagesize()
 
 #include "rfmdriver.h"
-#include "logger/logger.h"
+#include "modules/zmq/logger.h"
 
 DMA::DMA()
     : m_memory(NULL)

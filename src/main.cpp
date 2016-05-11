@@ -6,8 +6,9 @@
 
 #include "define.h"
 #include "mbox.h"
-#include "logger/logger.h"
-#include "logger/messenger.h"
+#include "modules/zmq/logger.h"
+#include "modules/zmq/messenger.h"
+#include "modules/timers.h"
 
 bool READONLY; /**< Global variable to authorize or not to write to the RFM */
 
@@ -15,7 +16,9 @@ bool READONLY; /**< Global variable to authorize or not to write to the RFM */
 zmq::context_t context(1); /**< ZMQ Context */
 /** Global socket used for the logging */
 zmq_ext::socket_t logSocket(context, ZMQ_PUB /*zmq::socket_type::pub*/);
-
+namespace TimingModule{
+TimerList tm;
+}
 /**
  * @brief Static mBox object.
  * @note Must be static so that exit() do a proper deletion.
@@ -54,6 +57,7 @@ int main(int argc, char *argv[])
     mbox.init(DEVICE_NAME, WEIGHTED_CORR);
 
     signal(SIGINT, SIGINT_handler);
+
     mbox.startLoop();
 
     return 0;

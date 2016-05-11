@@ -2,8 +2,8 @@
 
 #include "adc.h"
 #include "handlers/handler.h"
-#include "logger/logger.h"
-#include "logger/messenger.h"
+#include "modules/zmq/logger.h"
+#include "modules/zmq/messenger.h"
 
 #include <iostream>
 #include <cmath>
@@ -47,8 +47,12 @@ int CorrectionProcessor::correct(const CorrectionInput_t& input,
 {
 
     if (sum(input.diff.x) < -10.5) {
+#ifndef DUMMY_RFM_DRIVER
         Logger::error(_ME_) << " ERROR: No Beam";
         return FOFB_ERROR_NoBeam;
+#else
+        //Logger::error(_ME_) << "Not considered because DUMMY_RFM_DRIVER is true";
+#endif
     }
 
     if (this->isInjectionTime(input.newInjection)) {
@@ -73,11 +77,12 @@ int CorrectionProcessor::correct(const CorrectionInput_t& input,
 
 //    if ((arma::max(arma::abs(dCMx)) > 0.100) || (arma::max(arma::abs(dCMy)) > 0.100)) {
     if ((arma::max((dCMx)) > 0.100) || (arma::max((dCMy)) > 0.100)) {
+
+#ifndef DUMMY_RFM_DRIVER
         Logger::error(_ME_) << "A corrector as a value above 0.100";
-#ifdef DUMMY_RFM_DRIVER
-        Logger::error(_ME_) << "Not considered because DUMMY_RFM_DRIVER is true";
-#else
         return FOFB_ERROR_CM100;
+#else
+        //Logger::error(_ME_) << "Not considered because DUMMY_RFM_DRIVER is true";
 #endif
     }
 

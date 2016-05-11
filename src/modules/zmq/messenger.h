@@ -7,8 +7,8 @@
 #include <thread>
 #include <vector>
 
-#include "logger/map.h"
-#include "logger/zmqext.h"
+#include "modules/zmq/map.h"
+#include "modules/zmq/zmqext.h"
 
 
 namespace Messenger {
@@ -74,7 +74,7 @@ public:
     void get(const std::string& key, arma::vec& value) const {
         value = m_map.getAsVec(key);
     }
-   
+
     /**
      * @brief Shortcut function to get m_map[key]
      */
@@ -92,8 +92,9 @@ private:
      * @brief Process a `SET` request.
      *
      * @param key Key of the value to set.
+     * @param request Contains the value
      */
-    void serveSet(const std::string& key);
+    void serveSet(const std::string& key, const zmq::message_t& request);
 
     /**
      * @brief Process a `GET` request.

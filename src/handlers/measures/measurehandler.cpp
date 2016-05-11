@@ -5,7 +5,7 @@
 #include "dac.h"
 #include "dma.h"
 #include "handlers/structures.h"
-#include "logger/logger.h"
+#include "modules/zmq/logger.h"
 
 #include <iostream>
 #include <string>
@@ -54,7 +54,7 @@ int MeasureHandler::callProcessorRoutine(const CorrectionInput_t& input,
 {
 
     int error = this->callPythonFunction(input.diff.x, input.diff.x, CMx, CMy);
-    
+
     // Add to init values
     CMx += m_CM.x;
     CMy += m_CM.y;

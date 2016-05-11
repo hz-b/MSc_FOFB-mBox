@@ -8,7 +8,7 @@
 #include "dma.h"
 #include "rfmdriver.h"
 #include "define.h"
-#include "logger/logger.h"
+#include "modules/zmq/logger.h"
 
 class RFMHelper
 {
