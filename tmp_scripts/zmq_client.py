@@ -71,46 +71,51 @@ class ValuesSubscriber(ZmqSubscriber):
             return [valuesX], loopPos
 
 class ZmqReq:
-     def __init__(self, thread_nb=1):
-         c = zmq.Context.instance(thread_nb)
-         self.socket = zmq.Socket(c, zmq.REQ)
+    def __init__(self, thread_nb=1):
+        c = zmq.Context.instance(thread_nb)
+        self.socket = zmq.Socket(c, zmq.REQ)
 
-     def connect(self, address):
-         self.socket.connect(address)
+    def connect(self, address):
+        self.socket.connect(address)
 
-     def ask(self, query):
-         self.socket.send(query)
-         return self.socket.recv()
-      
+    def ask(self, query):
+        self.socket.send(query)
+        return self.socket.recv()
+
+    def tell(self, query, val):
+        self.socket.send(query, zmq.SNDMORE)
+        self.socket.send(val)
+        return self.socket.recv()
+
 class Packer:
-     import struct
-     def unpack_double(self, v):
-         return struct.unpack('d', v)[0]
-     
-     def unpack_int(self, v):
-         return struct.unpack('i', v)[0]
-     
-     def unpack_string(self, v):
-         return str(v)
-     
-     def unpack_vec(self, v):
-         return np.fromstring(v, dtype=np.double)
-     
-     def unpack_mat(self, v, dims):
-         return np.fromstring(v, dtype=np.double).reshape(dims)
-     
-     def pack_double(self, v):
-         return struct.pack('d', v)
-     
-     def pack_int(self, v):
-         return struct.pack('i', v)
-     
-     def pack_string(self, v):
-         return str(v)
-     
-     def pack_vec(self, v):
-         return v.tostring()
-     
-     def pack_mat(self, v):
-         return v.tostring()
+    import struct
+    def unpack_double(self, v):
+        return struct.unpack('d', v)[0]
+
+    def unpack_int(self, v):
+        return struct.unpack('i', v)[0]
+
+    def unpack_string(self, v):
+        return str(v)
+
+    def unpack_vec(self, v):
+        return np.fromstring(v, dtype=np.double)
+
+    def unpack_mat(self, v, dims):
+        return np.fromstring(v, dtype=np.double).reshape(dims)
+
+    def pack_double(self, v):
+        return struct.pack('d', v)
+
+    def pack_int(self, v):
+        return struct.pack('i', v)
+
+    def pack_string(self, v):
+        return str(v)
+
+    def pack_vec(self, v):
+        return v.tostring()
+
+    def pack_mat(self, v):
+        return v.tostring()
 

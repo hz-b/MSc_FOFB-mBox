@@ -3,12 +3,16 @@ import math
 import numpy as np
 
 sys.path.append('search_kicks')
+sys.path.append('../../../search_kicks')
 import zmq_client as zc
 import search_kicks.tools as sktools
 
 SAMPLE_NB = 100
-HOST = 'tcp://gofbz12c:3333'
-HOST_REQ = 'tcp://gofbz12c:3334'
+#HOST = 'tcp://gofbz12c:3333'
+#HOST_REQ = 'tcp://gofbz12c:3334'
+HOST = 'tcp://localhost:3333'
+HOST_REQ = 'tcp://localhost:3334'
+
 s_adc = zc.ValuesSubscriber()
 s_adc.connect(HOST)
 s_adc.subscribe(['FOFB-ADC-DATA'])
@@ -74,33 +78,22 @@ phX = np.angle(CorrX)
 
 ampY = np.abs(CorrY)
 phY = np.angle(CorrY)
-if pack.unpack_string(sreq.ask('SET AMPLITUDE-REF-10')) == "GO":
-    sreq.ask(pack.pack_vec(amp10))
-else:
+if pack.unpack_string(sreq.tell('SET AMPLITUDE-REF-10', pack.pack_double(amp10))) != "ACK":
     print("error on amplitude10")
-if pack.unpack_string(sreq.ask('SET PHASE-REF-10')) == "GO":
-    sreq.ask(pack.pack_vec(ph10))
-else:
+
+if pack.unpack_string(sreq.tell('SET PHASE-REF-10', pack.pack_double(ph10))) != "ACK":
     print("error on phase10")
 
-if pack.unpack_string(sreq.ask('SET AMPLITUDES-X-10')) == "GO":
-    sreq.ask(pack.pack_vec(ampX))
-else:
+if pack.unpack_string(sreq.tell('SET AMPLITUDES-X-10', pack.pack_vec(ampX))) != "ACK":
     print("error on amplitudesX")
 
-if pack.unpack_string(sreq.ask('SET PHASES-X-10')) == "GO":
-    sreq.ask(pack.pack_vec(phX))
-else:
+if pack.unpack_string(sreq.tell('SET PHASES-X-10', pack.pack_vec(phX))) != "ACK":
     print("error on phasesX")
 
-if pack.unpack_string(sreq.ask('SET AMPLITUDES-Y-10')) == "GO":
-    sreq.ask(pack.pack_vec(ampY))
-else:
+if pack.unpack_string(sreq.tell('SET AMPLITUDES-Y-10', pack.pack_vec(ampY))) != "ACK":
     print("error on amplitudesY")
 
-if pack.unpack_string(sreq.ask('SET PHASES-Y-10')) == "GO":
-    sreq.ask(pack.pack_vec(ampY))
-else:
+if pack.unpack_string(sreq.tell('SET PHASES-Y-10', pack.pack_vec(phY))) != "ACK":
     print("error on phasesY")
 
 print('ampX')
