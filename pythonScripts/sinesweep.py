@@ -12,7 +12,7 @@ fs = float(150)  # Hz
 
 fmin = 0
 fmax = fs/2
-tmax = 50
+tmax = 2#50
 t = np.arange(tmax*fs)/fs
 sample_nb = t.size
 filename = "sine_sweep"
@@ -27,17 +27,20 @@ axis = 'x'
 CM_id = 0
 t_id = 0
 
+res = None
+gBPMx_nb, gBPMy_nb, gCMx_nb, gCMy_nb = 0, 0, 0, 0
+
 
 class Status:
     Idle, Run, Done = range(3)
+
 
 status = Status.Idle
 
 
 def init(BPMx_nb, BPMy_nb, CMx_nb, CMy_nb):
     """ Initialize the environnment """
-    global gBPMx_nb, gBPMy_nb, gCMx_nb, gCMy_nb, status
-    global filename, sample_nb, res
+    global filename, gBPMx_nb, gBPMy_nb, gCMx_nb, gCMy_nb, res
 
     gBPMx_nb = BPMx_nb
     gBPMy_nb = BPMy_nb
@@ -63,11 +66,7 @@ def init(BPMx_nb, BPMy_nb, CMx_nb, CMy_nb):
 
 
 def corr_value(BPMx, BPMy):
-    global gCMx_nb, gCMy_nb, \
-        sample_nb, t_id, \
-        CM_id, axis, \
-        status, res
-
+    global status, t_id, axis, CM_id
     if status == Status.Done:
         print('done')
         return np.zeros(gCMx_nb), np.zeros(gCMy_nb)
@@ -88,7 +87,7 @@ def corr_value(BPMx, BPMy):
         # Save dictionary and erase previous one
         np.save(filename, [res])
         print("saved -- (axis={} / CMB_id={})"
-              .format(axis, CM_id ))
+              .format(axis, CM_id))
 
         # reset time
         t_id = 0
@@ -111,8 +110,6 @@ def corr_value(BPMx, BPMy):
 
 
 def set_output(axis, CM_id, t_id):
-    global gCMx_nb, gCMy_nb
-
     CMx = np.zeros(gCMx_nb)
     CMy = np.zeros(gCMy_nb)
 
@@ -127,7 +124,6 @@ def set_output(axis, CM_id, t_id):
 def read_bpms(bpms, t_id):
     """  bpms = (BPMx, BPMy), t_id = scalar """
 
-    global res
     if axis == 'x':
         res['data']['xx'][:, CM_id, t_id] = bpms[0]
         res['data']['yx'][:, CM_id, t_id] = bpms[1]
