@@ -12,7 +12,7 @@ fs = float(150)  # Hz
 
 fmin = 0
 fmax = fs/2
-tmax = 2#50
+tmax = 50
 t = np.arange(tmax*fs)/fs
 sample_nb = t.size
 filename = "sine_sweep"
