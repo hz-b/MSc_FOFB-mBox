@@ -19,7 +19,6 @@ if (${DUMMY_RFM_DRIVER})
     set(SOURCES ${SOURCES} rfmdriver_dummy.cpp)
 endif()
 
-
 add_executable(mbox ${SOURCES})
 
 target_link_libraries (mbox ${ARMADILLO_LIBRARIES}

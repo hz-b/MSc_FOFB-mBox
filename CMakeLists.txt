@@ -4,21 +4,21 @@ project(mBox++)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
 
-find_package(Armadillo REQUIRED)
-include_directories(${ARMADILLO_INCLUDE_DIRS})
+find_package(Armadillo 5 REQUIRED)
+include_directories(${ARMADILLO_INCLUDE_DIR})
 
 find_package(Rfm2g REQUIRED)
-include_directories(${RFM2G_INCLUDE_DIRS})
+include_directories(${RFM2G_INCLUDE_DIR})
 
-find_package(ZeroMQ REQUIRED)
-include_directories(${ZEROMQ_INCLUDE_DIRS})
+find_package(ZeroMQ 3 REQUIRED)
+include_directories(${ZEROMQ_INCLUDE_DIR})
 
 find_package(PythonLibs 2.7 REQUIRED)
-include_directories(${PYTHON_INCLUDE_DIRS})
+include_directories(${PYTHON_INCLUDE_DIR})
 
 find_package(PythonInterp 2.7 REQUIRED)
 find_package(NumPy REQUIRED)
-include_directories(${NUMPY_INCLUDE_DIRS})
+include_directories(${NUMPY_INCLUDE_DIR})
 
 find_package(Threads REQUIRED)
 
