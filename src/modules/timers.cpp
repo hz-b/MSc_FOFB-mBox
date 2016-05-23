@@ -89,7 +89,10 @@ void Timer::print(Unit unit)
 }
 
 void TimerList::print(Timer::Unit unit)
- {
+{
+    if (m_timerMap.empty()) {
+        return;
+    }
     std::cout << "==================" <<'\n';
     for (auto t : m_timerMap) {
         std::cout << " ";
