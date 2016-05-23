@@ -23,11 +23,23 @@ Experiment-mode:
 See `mbox --help` for all the commands.
 
 ## <a name="deps"></a> Dependencies
- * armadillo
- * zeroMQ
- * python (debian: python, libpython, libpython-dev)
- * numpy
+ * Needed libraries
+   * cmake
+   * build-essential (make, g++, ..)
+ * Development package (*-dev)
+   * armadillo >= 5 (for Jessie, use `-t jessie-backports` to get version 5)
+   * zeroMQ >= 4  (python-zmq is also useful)
+   * python (debian: python, libpython, libpython-dev) >= 2.7
+   * numpy
 
+For Debian (note: currently used as follow, but consider using the python3
+flavours instead):
+
+<pre>
+aptitude install build-essential cmake
+aptitude install python-zmq libzmq3-dev libpython-dev python-numpy
+aptitude install -t jessie-backports armadillo-dev
+</pre>
 
 ## <a name="compile-howto"></a> How to compile
 

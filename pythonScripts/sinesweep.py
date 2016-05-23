@@ -67,6 +67,7 @@ def init(BPMx_nb, BPMy_nb, CMx_nb, CMy_nb):
 
 def corr_value(BPMx, BPMy):
     global status, t_id, axis, CM_id
+
     if status == Status.Done:
         print('done')
         return np.zeros(gCMx_nb), np.zeros(gCMy_nb)
