@@ -1,6 +1,9 @@
+from __future__ import division, print_function, unicode_literals
+
 import numpy as np
 import struct
 import zmq
+
 
 class ZmqSubscriber:
     subscription_list = []
@@ -15,7 +18,7 @@ class ZmqSubscriber:
     def subscribe(self, subscriptions=[""]):
         for title in subscriptions:
             if title not in self.subscription_list:
-                self.socket.setsockopt(zmq.SUBSCRIBE, title)
+                self.socket.setsockopt_string(zmq.SUBSCRIBE, title)
                 self.subscription_list.append(title)
 
     def unsubscribe(self, subscriptions=[]):
@@ -24,7 +27,7 @@ class ZmqSubscriber:
 
         for title in subscriptions:
             if title in self.subscription_list:
-                self.socket.setsockopt(zmq.UNSUBSCRIBE, title)
+                self.socket.setsockopt_string(zmq.UNSUBSCRIBE, title)
                 self.subscription_list.remove(title)
             else:
                 print("ERROR: I'm not subscribed to '{}'".format(title))
@@ -42,6 +45,7 @@ class ZmqSubscriber:
 
         return messages
 
+
 class ValuesSubscriber(ZmqSubscriber):
     def __init__(self, thread_nb=1):
         ZmqSubscriber.__init__(self, thread_nb)
@@ -49,7 +53,7 @@ class ValuesSubscriber(ZmqSubscriber):
     def receive(self, message_nb=1):
         messages = ZmqSubscriber.receive(self, message_nb)
 
-        value_type = messages[0][2];
+        value_type = messages[0][2]
         valx_nb = np.fromstring(messages[0][3], dtype=value_type).size
         valuesX = np.zeros((valx_nb, message_nb))
 
@@ -70,6 +74,7 @@ class ValuesSubscriber(ZmqSubscriber):
         else:
             return [valuesX], loopPos
 
+
 class ZmqReq:
     def __init__(self, thread_nb=1):
         c = zmq.Context.instance(thread_nb)
@@ -79,11 +84,11 @@ class ZmqReq:
         self.socket.connect(address)
 
     def ask(self, query):
-        self.socket.send(query)
+        self.socket.send_string(query)
         return self.socket.recv()
 
     def tell(self, query, val):
-        self.socket.send(query, zmq.SNDMORE)
+        self.socket.send_string(query, zmq.SNDMORE)
         self.socket.send(val)
         return self.socket.recv()
 

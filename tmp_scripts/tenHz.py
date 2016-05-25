@@ -1,11 +1,35 @@
+from __future__ import division, print_function, unicode_literals
+
 import sys
 import math
 import numpy as np
-
+from scipy import optimize
 sys.path.append('search_kicks')
 sys.path.append('../../../search_kicks')
 import zmq_client as zc
 import search_kicks.tools as sktools
+
+
+def fit_coefs(values, asin, acos, fs, f):
+    def func(t, a, b, c, f):
+        return a + b*np.cos(2*np.pi*f*t)+c*np.sin(2*np.pi*f*t)
+
+    M, N = values.shape
+    t = np.arange(N)/fs
+    offs = np.zeros(M)
+    ampc = np.zeros(M)
+    amps = np.zeros(M)
+    freq = np.zeros(M)
+    for idx in range(M):
+        y = values[idx, :]
+        res, _ \
+            = optimize.curve_fit(func, t, y,
+                                 [np.mean(y), acos[idx], asin[idx], f])
+
+        [offs[idx], ampc[idx], amps[idx], freq[idx]] = res
+
+        return amps, ampc
+
 
 SAMPLE_NB = 100
 #HOST = 'tcp://gofbz12c:3333'
@@ -43,9 +67,10 @@ sin10 = buff_adc[62,:]
 [BPMx, BPMy], _ = s_bpm.receive(SAMPLE_NB)
 [CMx, CMy], _ = s_cm.receive(SAMPLE_NB)
 
-ampsin, ampcos = sktools.maths.extract_sin_cos(sin10.reshape(1, SAMPLE_NB), fs=150., f=10.)
-amp10 = np.linalg.norm([ampsin[0], ampcos[0]])
-ph10 = math.atan2(ampcos[0], ampsin[0])
+asin, acos = sktools.maths.extract_sin_cos(sin10.reshape(1, SAMPLE_NB), fs=150., f=10.)
+amps, ampc = fit_coefs(sin10.reshape(1, SAMPLE_NB), acos, asin, fs=150, f=10)
+amp10 = np.linalg.norm([amps[0], ampc[0]])
+ph10 = math.atan2(amps[0], ampc[0])
 
 # Get all parameters for calculations
 sreq = zc.ZmqReq()
@@ -66,7 +91,10 @@ Syy_inv = sktools.maths.inverse_with_svd(Syy, ivecY)
 
 # Do calculations
 asinX, acosX = sktools.maths.extract_sin_cos(BPMx, fs=150., f=10.)
+asinX, acosX = fit_coefs(BPMx, acosX, asinX, fs=150, f=10)
 asinY, acosY = sktools.maths.extract_sin_cos(BPMy, fs=150., f=10.)
+asinY, acosY = fit_coefs(BPMy, acosY, asinY, fs=150, f=10)
+
 valuesX = acosX + 1j*asinX
 valuesY = acosY + 1j*asinY
 
@@ -78,6 +106,7 @@ phX = np.angle(CorrX)
 
 ampY = np.abs(CorrY)
 phY = np.angle(CorrY)
+
 if pack.unpack_string(sreq.tell('SET AMPLITUDE-REF-10', pack.pack_double(amp10))) != "ACK":
     print("error on amplitude10")
 
