@@ -66,10 +66,6 @@ void mBox::startLoop()
 #endif
         m_driver->read(CTRL_MEMPOS, &m_mBoxStatus, 1);
 
-#ifdef DUMMY_RFM_DRIVER
-        // In case of DUMMY_RFM_DRIVER we'll never get an order from the cBox.
-        m_mBoxStatus = Status::Running;
-#endif
         if (m_mBoxStatus == Status::RestartedThing) {
             std::cout << "  !!! MDIZ4T4R was restarted !!! ... Wait for initialization \n";
             while (m_mBoxStatus != Status::Idle) {

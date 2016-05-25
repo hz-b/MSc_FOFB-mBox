@@ -1,7 +1,12 @@
 #ifndef RFMDRIVERINTERFACE_H
 #define RFMDRIVERINTERFACE_H
 
+#include "config.h"
+#if DUMMY_RFM_DRIVER
+#include "rfm2g_dummy/rfm2g_api.h"
+#else
 #include <rfm2g_api.h>
+#endif
 
 class RFMDriverInterface
 {

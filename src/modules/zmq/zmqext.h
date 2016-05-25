@@ -1,7 +1,6 @@
 #ifndef ZMQEXT_H
 #define ZMQEXT_H
 
-#include <rfm2g_api.h>
 #include <armadillo>
 #include "zmq.hpp"
 

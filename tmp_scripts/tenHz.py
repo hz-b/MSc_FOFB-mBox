@@ -43,7 +43,7 @@ sin10 = buff_adc[62,:]
 [BPMx, BPMy], _ = s_bpm.receive(SAMPLE_NB)
 [CMx, CMy], _ = s_cm.receive(SAMPLE_NB)
 
-ampsin, ampcos = sktools.maths.extract_sin_cos(sin10.reshape(1, SAMPLE_NB), fs=150., f=10., method='fft')
+ampsin, ampcos = sktools.maths.extract_sin_cos(sin10.reshape(1, SAMPLE_NB), fs=150., f=10.)
 amp10 = np.linalg.norm([ampsin[0], ampcos[0]])
 ph10 = math.atan2(ampcos[0], ampsin[0])
 
@@ -65,8 +65,8 @@ Sxx_inv = sktools.maths.inverse_with_svd(Sxx, ivecX)
 Syy_inv = sktools.maths.inverse_with_svd(Syy, ivecY)
 
 # Do calculations
-asinX, acosX = sktools.maths.extract_sin_cos(BPMx, fs=150., f=10., method='fft')
-asinY, acosY = sktools.maths.extract_sin_cos(BPMy, fs=150., f=10., method='fft')
+asinX, acosX = sktools.maths.extract_sin_cos(BPMx, fs=150., f=10.)
+asinY, acosY = sktools.maths.extract_sin_cos(BPMy, fs=150., f=10.)
 valuesX = acosX + 1j*asinX
 valuesY = acosY + 1j*asinY
 

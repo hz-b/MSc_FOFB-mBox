@@ -59,7 +59,7 @@ public:
     virtual RFM2G_STATUS enableEvent(RFM2GEVENTTYPE eventType){ return RFM2G_SUCCESS; };
     virtual RFM2G_STATUS disableEvent(RFM2GEVENTTYPE eventType){ return RFM2G_SUCCESS; };
     virtual RFM2G_STATUS sendEvent(RFM2G_NODE toNode, RFM2GEVENTTYPE eventType, RFM2G_UINT32 extendedData){ return RFM2G_SUCCESS; };
-    virtual RFM2G_STATUS waitForEvent(RFM2GEVENTINFO* eventInfo){ return RFM2G_SUCCESS; };
+    virtual RFM2G_STATUS waitForEvent(RFM2GEVENTINFO* eventInfo);
     virtual RFM2G_STATUS enableEventCallback(RFM2GEVENTTYPE eventType, RFM2G_EVENT_FUNCPTR pEventFunc){ return RFM2G_SUCCESS; };
     virtual RFM2G_STATUS disableEventCallback(RFM2GEVENTTYPE eventType){ return RFM2G_SUCCESS; };
     virtual RFM2G_STATUS clearEvent(RFM2GEVENTTYPE eventType){ return RFM2G_SUCCESS; };

@@ -2,7 +2,11 @@
 #define DEFINE_H
 
 #include "config.h"
+#if DUMMY_RFM_DRIVER
+#include "rfm2g_dummy/rfm2g_api.h"
+#else
 #include "rfm2g_api.h"
+#endif
 
 #define CLOCK_MODE CLOCK_MONOTONIC_RAW
 

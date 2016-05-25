@@ -5,7 +5,8 @@
 #include <map>
 #include <cmath>
 #include <iostream>
-#include <ratio>
+
+
 class Timer
 {
 public:
