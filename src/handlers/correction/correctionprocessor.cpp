@@ -131,6 +131,7 @@ int CorrectionProcessor::checkRMS(const arma::vec& diffX, const arma::vec& diffY
     if ((rmsX > m_lastRMS.x*1.1) || (rmsY > m_lastRMS.y*1.1))
     {
         m_rmsErrorCnt++;
+        Logger::Logger() << "RMS error - Nb " << m_rmsErrorCnt << " out of 5.";
         if (m_rmsErrorCnt > 5) {
             Logger::error(_ME_) << "RMS error, count > 5";
             return FOFB_ERROR_RMS;

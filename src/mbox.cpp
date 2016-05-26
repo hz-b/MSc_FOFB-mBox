@@ -98,9 +98,11 @@ void mBox::startLoop()
                 Logger::error(_ME_) <<  "error: " << Logger::errorMessage(errornr);
                 std::cout << "Status: mBox in ERROR \n";
             }
-
-            // Write the status
-            m_driver->write(STATUS_MEMPOS, m_dma->status(), sizeof(t_status));
+            
+            if (!READONLY) {
+                // Write the status
+                m_driver->write(STATUS_MEMPOS, m_dma->status(), sizeof(t_status));
+            }
         }
 
         /**
