@@ -79,7 +79,7 @@ def corr_value(BPMx, BPMy):
         return set_output(axis, CM_id, t_id)
 
     # Those are the result of last round
-    read_bpms((BPMx, BPMy), axis, t_id)
+    read_bpms((BPMx, BPMy), axis, CM_id, t_id)
 
     # Update indexes for next round
     if t_id < sample_nb-1:
@@ -122,13 +122,8 @@ def set_output(axis, CM_id, t_id):
     return CMx, CMy
 
 
-def read_bpms(bpms, axis, t_id):
+def read_bpms(bpms, axis, CM_id,  t_id):
     """  bpms = (BPMx, BPMy), t_id = scalar """
 
-    if axis == 'x':
-        res['data']['xx'][:, CM_id, t_id] = bpms[0]
-        res['data']['yx'][:, CM_id, t_id] = bpms[1]
-    else:
-        res['data']['xy'][:, CM_id, t_id] = bpms[0]
-        res['data']['yy'][:, CM_id, t_id] = bpms[1]
-
+    res['data']['x'+axis][:, CM_id, t_id] = bpms[0]
+    res['data']['y'+axis][:, CM_id, t_id] = bpms[1]
