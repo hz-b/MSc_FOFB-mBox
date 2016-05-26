@@ -60,10 +60,6 @@ void mBox::startLoop()
     Logger::Logger() << "...Wait for start...";
     std::cout << "...Wait for start... \n";
     for(;;) {
-#ifdef DUMMY_RFM_DRIVER
-        Timer looptimer;
-        looptimer.start();
-#endif
         m_driver->read(CTRL_MEMPOS, &m_mBoxStatus, 1);
 
         if (m_mBoxStatus == Status::RestartedThing) {
@@ -119,10 +115,6 @@ void mBox::startLoop()
 
         TimingModule::printAll(Timer::Unit::ms, 1000);
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
-#ifdef DUMMY_RFM_DRIVER
-        looptimer.stop();
-        std::this_thread::sleep_for(std::chrono::nanoseconds(static_cast<int>((1/150.-looptimer.timeSpan())*1e9)));
-#endif
     }
 }
 
