@@ -75,8 +75,8 @@ int CorrectionProcessor::correct(const CorrectionInput_t& input,
         dCMy = dCMy % m_CMWeight.y;
     }
 
-//    if ((arma::max(arma::abs(dCMx)) > 0.100) || (arma::max(arma::abs(dCMy)) > 0.100)) {
-    if ((arma::max((dCMx)) > 0.100) || (arma::max((dCMy)) > 0.100)) {
+    if ((arma::max(arma::abs(dCMx)) > 0.100) || (arma::max(arma::abs(dCMy)) > 0.100)) {
+//    if ((arma::max((dCMx)) > 0.100) || (arma::max((dCMy)) > 0.100)) {
 
 #ifndef DUMMY_RFM_DRIVER
         Logger::error(_ME_) << "A corrector as a value above 0.100";
@@ -106,16 +106,23 @@ int CorrectionProcessor::correct(const CorrectionInput_t& input,
     Messenger::get("PHASES-X-10", phaseX10);
     arma::vec ampX10;
     Messenger::get("AMPLITUDES-X-10", ampX10);
+
+    arma::vec phaseY10;
+    Messenger::get("PHASES-Y-10", phaseY10);
+    arma::vec ampY10;
+    Messenger::get("AMPLITUDES-Y-10",ampY10);
+
+    if ((arma::max(arma::abs(ampX10)) > 0.1) || (arma::max(arma::abs(ampY10)) > 0.1)) {
+        Logger::Logger() << "Dynamic amplitude to high, don't use";
+        return 0;
+    }
+
     if ((ampX10.n_elem == Data_CMx.n_elem) && (phaseX10.n_elem == Data_CMx.n_elem)) {
         arma::vec dynamicCorrX = ampX10 % (input.value10Hz/ampref * arma::cos(phaseX10-phref)
                               + std::sqrt(1-std::pow(input.value10Hz/ampref, 2)) * arma::sin(phaseX10-phref));
         Data_CMx += dynamicCorrX;
     }
 
-    arma::vec phaseY10;
-    Messenger::get("PHASES-Y-10", phaseY10);
-    arma::vec ampY10;
-    Messenger::get("AMPLITUDES-Y-10",ampY10);
     if ((ampY10.n_elem == Data_CMy.n_elem) && (phaseY10.n_elem == Data_CMy.n_elem)) {
         arma::vec dynamicCorrY = ampY10 % (input.value10Hz/ampref * arma::cos(phaseY10-phref)
                               + std::sqrt(1-std::pow(input.value10Hz/ampref, 2)) * arma::sin(phaseY10-phref));
