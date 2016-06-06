@@ -161,10 +161,11 @@ int Handler::make()
     bool newInjection = false;
 
     TimingModule::addTimer("ADC_Full");
-    if (this->getNewData(diffX, diffY, newInjection))
+    int readError = this->getNewData(diffX, diffY, newInjection);
+    if (readError)
     {
         Logger::error(_ME_) << "Cannot correct, error in data acquisition";
-        return 1;
+        return readError;
     }
     TimingModule::timer("ADC_Full").stop();
 
@@ -193,7 +194,10 @@ int Handler::make()
     this->prepareCorrectionValues(CMx, CMy, input.typeCorr);
 
     if (!READONLY) {
-        this->writeCorrection();
+        int writeError = this->writeCorrection();
+        if (writeError) {
+            return writeError;
+        }
     }
     TimingModule::timer("DAC_Full").stop();
 
@@ -206,7 +210,6 @@ int Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
 {
     arma::vec rADCdataX(m_numBPM.x), rADCdataY(m_numBPM.y);
     if (m_adc->read()) {
-        Logger::postError(FOFB_ERROR_ADC);
         Logger::error(_ME_) << "Read Error";
         return FOFB_ERROR_ADC;
     }
@@ -265,12 +268,12 @@ void Handler::prepareCorrectionValues(const arma::vec& CMx, const arma::vec& CMy
 }
 
 
-void Handler::writeCorrection()
+int Handler::writeCorrection()
 {
     if (m_dac->write(m_plane, m_loopDir, m_DACout) > 0) {
-         m_dma->status()->errornr = FOFB_ERROR_DAC;
-         Logger::postError(FOFB_ERROR_DAC);
+         return FOFB_ERROR_DAC;
     }
     unsigned long pos = STATUS_MEMPOS;
-    m_driver->write(pos, m_dma->status(), sizeof(t_status));
+
+    return 0;
 }

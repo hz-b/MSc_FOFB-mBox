@@ -64,6 +64,8 @@ void mBox::startLoop()
 
         if (m_mBoxStatus == Status::RestartedThing) {
             std::cout << "  !!! MDIZ4T4R was restarted !!! ... Wait for initialization \n";
+            Logger::postError(FOFB_ERROR_ADCReset);
+
             while (m_mBoxStatus != Status::Idle) {
                 m_driver->read(CTRL_MEMPOS , &m_mBoxStatus, 1);
                 sleep(1);
@@ -84,37 +86,35 @@ void mBox::startLoop()
             std::this_thread::sleep_for(std::chrono::nanoseconds(4000000));
             m_currentState = State::Initialized;
 
-            std::cout << "Status: mBox running \n";
             Logger::Logger() << "mBox running";
+            Logger::Logger().sendMessage("FOFB mBox++ started");
         }
 
         /**
          * Read and correct
          */
         if ((m_mBoxStatus == Status::Running) && (m_currentState == State::Initialized)) {
-            if (int errornr = m_handler->make()) {
-                Logger::postError(errornr);
+            if (m_dma->status()->errornr = m_handler->make()) {
                 m_currentState = State::Error;
-                Logger::error(_ME_) <<  "error: " << Logger::errorMessage(errornr);
-                std::cout << "Status: mBox in ERROR \n";
+                Logger::postError(m_dma->status()->errornr);
+                Logger::error(_ME_) <<  Logger::errorMessage(m_dma->status()->errornr).first << " : "
+                                    << Logger::errorMessage(m_dma->status()->errornr).second;
             }
 
-        }
-            
             if (!READONLY) {
                 // Write the status
                 m_driver->write(STATUS_MEMPOS, m_dma->status(), sizeof(t_status));
             }
+        }
 
         /**
          * Stop correction
          */
         if ((m_mBoxStatus == Status::Idle) && (m_currentState != State::Preinit)) {
             Logger::Logger() << "Stopped  .....";
-            std::cout << "Status: mBox stopped \n";
             m_handler->disable();
             m_currentState = State::Preinit;
-
+            Logger::Logger().sendMessage("FOFB mBox++ stopped");
         }
 
         TimingModule::printAll(Timer::Unit::ms, 1000);

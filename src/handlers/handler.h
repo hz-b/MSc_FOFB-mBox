@@ -127,7 +127,7 @@ protected:
     /**
      * @brief Write DACout to the RFM
      */
-    void writeCorrection();
+    int writeCorrection();
 
     /**
      * @brief Get the index of a given index

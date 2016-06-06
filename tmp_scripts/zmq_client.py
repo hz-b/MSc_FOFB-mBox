@@ -5,7 +5,7 @@ import struct
 import zmq
 
 
-class ZmqSubscriber:
+class ZmqSubscriber(object):
     subscription_list = []
 
     def __init__(self, thread_nb=1):
@@ -70,9 +70,9 @@ class ValuesSubscriber(ZmqSubscriber):
                 valuesY[:, count] = np.fromstring(message[4], dtype=value_type)
 
         if len(messages[0]) > 4:
-            return [valuesX, valuesY], loopPos
+            return (valuesX, valuesY), loopPos
         else:
-            return [valuesX], loopPos
+            return (valuesX), loopPos
 
 
 class ZmqReq:

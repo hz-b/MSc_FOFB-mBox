@@ -15,12 +15,18 @@ import cbox
 
 fs = 150
 
-def frequency_int():
+def frequency_int(which, T):
     while True:
-        time.sleep(1/fs)
-        cbox.set_interruption('adc')
+        if cbox.is_interruption_enabled(which):
+            if T == 0:
+                T = 0.1
+            time.sleep(T)
+            cbox.set_interruption(which)
+
 
 if __name__ == "__main__":
     cbox.set_filename('../build/dump_rmf.dat')
-    t = threading.Thread(target=frequency_int)
-    t.start()
+    tadc = threading.Thread(target=frequency_int, args=['adc', 1/fs] )
+    tdac = threading.Thread(target=frequency_int, args=['dac', 0.])
+    tadc.start()
+    tdac.start()

@@ -61,10 +61,16 @@ int Logger::Logger::port() const
     return m_port;
 }
 
-void Logger::Logger::sendMessage(const std::string& message, const std::string& error)
+void Logger::Logger::sendMessage(const std::string& message,
+                                 const std::string& errorType)
 {
+    // error are already shown by Logger::error()
+    if (errorType == " ") {
+        std::cout << "Status: " << message << '\n';
+    }
+
     if (!READONLY) {
-        this->sendRFM(message, error);
+        this->sendRFM(message, errorType);
     }
 }
 
@@ -152,34 +158,38 @@ void Logger::postError(unsigned int errornr)
 {
     Logger logger;
     if (errornr) {
-        logger.sendMessage("FOFB error", errorMessage(errornr));
+        std::pair<std::string, std::string> error = errorMessage(errornr);
+        logger.sendMessage(error.first, error.second);
     }
 }
 
-std::string Logger::errorMessage(unsigned int errornr)
+std::pair<std::string, std::string> Logger::errorMessage(unsigned int errornr)
 {
-    std::string message;
+    std::pair<std::string, std::string> message;
     switch (errornr) {
     case 0:
-        message = "No Error";
+        message = {"", "No Error"};
         break;
     case FOFB_ERROR_ADC:
-        message = "ADC Timeout";
+        message = {"MDI Error", "ADC Timeout"};
+        break;
+    case FOFB_ERROR_ADCReset:
+        message = {"MDI error", "MDI was restaret"};
         break;
     case FOFB_ERROR_DAC:
-        message = "DAC Problem";
+        message = {"IOC error", "DAC Problem"};
         break;
     case FOFB_ERROR_CM100:
-        message = "To much to correct";
-        break;
-    case FOFB_ERROR_NoBeam:
-        message = "No Current";
+        message = {"FOFB error", "To much to correct"};
         break;
     case FOFB_ERROR_RMS:
-        message = "Bad RMS";
+        message = {"FOFB error", "Bad RMS"};
+        break;
+    case FOFB_ERROR_NoBeam:
+        message = {"Error", "No Current"};
         break;
     default:
-        message = "Unknown Problem";
+        message = {"Error", "Unknown Problem"};
         break;
     }
     return message;

@@ -6,7 +6,12 @@
 #include <chrono>
 #include "define.h"
 
+const int INT_POS = -1;
+const int INT_ENABLE = -2;
+const unsigned char ADC_INT_VAL = 1;
+const unsigned char DAC_INT_VAL = 2;
 const std::string dummyFile = "dump_rmf.dat";
+
 RFM2G_STATUS RFMDriver::open(char* devicePath)
 {
     std::ifstream infile(dummyFile);
@@ -74,30 +79,31 @@ RFM2G_STATUS RFMDriver::waitForEvent(RFM2GEVENTINFO* eventInfo)
 {
     using namespace std::chrono;
     steady_clock::time_point start = steady_clock::now();
-    int filepos = 0;
+    char pos = 0;
     if (eventInfo->Event == ADC_EVENT) {
-        filepos = -1;
+        pos = ADC_INT_VAL;
     } else if (eventInfo->Event == DAC_EVENT) {
-        filepos = -2;
+        pos = DAC_INT_VAL;
     }
 
     milliseconds elapsedTime(0);
     milliseconds timeout(eventInfo->Timeout);
-    bool eventReceived = false;
+    char eventBuffer = 0;
     while (elapsedTime < timeout) {
         std::ifstream file;
         file.open(dummyFile, std::ios::in | std::ios::binary);
-        file.seekg(filepos, std::ios::end);
-        file.read((char*)&eventReceived, 1);
+        file.seekg(INT_POS, std::ios::end);
+        file.read((char*)&eventBuffer, 1);
         file.close();
-        if (eventReceived) {
+        if (eventBuffer & pos) {
             // reset interruption
             std::ofstream ofile;
             ofile.open(dummyFile, std::ios::in | std::ios::out | std::ios::binary);
             ofile.exceptions(std::ofstream::badbit | std::ofstream::failbit);
-            ofile.seekp(filepos, std::ios::end);
-            bool buffer = false;
-            ofile.write((char*)&buffer, 1);
+            ofile.seekp(INT_POS, std::ios::end);
+
+            unsigned char val = eventBuffer & (255^pos);
+            ofile.write((char*) &val, 1);
             ofile.close();
             return RFM2G_SUCCESS;
         }
@@ -107,4 +113,52 @@ RFM2G_STATUS RFMDriver::waitForEvent(RFM2GEVENTINFO* eventInfo)
     }
 
     return RFM2G_TIMED_OUT;
+}
+
+RFM2G_STATUS RFMDriver::enableEvent(RFM2GEVENTTYPE eventType) {
+    unsigned char pos = 0;
+    if (eventType == ADC_EVENT) {
+        pos = ADC_INT_VAL;
+    } else if (eventType == DAC_EVENT) {
+        pos = DAC_INT_VAL;
+    }
+
+    std::fstream file;
+    file.open(dummyFile, std::ios::in | std::ios::out | std::ios::binary);
+    file.exceptions(std::ofstream::badbit | std::ofstream::failbit);
+    file.seekg(INT_ENABLE, std::ios::end);
+
+    unsigned char eventBuffer = 0;
+    file.read((char*)&eventBuffer, 1);
+    file.seekp(INT_ENABLE, std::ios::end);
+
+    unsigned char val = (eventBuffer | pos);
+    file.write((char*) &val, 1);
+    file.close();
+
+    return RFM2G_SUCCESS;
+}
+
+RFM2G_STATUS RFMDriver::disableEvent(RFM2GEVENTTYPE eventType) {
+    unsigned char pos = 0;
+    if (eventType == ADC_EVENT) {
+        pos = ADC_INT_VAL;
+    } else if (eventType == DAC_EVENT) {
+        pos = DAC_INT_VAL;
+    }
+
+    std::fstream file;
+    file.open(dummyFile, std::ios::in | std::ios::out | std::ios::binary);
+    file.exceptions(std::ofstream::badbit | std::ofstream::failbit);
+    file.seekg(INT_ENABLE, std::ios::end);
+
+    unsigned char eventBuffer = 0;
+    file.read((char*)&eventBuffer, 1);
+    file.seekp(INT_ENABLE, std::ios::end);
+
+    unsigned char val = eventBuffer & (255^pos);
+    file.write((char*) &val, 1);
+    file.close();
+
+    return RFM2G_SUCCESS;
 }

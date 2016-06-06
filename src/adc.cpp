@@ -140,7 +140,7 @@ int ADC::read()
         RFM2G_STATUS readError = m_driver->read(ADC_MEMPOS + ( m_dma->status()->loopPos * data_size),
                                                 (void*) m_dma->memory(), data_size);
         if (readError) {
-            Logger::error(_ME_) << "Read error DMA " << m_driver->errorMsg(readError);
+            Logger::error(_ME_) << "Read error DMA: " << m_driver->errorMsg(readError);
 
             return 1;
         }

@@ -19,13 +19,15 @@ STATUS_POS = CTRL_POS + 50
 MESSAGE_POS = CTRL_POS + 100
 CONF_POS = CTRL_POS + 1000
 
-ADC_INT_POS = -1  # From EOF
-DAC_INT_POS = -2  # From EOF
+ADC_INT_VAL = 1
+DAC_INT_VAL = 2
+INT_POS = -1  # From EOF
+INT_ENABLE = -2
 
 ADC_TIMEOUT = 10000  # in ms
 DAC_TIMEOUT = 10000  # in ms
 
-FILENAME = "../fofb/mBox++/build/dump_rmf.dat"
+FILENAME = "../build/dump_rmf.dat"
 
 cf = 0.3051758e-3
 halfDigits = 1 << 23
@@ -304,16 +306,16 @@ def read_ctrl_command():
 
 
 def write_interruption(which, value):
-    if which == 'adc':
-        pos = ADC_INT_POS
-    elif which == 'dac':
-        pos = DAC_INT_POS
-    else:
-        print("Error: 1st arg must be 'adc' or 'dac'")
-        return False
+    pos = which_interruption(which)
+    res = read_interruption()
     with open(FILENAME, 'rb+') as f:
-        f.seek(pos, os.SEEK_END)
-        f.write(struct.pack('b', value))
+        if value:
+            write_value = res | pos
+        else:
+            write_value = res & (255 ^ pos)
+
+        f.seek(INT_POS, os.SEEK_END)
+        f.write(struct.pack('B', write_value))
 
 
 def set_interruption(which):
@@ -324,31 +326,67 @@ def reset_interruption(which):
     write_interruption(which, False)
 
 
-def read_interruption(which):
-    if which == 'adc':
-        pos = ADC_INT_POS
-    elif which == 'dac':
-        pos = DAC_INT_POS
-    else:
-        print("Error: 1st arg must be 'adc' or 'dac'")
-        return False
+def read_interruption():
     with open(FILENAME, 'rb') as f:
-        f.seek(pos, os.SEEK_END)
-        return struct.unpack('b', f.read(1))[0]
+        f.seek(INT_POS, os.SEEK_END)
+        return struct.unpack('B', f.read(1))[0]
+
+
+def has_interruption(which):
+    val = which_interruption(which)
+    res = read_interruption()
+    return (res & val) == val
 
 
 def wait_for_interruption(which):
-    if which == 'adc':
-        timeout = ADC_TIMEOUT  # ms
-    elif which == 'dac':
-        timeout = DAC_TIMEOUT  # ms
-    else:
-        print("Error: 1st arg must be 'adc' or 'dac'")
-        return False
+    pos = which_interruption(which)
+
     start = time.time()
     while (time.time() - start)*1e3 < timeout:
-        if read_interruption(which):
+        if has_interruption(which):
             reset_interruption(which)
             return True
     print("Time out, no interruption received")
     return False
+
+
+def read_interruption_enable():
+    with open(FILENAME, 'rb+') as f:
+        f.seek(INT_ENABLE, os.SEEK_END)
+        res = struct.unpack('B', f.read(1))[0]
+    return res
+
+
+def is_interruption_enabled(which):
+    val = which_interruption(which)
+    res = read_interruption_enable()
+    return (res & val) == val
+
+
+def enable_interruption(which):
+    pos = which_interruption(which)
+
+    res = read_interruption_enable()
+    write_value = res | pos
+    with open(FILENAME, 'rb+') as f:
+        f.seek(INT_ENABLE, os.SEEK_END)
+        f.write(struct.pack('B', write_value))
+
+def disable_interruption(which):
+    pos = which_interruption(which)
+
+    res = read_interruption_enable()
+    write_value = res & (255 ^ pos)
+    with open(FILENAME, 'rb+') as f:
+        f.seek(INT_ENABLE, os.SEEK_END)
+        f.write(struct.pack('B', write_value))
+
+
+def which_interruption(which):
+    if which == 'adc':
+        return ADC_INT_VAL
+    elif which == 'dac':
+        return DAC_INT_VAL
+    else:
+        raise ValueError("Error: 1st arg must be 'adc' or 'dac'")
+        return False

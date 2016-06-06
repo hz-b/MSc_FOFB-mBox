@@ -76,7 +76,7 @@ public:
      */
     void setRFM(RFMDriver* driver) { Logger::m_driver = driver; }
 
-    void sendMessage(const std::string& message, const std::string& error="");
+    void sendMessage(const std::string &message, const std::string &errorType=" ");
     void sendZmq(const std::string& header, const std::string& message, const std::string& other);
 
     template <typename T>
@@ -113,8 +113,8 @@ public:
 
     /**
      * @brief Send message to the RFM.
-     * @param message The message
-     * @param errornr Error number
+     * @param message message
+     * @param error type of error (= Status)
      */
     void sendRFM(const std::string& message, const std::string& error);
 
@@ -246,7 +246,7 @@ void postError(unsigned int errornr);
 /**
  * @brief Global function to express an error code in a verbose way.
  */
-std::string errorMessage(unsigned int errornr);
+std::pair<std::string, std::string> errorMessage(unsigned int errornr);
 
 }
 
