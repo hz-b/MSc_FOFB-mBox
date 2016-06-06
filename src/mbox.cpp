@@ -98,12 +98,13 @@ void mBox::startLoop()
                 Logger::error(_ME_) <<  "error: " << Logger::errorMessage(errornr);
                 std::cout << "Status: mBox in ERROR \n";
             }
+
+        }
             
             if (!READONLY) {
                 // Write the status
                 m_driver->write(STATUS_MEMPOS, m_dma->status(), sizeof(t_status));
             }
-        }
 
         /**
          * Stop correction
@@ -113,6 +114,7 @@ void mBox::startLoop()
             std::cout << "Status: mBox stopped \n";
             m_handler->disable();
             m_currentState = State::Preinit;
+
         }
 
         TimingModule::printAll(Timer::Unit::ms, 1000);

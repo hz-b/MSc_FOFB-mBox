@@ -64,7 +64,7 @@ void Messenger::Messenger::servingLoop()
             m_socket->send(s);
         } else if (!message.compare(0, prefixSet.length(), prefixSet) && request.size() > 3) {
             std::string key = message.substr(prefixGet.length(), message.npos);
-            this->serveSet(key, request[4]);
+            this->serveSet(key, request[3]);
         } else if (!message.compare(0, prefixGet.length(), prefixGet)) {
             std::string key =  message.substr(prefixGet.length(), message.npos);
             this->serveGet(key);
