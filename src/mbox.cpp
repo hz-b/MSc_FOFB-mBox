@@ -97,7 +97,7 @@ void mBox::startLoop()
             if (m_dma->status()->errornr = m_handler->make()) {
                 m_currentState = State::Error;
                 Logger::postError(m_dma->status()->errornr);
-                Logger::error(_ME_) <<  Logger::errorMessage(m_dma->status()->errornr).first << " : "
+                Logger::error(_ME_) << Logger::errorMessage(m_dma->status()->errornr).first << " : "
                                     << Logger::errorMessage(m_dma->status()->errornr).second;
             }
 

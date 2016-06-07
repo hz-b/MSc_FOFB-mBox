@@ -8,34 +8,54 @@
 #include <iostream>
 #include <cmath>
 
+const int FIR_NTAP = 15;
+
 CorrectionProcessor::CorrectionProcessor()
 {
 }
 
-void CorrectionProcessor::setCMs(arma::vec CMx, arma::vec CMy)
+void CorrectionProcessor::initCMs(arma::vec CMx, arma::vec CMy)
+{
+    m_CM.x = CMx;
+    m_CM.y = CMy;
+}
+void CorrectionProcessor::finishInitialization()
 {
     m_rmsErrorCnt = 0;
     m_lastRMS.x = 999;
     m_lastRMS.y = 999;
-
-    m_CM.x = CMx;
-    m_CM.y = CMy;
 
     m_PID.x.lastCorrection = arma::zeros<arma::vec>(m_CM.x.n_elem);
     m_PID.x.correctionSum = arma::zeros<arma::vec>(m_CM.x.n_elem);
 
     m_PID.y.lastCorrection = arma::zeros<arma::vec>(m_CM.y.n_elem);
     m_PID.y.correctionSum = arma::zeros<arma::vec>(m_CM.y.n_elem);
+
+    m_values10Hz = arma::zeros<arma::vec>(FIR_NTAP);
+    m_dynamicCorrStarted = false;
 }
 
-void CorrectionProcessor::setSmat(arma::mat &SmatX, arma::mat &SmatY, double IvecX, double IvecY, bool weightedCorr)
+void CorrectionProcessor::initSmat(arma::mat &SmatX, arma::mat &SmatY, double IvecX, double IvecY, bool weightedCorr)
 {
     m_useCMWeight = weightedCorr;
     this->calcSmat(SmatX, IvecX, m_CMWeight.x, m_SmatInv.x);
     this->calcSmat(SmatY, IvecY, m_CMWeight.y, m_SmatInv.y);
 }
 
-void CorrectionProcessor::setInjectionCnt(double frequency)
+void CorrectionProcessor::initPID(double P, double I, double D)
+{
+    m_PID.x.P = P;
+    m_PID.x.I = I;
+    m_PID.x.D = D;
+    m_PID.x.currentP = 0;
+
+    m_PID.y.P = P;
+    m_PID.y.I = I;
+    m_PID.y.D = D;
+    m_PID.y.currentP = 0;
+}
+
+void CorrectionProcessor::initInjectionCnt(double frequency)
 {
     m_injection.count = 0;
     m_injection.countStart = (int) frequency/1000;
@@ -97,48 +117,71 @@ int CorrectionProcessor::correct(const CorrectionInput_t& input,
     Data_CMx = m_CM.x;
     Data_CMy = m_CM.y;
 
+    Data_CMx += this->dynamicCorrection10("X", Data_CMx.n_elem, input.value10Hz);
+    Data_CMy += this->dynamicCorrection10("Y", Data_CMy.n_elem, input.value10Hz);
+    return 0;
+}
+
+arma::vec CorrectionProcessor::dynamicCorrection10(const std::string& axis,
+                                                   const int size, const double value10Hz)
+{
     double ampref;
     double phref;
     Messenger::get("AMPLITUDE-REF-10", ampref);
     Messenger::get("PHASE-REF-10", phref);
 
-    arma::vec phaseX10;
-    Messenger::get("PHASES-X-10", phaseX10);
-    arma::vec ampX10;
-    Messenger::get("AMPLITUDES-X-10", ampX10);
+    arma::vec phase;
+    Messenger::get("PHASES-"+axis+"-10", phase);
+    arma::vec amp;
+    Messenger::get("AMPLITUDES-"+axis+"-10", amp);
 
-    arma::vec phaseY10;
-    Messenger::get("PHASES-Y-10", phaseY10);
-    arma::vec ampY10;
-    Messenger::get("AMPLITUDES-Y-10",ampY10);
+    if (amp.empty() || phase.empty()) {
+        return arma::zeros<arma::vec>(size);
+    }
 
-    if (ampX10.empty() || ampY10.empty() || phaseX10.empty() || phaseY10.empty()) {
-        return 0;
-    }
-    if ((arma::max(arma::abs(ampX10)) > 0.1) || (arma::max(arma::abs(ampY10)) > 0.1) || ampref < 1e-6) {
-        Logger::Logger() << "Dynamic amplitude to high, don't use";
-        return 0;
-    }
-    static bool test = false;
-    if ((ampX10.n_elem == Data_CMx.n_elem) && (phaseX10.n_elem == Data_CMx.n_elem)) {
-        if (!test)
-        {
-            test =true;
-            std::cout << "dynamic coprr" << std::endl;
+    if ((arma::max(arma::abs(amp)) > 0.1) || (arma::max(arma::abs(amp)) > 0.1) || ampref < 1e-6) {
+        Logger::error(_ME_) << "Dynamic amplitude to high, don't use";
+        return arma::zeros<arma::vec>(size);
+   }
+
+    if ((amp.n_elem == size) && (phase.n_elem == size)) {
+        if (!m_dynamicCorrStarted) {
+            m_dynamicCorrStarted = true;
+           Logger::Logger() << "Dynamic correction started.";
         }
-        arma::vec dynamicCorrX = ampX10 % (input.value10Hz/ampref * arma::cos(phaseX10-phref)
-                              + std::sqrt(std::max(0.0, 1-std::pow(input.value10Hz/ampref, 2))) * arma::sin(phaseX10-phref));
-        Data_CMx += dynamicCorrX;
-        std::cout << arma::max(arma::abs(dynamicCorrX)) << '\n';
+
+        int ntap = FIR_NTAP;
+        double fs = 150;
+        double f = 10;
+
+        arma::vec time = arma::linspace<arma::vec>(0, ntap-1, ntap);
+        arma::mat t_mat = arma::repmat(time.t(), size, 1)/fs;
+
+        arma::mat phase_mat = arma::repmat(phase, 1, ntap) - phref;
+        arma::mat fir = arma::cos(2*M_PI*f*t_mat - phase_mat) * 2/fs; // - or + the phase ???
+
+        // Pop front element, them pushback new one
+        for (int i = 0 ; i < FIR_NTAP - 1 ; i++) {
+             m_values10Hz(i) = m_values10Hz(i+1);
+        }
+        m_values10Hz(FIR_NTAP-1) = value10Hz;
+
+        arma::vec dynamicCorr = arma::zeros<arma::vec>(size);
+
+        for (int i = 0 ; i < size ; i++){
+            dynamicCorr.row(i) = fir.row(i) * m_values10Hz;
+        }
+
+        dynamicCorr %= amp/ampref;
+        std::cout << arma::max(arma::abs(dynamicCorr)) << '\n'<<'\n';
+
+        return dynamicCorr;
+    } else {
+        m_dynamicCorrStarted = false;
+        Logger::Logger() << "Dynamic correction stopped.";
     }
 
-    if ((ampY10.n_elem == Data_CMy.n_elem) && (phaseY10.n_elem == Data_CMy.n_elem)) {
-        arma::vec dynamicCorrY = ampY10 % (input.value10Hz/ampref * arma::cos(phaseY10-phref)
-                              + std::sqrt(std::max(0.0, 1-std::pow(input.value10Hz/ampref, 2))) * arma::sin(phaseY10-phref));
-        Data_CMy += dynamicCorrY;
-        std::cout<< arma::max(arma::abs(dynamicCorrY)) << '\n';
-    }
-    return 0;
+    return arma::zeros<arma::vec>(size);
 }
 
 int CorrectionProcessor::checkRMS(const arma::vec& diffX, const arma::vec& diffY)
@@ -215,19 +258,6 @@ void CorrectionProcessor::calcSmat(const arma::mat &Smat,
     SmatInv = V * arma::inv(S) * U;
 
     Logger::Logger() << "SVD complete ...";
-}
-
-void CorrectionProcessor::setPID(double P, double I, double D)
-{
-    m_PID.x.P = P;
-    m_PID.x.I = I;
-    m_PID.x.D = D;
-    m_PID.x.currentP = 0;
-
-    m_PID.y.P = P;
-    m_PID.y.I = I;
-    m_PID.y.D = D;
-    m_PID.y.currentP = 0;
 }
 
 bool CorrectionProcessor::isInjectionTime(const bool newInjection)

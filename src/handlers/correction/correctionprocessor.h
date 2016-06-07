@@ -57,12 +57,12 @@ public:
     /**
      * @brief Set the PID parameters.
      */
-    void setPID(double P, double I, double D);
+    void initPID(double P, double I, double D);
 
     /**
      * @brief Set the correctors.
      */
-    void setCMs(arma::vec CMx, arma::vec CMy);
+    void initCMs(arma::vec CMx, arma::vec CMy);
 
     /**
      * @brief Initialize the injection count.
@@ -70,7 +70,12 @@ public:
      *  * count start = frequency/1000
      *  * count stop  = frequency*60/1000
      */
-    void setInjectionCnt(double frequency);
+    void initInjectionCnt(double frequency);
+
+    /**
+     * @brief To be called after all other parameters are initialized.
+     */
+    void finishInitialization();
 
     /**
      * @brief Function that call calcSmat() for both x and y axes.
@@ -79,7 +84,7 @@ public:
      * @param IvecX, IvecY ????
      * @param CMWeight True if the correction should be weighted or not.
      */
-    void setSmat(arma::mat &SmatX, arma::mat &SmatY, double IvecX, double IvecY, bool weightedCorr);
+    void initSmat(arma::mat &SmatX, arma::mat &SmatY, double IvecX, double IvecY, bool weightedCorr);
 
 private:
 
@@ -96,6 +101,10 @@ private:
     bool isInjectionTime(const bool newInjection);
     int checkRMS(const arma::vec& diffX, const arma::vec& diffY);
     arma::vec PIDcorr(const arma::vec& dCM, PID_t& pid);
+    arma::vec dynamicCorrection10(const std::string& axis, const int size, const double value10Hz);
+
+    bool m_dynamicCorrStarted;
+    arma::vec m_values10Hz;
 
     Injection_t m_injection; /**< @brief Injection count values */
     int m_rmsErrorCnt; /**< @brief Number of RMS error counted */

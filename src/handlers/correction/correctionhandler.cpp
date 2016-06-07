@@ -36,10 +36,11 @@ void CorrectionHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
                                      arma::vec CMx, arma::vec CMy,
                                      bool weightedCorr)
 {
-    m_correctionProcessor.setCMs(CMx, CMy);
-    m_correctionProcessor.setSmat(SmatX, SmatY, IvecX, IvecY, weightedCorr);
-    m_correctionProcessor.setInjectionCnt(Frequency);
-    m_correctionProcessor.setPID(P,I,D);
+    m_correctionProcessor.initCMs(CMx, CMy);
+    m_correctionProcessor.initSmat(SmatX, SmatY, IvecX, IvecY, weightedCorr);
+    m_correctionProcessor.initInjectionCnt(Frequency);
+    m_correctionProcessor.initPID(P,I,D);
+    m_correctionProcessor.finishInitialization();
 }
 
 
