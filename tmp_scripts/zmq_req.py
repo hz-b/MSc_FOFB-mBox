@@ -9,7 +9,7 @@ def unpack_int(v):
     return struct.unpack('i', v)[0]
 
 def unpack_string(v):
-    return str(v)
+    return str(v.decode('utf8'))
 
 def unpack_vec(v):
     return np.fromstring(v, dtype=np.double)
@@ -24,7 +24,7 @@ def pack_int(v):
     return struct.pack('i', v)
 
 def pack_string(v):
-    return str(v)
+    return str(v.encode('utf8'))
 
 def pack_vec(v):
     return np.tostring(v)

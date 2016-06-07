@@ -101,7 +101,7 @@ class Packer:
         return struct.unpack('i', v)[0]
 
     def unpack_string(self, v):
-        return str(v)
+        return str(v.decode('utf8'))
 
     def unpack_vec(self, v):
         return np.fromstring(v, dtype=np.double)
@@ -116,7 +116,7 @@ class Packer:
         return struct.pack('i', v)
 
     def pack_string(self, v):
-        return str(v)
+        return str(v.encode('utf8'))
 
     def pack_vec(self, v):
         return v.tostring()

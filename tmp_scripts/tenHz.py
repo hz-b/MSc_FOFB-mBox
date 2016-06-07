@@ -62,10 +62,10 @@ while not synchronized:
         print("{} {} {}".format(loop_adc, loop_bpm, loop_cm))
 
 # Get values
-[buff_adc], _ = s_adc.receive(SAMPLE_NB)
+(buff_adc), _ = s_adc.receive(SAMPLE_NB)
 sin10 = buff_adc[62,:]
-[BPMx, BPMy], _ = s_bpm.receive(SAMPLE_NB)
-[CMx, CMy], _ = s_cm.receive(SAMPLE_NB)
+(BPMx, BPMy), _ = s_bpm.receive(SAMPLE_NB)
+(CMx, CMy), _ = s_cm.receive(SAMPLE_NB)
 
 asin, acos = sktools.maths.extract_sin_cos(sin10.reshape(1, SAMPLE_NB), fs=150., f=10.)
 amps, ampc = fit_coefs(sin10.reshape(1, SAMPLE_NB), acos, asin, fs=150, f=10)
@@ -107,23 +107,30 @@ phX = np.angle(CorrX)
 ampY = np.abs(CorrY)
 phY = np.angle(CorrY)
 
-if pack.unpack_string(sreq.tell('SET AMPLITUDE-REF-10', pack.pack_double(amp10))) != "ACK":
-    print("error on amplitude10")
 
-if pack.unpack_string(sreq.tell('SET PHASE-REF-10', pack.pack_double(ph10))) != "ACK":
-    print("error on phase10")
+ans = pack.unpack_string(sreq.tell('SET AMPLITUDE-REF-10', pack.pack_double(amp10)))
+if ans != "ACK":
+    print("error on AMPLITUDE-REF-10: {}".format(ans))
 
-if pack.unpack_string(sreq.tell('SET AMPLITUDES-X-10', pack.pack_vec(ampX))) != "ACK":
-    print("error on amplitudesX")
+ans = pack.unpack_string(sreq.tell('SET PHASE-REF-10', pack.pack_double(ph10)))
+if ans != "ACK":
+    print("error on SET PHASE-REF-10: {}".format(ans))
 
-if pack.unpack_string(sreq.tell('SET PHASES-X-10', pack.pack_vec(phX))) != "ACK":
-    print("error on phasesX")
+ans = pack.unpack_string(sreq.tell('SET AMPLITUDES-X-10', pack.pack_vec(ampX)))
+if ans != "ACK":
+    print("error on AMPLITUDES-X-10: {}".format(ans))
 
-if pack.unpack_string(sreq.tell('SET AMPLITUDES-Y-10', pack.pack_vec(ampY))) != "ACK":
-    print("error on amplitudesY")
+ans = pack.unpack_string(sreq.tell('SET PHASES-X-10', pack.pack_vec(phX)))
+if ans != "ACK":
+    print("error on PHASES-X-10: {}".format(ans))
 
-if pack.unpack_string(sreq.tell('SET PHASES-Y-10', pack.pack_vec(phY))) != "ACK":
-    print("error on phasesY")
+ans = pack.unpack_string(sreq.tell('SET AMPLITUDES-Y-10', pack.pack_vec(ampY)))
+if ans != "ACK":
+    print("error on AMPLITUDES-Y-10: {}".format(ans))
+
+ans = pack.unpack_string(sreq.tell('SET PHASES-Y-10', pack.pack_vec(phY)))
+if ans != "ACK":
+    print("error on PHASES-Y-10: {}".format(ans))
 
 print('ampX')
 print(ampX)
