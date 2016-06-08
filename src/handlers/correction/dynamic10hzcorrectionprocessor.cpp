@@ -85,7 +85,7 @@ int Dynamic10HzCorrectionProcessor::processAxis(const std::string& axisName,
     arma::vec dynamicCorr = arma::zeros<arma::vec>(vectorSize);
 
     for (int i = 0 ; i < vectorSize ; i++){
-        dynamicCorr.row(i) = fir.row(i) * m_buffer10Hz;
+        dynamicCorr.row(i) = fir.row(i) * arma::flipud(m_buffer10Hz);
     }
 
     dynamicCorr %= amp/ampref;

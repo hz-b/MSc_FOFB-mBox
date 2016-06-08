@@ -108,7 +108,8 @@ ampY = np.abs(CorrY)
 phY = np.angle(CorrY)
 
 
-ans = pack.unpack_string(sreq.tell('SET AMPLITUDE-REF-10', pack.pack_double(amp10)))
+ans = pack.unpack_string(sreq.tell('SET AMPLITUDE-REF-10',
+                                   pack.pack_double(amp10)))
 if ans != "ACK":
     print("error on AMPLITUDE-REF-10: {}".format(ans))
 
