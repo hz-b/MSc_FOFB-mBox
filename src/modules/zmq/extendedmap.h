@@ -1,5 +1,5 @@
-#ifndef MAP_H
-#define MAP_H
+#ifndef EXTENDEDMAP_H
+#define EXTENDEDMAP_H
 
 #include <armadillo>
 
@@ -11,14 +11,14 @@
  *
  * All elements are saved as vectors of unsigned char.
  */
-class Map
+class ExtendedMap
 {
 public:
 
     /**
      * @brief Constructor
      */
-    Map();
+    ExtendedMap();
 
     /**
      * @brief Return the list of all keys known by the std::map container
@@ -141,7 +141,7 @@ public:
     /**
      * @brief Get an element as a arma::mat.
      * @param key Key of the element to return
-     * @param nros Number of rows
+     * @param nrows Number of rows
      * @param ncols Number of colunms
      *
      * @return arma::mat object (empty if the key doesn't exist)
@@ -155,6 +155,7 @@ public:
      * @return true if it contains the key
      */
     bool has(const std::string& key) { return (m_map.count(key) > 0); };
+
 #ifndef DEBUG
     /**
      * @brief Test all update/getAs functions if DEBUG is true
@@ -170,4 +171,4 @@ private:
     std::map<std::string, std::vector<unsigned char> > m_map;
 };
 
-#endif // MAP_H
+#endif // EXTENDEDMAP_H

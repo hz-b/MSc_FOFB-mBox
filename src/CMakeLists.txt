@@ -11,7 +11,7 @@ set(SOURCES main.cpp
             handlers/measures/measurehandler.cpp
             modules/timers.cpp
             modules/zmq/logger.cpp
-            modules/zmq/map.cpp
+            modules/zmq/extendedmap.cpp
             modules/zmq/messenger.cpp
             modules/zmq/zmqext.cpp
 )

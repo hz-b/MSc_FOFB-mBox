@@ -1,11 +1,12 @@
-#include "map.h"
+#include "extendedmap.h"
+
 #include "modules/zmq/logger.h"
 
-Map::Map()
+ExtendedMap::ExtendedMap()
 {
 }
 
-std::string Map::keyList() {
+std::string ExtendedMap::keyList() {
     std::string list;
     std::vector<std::string> vect;
     for (const auto& item : m_map) {
@@ -17,12 +18,12 @@ std::string Map::keyList() {
 
     return list;
 }
-void Map::update(const std::string& key,const std::vector<unsigned char>& value)
+void ExtendedMap::update(const std::string& key,const std::vector<unsigned char>& value)
 {
     m_map[key] = value;
 }
 
-void Map::update(const std::string& key, const unsigned char* ptr, const int size)
+void ExtendedMap::update(const std::string& key, const unsigned char* ptr, const int size)
 {
     unsigned char arr[size];
     memcpy(&arr, ptr, size);
@@ -30,38 +31,38 @@ void Map::update(const std::string& key, const unsigned char* ptr, const int siz
     update(key, v);
 }
 
-void Map::update(const std::string& key, const int value)
+void ExtendedMap::update(const std::string& key, const int value)
 {
     int size = sizeof(value);
     update(key, (unsigned char*)&value, size);
 }
-void Map::update(const std::string& key, const double value)
+void ExtendedMap::update(const std::string& key, const double value)
 {
     int size = sizeof(value);
     update(key, (unsigned char*)&value, size);
 }
-void Map::update(const std::string& key, const std::string& value)
+void ExtendedMap::update(const std::string& key, const std::string& value)
 {
     int size = value.size();
     update(key, (unsigned char*)value.data(), size);
 }
-void Map::update(const std::string& key, const arma::vec& value)
+void ExtendedMap::update(const std::string& key, const arma::vec& value)
 {
     int size = value.n_elem*sizeof(double);
     update(key, (unsigned char*)value.memptr(), size);
 }
-void Map::update(const std::string& key, const arma::mat& value)
+void ExtendedMap::update(const std::string& key, const arma::mat& value)
 {
     int size = value.n_elem*sizeof(double);
     update(key, (unsigned char*)value.memptr(), size);
 }
 
-const std::vector<unsigned char> Map::get(const std::string& key) const
+const std::vector<unsigned char> ExtendedMap::get(const std::string& key) const
 {
     return m_map.at(key);
 }
 
-const unsigned char* Map::get_raw(const std::string& key) const
+const unsigned char* ExtendedMap::get_raw(const std::string& key) const
 {
     try {
         auto v = m_map.at(key);
@@ -72,7 +73,7 @@ const unsigned char* Map::get_raw(const std::string& key) const
     }
 }
 
-std::string Map::getAsString(const std::string& key) const
+std::string ExtendedMap::getAsString(const std::string& key) const
 {
     const char* ptr = (const char*) get_raw(key);
     if (ptr == nullptr) {
@@ -82,7 +83,7 @@ std::string Map::getAsString(const std::string& key) const
     }
 }
 
-int Map::getAsInt(const std::string& key) const
+int ExtendedMap::getAsInt(const std::string& key) const
 {
     int* ptr = (int*) get_raw(key);
     if (ptr == nullptr) {
@@ -92,7 +93,7 @@ int Map::getAsInt(const std::string& key) const
     }
 }
 
-double Map::getAsDouble(const std::string& key) const
+double ExtendedMap::getAsDouble(const std::string& key) const
 {
     double* ptr = (double*) get_raw(key);
     if (ptr == nullptr) {
@@ -102,7 +103,7 @@ double Map::getAsDouble(const std::string& key) const
     }
 }
 
-arma::vec Map::getAsVec(const std::string& key) const
+arma::vec ExtendedMap::getAsVec(const std::string& key) const
 {
     double* ptr = (double*) get_raw(key);
     if (ptr == nullptr) {
@@ -112,7 +113,7 @@ arma::vec Map::getAsVec(const std::string& key) const
     }
 }
 
-arma::mat Map::getAsMat(const std::string& key, int nrows, int ncols) const
+arma::mat ExtendedMap::getAsMat(const std::string& key, int nrows, int ncols) const
 {
     double* ptr = (double*) get_raw(key);
     if (ptr == nullptr) {
@@ -122,7 +123,7 @@ arma::mat Map::getAsMat(const std::string& key, int nrows, int ncols) const
     }
 }
 
-const int Map::get_sizeof(const std::string& key) const
+const int ExtendedMap::get_sizeof(const std::string& key) const
 {
     int size(0);
     try {
@@ -135,7 +136,7 @@ const int Map::get_sizeof(const std::string& key) const
 }
 
 #ifndef DEBUG
-void Map::selfTest() {
+void ExtendedMap::selfTest() {
     // int
     int i = 5;
     update("i", i);

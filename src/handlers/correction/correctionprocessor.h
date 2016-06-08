@@ -14,8 +14,25 @@ class RFM;
  */
 class PID {
 public:
-    explicit PID() {};
+    /**
+     * @brief Empty constructor
+     */
+    explicit PID() { PID(0., 0., 0., 0); }
+
+    /**
+     * @brief Real constructor
+     * @param P Gain
+     * @param I Integrator coefficient
+     * @param D Derivator coefficient
+     * @param bufferSize Size of the buffers (= size of input/output vectors)
+     */
     PID(const double P, const double I, const double D, const int bufferSize);
+
+    /**
+     * @brief Apply the PID to a data vector
+     * @param dCM Data on which the PID should be applied
+     * @return Computed vector
+     */
     arma::vec apply(const arma::vec& dCM);
 
 private:
@@ -27,8 +44,6 @@ private:
     arma::vec m_lastCorrection; /**< Last correction */
 };
 
-
-
 /**
  * @brief Structure containing values concerning the injection
  */
@@ -38,6 +53,13 @@ struct Injection_t {
     int countStop; /**< Number of injection, high threshold */
 };
 
+
+/**
+ * @brief Do the correction.
+ *
+ * The correction uses the pseudo-inverse of the ring response matrix, weighten
+ * the output and applieds a PID.
+ */
 class CorrectionProcessor
 {
 public:
@@ -49,16 +71,9 @@ public:
     /**
      * @brief Calculate the correction to apply.
      *
-     * @param[in] diffX BPM values for the x axis
-     * @param[in] diffY BPM values for the y axis
-     * @param[in] newInjection Was there a new injection?
+     * @param[in] input All values needed as input for the correction
      * @param[out] Data_CMx Corrector values for the x axis
      * @param[out] Data_CMy Corrector values for the y axis
-     * @param[in] type int value in the following set:
-     *                  * Correction::None (= `0b00`)
-     *                  * Correction::Horizontal (= `0b01`)
-     *                  * Correction::Vertical (= `0b10`)
-     *                  * Correction::All (= `0b11`)
      */
     int process(const CorrectionInput_t& input,
                 arma::vec& Data_CMx, arma::vec& Data_CMy);
@@ -91,7 +106,7 @@ public:
      *
      * @param SmatX, SmatY Matrices to inverse (both axes)
      * @param IvecX, IvecY ????
-     * @param CMWeight True if the correction should be weighted or not.
+     * @param weightedCorr True if the correction should be weighted or not.
      */
     void initSmat(arma::mat &SmatX, arma::mat &SmatY, double IvecX, double IvecY, bool weightedCorr);
 

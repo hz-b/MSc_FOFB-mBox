@@ -7,7 +7,7 @@
 #include <thread>
 #include <vector>
 
-#include "modules/zmq/map.h"
+#include "modules/zmq/extendedmap.h"
 #include "modules/zmq/zmqext.h"
 
 
@@ -126,7 +126,7 @@ private:
     /**
      * @brief Map / Dictionary containing the information that can be queried.
      */
-    Map m_map;
+    ExtendedMap m_map;
 
     /**
      * @brief Return all the keys that can be edited throught the server.

@@ -19,8 +19,8 @@ public:
 
     /**
      * @brief Send an integer.
-     * @param value
-     * @param flag
+     * @param value Value to send
+     * @param flags Flag for sending (e.g. ZMQ_SNDMORE)
      *
      * @return True if successed
      */
@@ -28,8 +28,8 @@ public:
 
     /**
      * @brief Send an vector of short.
-     * @param value
-     * @param flag
+     * @param values Values to send
+     * @param flags Flag for sending (e.g. ZMQ_SNDMORE)
      *
      * @return True if successed
      */
@@ -37,8 +37,8 @@ public:
 
     /**
      * @brief Send a arma::vec value.
-     * @param value
-     * @param flag
+     * @param values Values to send
+     * @param flags Flag for sending (e.g. ZMQ_SNDMORE)
      *
      * @return True if successed
      */
@@ -46,8 +46,8 @@ public:
 
     /**
      * @brief Send a string.
-     * @param value
-     * @param flag
+     * @param value Value to send
+     * @param flags Flag for sending (e.g. ZMQ_SNDMORE)
      *
      * @return True if successed
      */

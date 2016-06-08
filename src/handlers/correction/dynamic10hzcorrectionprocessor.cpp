@@ -13,6 +13,7 @@ Dynamic10HzCorrectionProcessor::Dynamic10HzCorrectionProcessor()
 void Dynamic10HzCorrectionProcessor::initialize()
 {
     m_started = false;
+    m_buffer10Hz.zeros();
 }
 
 int Dynamic10HzCorrectionProcessor::process(const CorrectionInput_t& input,
