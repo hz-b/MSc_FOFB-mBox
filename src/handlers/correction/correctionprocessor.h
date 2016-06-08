@@ -8,17 +8,26 @@
 class ADC;
 class RFM;
 
+
 /**
- * @brief Structure containing every values to process a PID
+ * @brief Class containing every values to process a PID
  */
-struct PID_t {
-    double P; /**< Gain */
-    double I; /**< Coefficient of the integrator */
-    double D; /**< Coefficient of the derivator */
-    double currentP; /**< Current gain (to modify the P without losing it) */
-    arma::vec correctionSum; /**< Sum of the previous corrections */
-    arma::vec lastCorrection; /**< Last correction */
+class PID {
+public:
+    explicit PID() {};
+    PID(const double P, const double I, const double D, const int bufferSize);
+    arma::vec apply(const arma::vec& dCM);
+
+private:
+    double m_P; /**< Gain */
+    double m_I; /**< Coefficient of the integrator */
+    double m_D; /**< Coefficient of the derivator */
+    double m_currentP; /**< Current gain (to modify the P without losing it) */
+    arma::vec m_correctionSum; /**< Sum of the previous corrections */
+    arma::vec m_lastCorrection; /**< Last correction */
 };
+
+
 
 /**
  * @brief Structure containing values concerning the injection
@@ -100,7 +109,6 @@ private:
 
     bool isInjectionTime(const bool newInjection);
     int checkRMS(const arma::vec& diffX, const arma::vec& diffY);
-    arma::vec PIDcorr(const arma::vec& dCM, PID_t& pid);
 
     Injection_t m_injection; /**< @brief Injection count values */
     int m_rmsErrorCnt; /**< @brief Number of RMS error counted */
@@ -109,7 +117,7 @@ private:
     bool m_useCMWeight; /**< @brief Should we use weights in the corrections? */
     Pair_t<arma::vec> m_CMWeight; /**< @brief  Weights */
     Pair_t<arma::mat> m_SmatInv; /**< @brief Inverse of the Smatrix */
-    Pair_t<PID_t> m_PID; /**< @brief PID parameters */
+    Pair_t<PID> m_PID; /**< @brief PID classes */
     Pair_t<arma::vec> m_CM; /** < @brief Current corrector values */
 };
 

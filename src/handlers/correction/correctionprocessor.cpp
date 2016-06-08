@@ -8,6 +8,31 @@
 #include <iostream>
 #include <cmath>
 
+// -------- PID implementation --------- //
+PID::PID(const double P, const double I, const double D, const int sizeBuffer)
+{
+    m_P = P;
+    m_P = I;
+    m_P = D;
+    m_currentP = 0;
+    m_lastCorrection = arma::zeros<arma::vec>(sizeBuffer);
+    m_correctionSum = arma::zeros<arma::vec>(sizeBuffer);
+}
+
+arma::vec PID::apply(const arma::vec& dCM)
+{
+    if (m_currentP < m_P) {
+        m_currentP += 0.01;
+    }
+    arma::vec pidCorrection = (dCM * m_currentP) + (m_I*m_correctionSum) + (m_D*(dCM - m_lastCorrection));
+    m_lastCorrection = dCM;
+    m_correctionSum += dCM;
+
+    return pidCorrection;
+}
+
+
+// -------- CorrectionProcessor implementation --------- //
 CorrectionProcessor::CorrectionProcessor()
 {
 }
@@ -22,12 +47,6 @@ void CorrectionProcessor::finishInitialization()
     m_rmsErrorCnt = 0;
     m_lastRMS.x = 999;
     m_lastRMS.y = 999;
-
-    m_PID.x.lastCorrection = arma::zeros<arma::vec>(m_CM.x.n_elem);
-    m_PID.x.correctionSum = arma::zeros<arma::vec>(m_CM.x.n_elem);
-
-    m_PID.y.lastCorrection = arma::zeros<arma::vec>(m_CM.y.n_elem);
-    m_PID.y.correctionSum = arma::zeros<arma::vec>(m_CM.y.n_elem);
 }
 
 void CorrectionProcessor::initSmat(arma::mat &SmatX, arma::mat &SmatY, double IvecX, double IvecY, bool weightedCorr)
@@ -39,15 +58,8 @@ void CorrectionProcessor::initSmat(arma::mat &SmatX, arma::mat &SmatY, double Iv
 
 void CorrectionProcessor::initPID(double P, double I, double D)
 {
-    m_PID.x.P = P;
-    m_PID.x.I = I;
-    m_PID.x.D = D;
-    m_PID.x.currentP = 0;
-
-    m_PID.y.P = P;
-    m_PID.y.I = I;
-    m_PID.y.D = D;
-    m_PID.y.currentP = 0;
+    m_PID.x = PID(P, I, D, m_CM.x.n_elem);
+    m_PID.y = PID(P, I, D, m_CM.y.n_elem);
 }
 
 void CorrectionProcessor::initInjectionCnt(double frequency)
@@ -102,11 +114,11 @@ int CorrectionProcessor::process(const CorrectionInput_t& input,
     }
 
     if ((input.typeCorr & Correction::Horizontal) == Correction::Horizontal) {
-        m_CM.x -= this->PIDcorr(dCMx, m_PID.x);
+        m_CM.x -= m_PID.x.apply(dCMx);
     }
 
     if ((input.typeCorr & Correction::Vertical) == Correction::Vertical) {
-        m_CM.y -= this->PIDcorr(dCMy, m_PID.y);
+        m_CM.y -= m_PID.y.apply(dCMy);
     }
     // We want to write the old value if it is not changed
     Data_CMx = m_CM.x;
@@ -135,18 +147,6 @@ int CorrectionProcessor::checkRMS(const arma::vec& diffX, const arma::vec& diffY
     m_lastRMS.y = rmsY;
 
     return 0;
-}
-
-arma::vec CorrectionProcessor::PIDcorr(const arma::vec& dCM, PID_t& pid)
-{
-    if (pid.currentP < pid.P) {
-        pid.currentP += 0.01;
-    }
-    arma::vec pidCorrection = (dCM * pid.currentP) + (pid.I*pid.correctionSum) + (pid.D*(dCM-pid.lastCorrection));
-    pid.lastCorrection = dCM;
-    pid.correctionSum += dCM;
-
-    return pidCorrection;
 }
 
 void CorrectionProcessor::calcSmat(const arma::mat &Smat,
