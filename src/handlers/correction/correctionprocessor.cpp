@@ -73,7 +73,7 @@ int CorrectionProcessor::process(const CorrectionInput_t& input,
                                  arma::vec &Data_CMx, arma::vec &Data_CMy)
 {
     if (sum(input.diff.x) < -10.5) {
-#ifdef DUMMY_RFM_DRIVER
+#ifndef DUMMY_RFM_DRIVER
         Logger::error(_ME_) << " ERROR: No Beam";
         return Error::NoBeam;
 #else
@@ -102,7 +102,6 @@ int CorrectionProcessor::process(const CorrectionInput_t& input,
     }
 
     if ((arma::max(arma::abs(dCMx)) > 0.100) || (arma::max(arma::abs(dCMy)) > 0.100)) {
-//    if ((arma::max((dCMx)) > 0.100) || (arma::max((dCMy)) > 0.100)) {
 
 #ifndef DUMMY_RFM_DRIVER
         Logger::error(_ME_) << "A corrector as a value above 0.100";
