@@ -50,6 +50,9 @@ private:
      * @brief Processor, i.e. what does the maths.
      */
     CorrectionProcessor m_correctionProcessor;
+    /**
+     * @brief Additional processor for the 10Hz harmonic perturbation
+     */
     Dynamic10HzCorrectionProcessor m_dyn10HzCorrectionProcessor;
 
 };

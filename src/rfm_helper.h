@@ -13,6 +13,12 @@
 class RFMHelper
 {
 public:
+    static const int readStructtype_pchar = 0;  /**< @brief Type in structure is char pointer. */
+    static const int readStructtype_mat = 1;    /**< @brief Type in structure is matrix. */
+    static const int readStructtype_vec = 2;    /**< @brief Type in structure is vector. */
+    static const int readStructtype_double = 3; /**< @brief Type in structure is double. */
+
+public:
     /**
      * @brief Constructor.
      *

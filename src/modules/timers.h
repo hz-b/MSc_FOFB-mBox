@@ -131,7 +131,7 @@ public:
     void reset() { m_timerMap.clear(); }
 
 private:
-    std::map<std::string, Timer> m_timerMap; /** < @brief Map containing the Timers */
+    std::map<std::string, Timer> m_timerMap; /**< @brief Map containing the Timers */
 };
 
 /**

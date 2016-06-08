@@ -4,9 +4,9 @@
 #include <algorithm>
 
 
-/** Just so that it don't get sent by  error */
-#define STOP_MESSAGE "STOP-NOW"
-#define STOP_SOCKET "406812310648"
+
+#define STOP_MESSAGE "STOP-NOW" /**< @brief Message to stop the ZMQ server */
+#define STOP_SOCKET "406812310648" /**< @brief ID of the server allowed to stop the ZMQ server */
 
 Messenger::Messenger::Messenger(zmq::context_t& context)
     : m_serve(false)

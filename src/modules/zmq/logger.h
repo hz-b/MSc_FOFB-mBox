@@ -241,12 +241,12 @@ inline Logger error(std::string fctname) { return Logger(LogType::Error, "in " +
 /**
  * @brief Global function to post an error code on the RFM.
  */
-void postError(unsigned int errornr);
+void postError(const unsigned int errornr);
 
 /**
  * @brief Global function to express an error code in a verbose way.
  */
-std::pair<std::string, std::string> errorMessage(unsigned int errornr);
+std::string errorMessage(unsigned int errornr);
 
 }
 

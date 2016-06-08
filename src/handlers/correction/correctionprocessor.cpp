@@ -72,11 +72,10 @@ void CorrectionProcessor::initInjectionCnt(double frequency)
 int CorrectionProcessor::process(const CorrectionInput_t& input,
                                  arma::vec &Data_CMx, arma::vec &Data_CMy)
 {
-
     if (sum(input.diff.x) < -10.5) {
-#ifndef DUMMY_RFM_DRIVER
+#ifdef DUMMY_RFM_DRIVER
         Logger::error(_ME_) << " ERROR: No Beam";
-        return FOFB_ERROR_NoBeam;
+        return Error::NoBeam;
 #else
         //Logger::error(_ME_) << "Not considered because DUMMY_RFM_DRIVER is true";
 #endif
@@ -107,7 +106,7 @@ int CorrectionProcessor::process(const CorrectionInput_t& input,
 
 #ifndef DUMMY_RFM_DRIVER
         Logger::error(_ME_) << "A corrector as a value above 0.100";
-        return FOFB_ERROR_CM100;
+        return Error::CM100;
 #else
         //Logger::error(_ME_) << "Not considered because DUMMY_RFM_DRIVER is true";
 #endif
@@ -137,7 +136,7 @@ int CorrectionProcessor::checkRMS(const arma::vec& diffX, const arma::vec& diffY
     //    Logger::Logger() << "RMS error - Nb " << m_rmsErrorCnt << " out of 5.";
         if (m_rmsErrorCnt > 5) {
             Logger::error(_ME_) << "RMS error, count > 5";
-            return FOFB_ERROR_RMS;
+            return Error::RMS;
         }
     } else {
         m_rmsErrorCnt = 0;

@@ -154,43 +154,16 @@ void Logger::setPort(const int port)
     logger.setPort(port);
 }
 
-void Logger::postError(unsigned int errornr)
+void Logger::postError(const unsigned int errornr)
 {
     Logger logger;
     if (errornr) {
-        std::pair<std::string, std::string> error = errorMessage(errornr);
-        logger.sendMessage(error.first, error.second);
+        Error::Error error(errornr);
+        logger.sendMessage(error.message(), error.type());
     }
 }
 
-std::pair<std::string, std::string> Logger::errorMessage(unsigned int errornr)
-{
-    std::pair<std::string, std::string> message;
-    switch (errornr) {
-    case 0:
-        message = {"", "No Error"};
-        break;
-    case FOFB_ERROR_ADC:
-        message = {"MDI Error", "ADC Timeout"};
-        break;
-    case FOFB_ERROR_ADCReset:
-        message = {"MDI error", "MDI was restaret"};
-        break;
-    case FOFB_ERROR_DAC:
-        message = {"IOC error", "DAC Problem"};
-        break;
-    case FOFB_ERROR_CM100:
-        message = {"FOFB error", "To much to correct"};
-        break;
-    case FOFB_ERROR_RMS:
-        message = {"FOFB error", "Bad RMS"};
-        break;
-    case FOFB_ERROR_NoBeam:
-        message = {"Error", "No Current"};
-        break;
-    default:
-        message = {"Error", "Unknown Problem"};
-        break;
-    }
-    return message;
+std::string Logger::errorMessage(unsigned int errornr){
+    Error::Error error(errornr);
+    return error.type() + " : " + error.message();
 }

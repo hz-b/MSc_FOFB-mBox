@@ -6,11 +6,11 @@
 #include <chrono>
 #include "define.h"
 
-const int INT_POS = -1;
-const int INT_ENABLE = -2;
-const unsigned char ADC_INT_VAL = 1;
-const unsigned char DAC_INT_VAL = 2;
-const std::string dummyFile = "dump_rmf.dat";
+const int INT_POS = -1; /**< @brief Position of the register for interruptions */
+const int INT_ENABLE = -2; /**< @brief Position of the register for enabled interruptions */
+const unsigned char ADC_INT_VAL = 1; /**< @brief Interruption value for the ADC */
+const unsigned char DAC_INT_VAL = 2; /**< @brief Interruption value for the DAC */
+const std::string dummyFile = "dump_rmf.dat"; /**< @brief File to use instead of the RFM hardware */
 
 RFM2G_STATUS RFMDriver::open(char* devicePath)
 {

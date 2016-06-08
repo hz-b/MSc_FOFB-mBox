@@ -61,32 +61,32 @@ void Handler::init()
 
     RFMHelper rfmHelper(m_driver, m_dma);
     // ADC/DAC
-    rfmHelper.readStruct("ADC_BPMIndex_PosX", ADC_WaveIndexX, readStructtype_pchar);
-    rfmHelper.readStruct("ADC_BPMIndex_PosY", ADC_WaveIndexY, readStructtype_pchar);
-    rfmHelper.readStruct("DAC_HCMIndex", DAC_WaveIndexX, readStructtype_pchar);
-    rfmHelper.readStruct("DAC_VCMIndex", DAC_WaveIndexY, readStructtype_pchar);
+    rfmHelper.readStruct("ADC_BPMIndex_PosX", ADC_WaveIndexX, RFMHelper::readStructtype_pchar);
+    rfmHelper.readStruct("ADC_BPMIndex_PosY", ADC_WaveIndexY, RFMHelper::readStructtype_pchar);
+    rfmHelper.readStruct("DAC_HCMIndex", DAC_WaveIndexX, RFMHelper::readStructtype_pchar);
+    rfmHelper.readStruct("DAC_VCMIndex", DAC_WaveIndexY, RFMHelper::readStructtype_pchar);
     // Smatrix
-    rfmHelper.readStruct("SmatX", SmatX, readStructtype_mat);
-    rfmHelper.readStruct("SmatY", SmatY, readStructtype_mat);
+    rfmHelper.readStruct("SmatX", SmatX, RFMHelper::readStructtype_mat);
+    rfmHelper.readStruct("SmatY", SmatY, RFMHelper::readStructtype_mat);
     // Parameters
-    rfmHelper.readStruct("GainX", m_gain.x, readStructtype_vec);
-    rfmHelper.readStruct("GainY", m_gain.y, readStructtype_vec);
-    rfmHelper.readStruct("BPMoffsetX", m_BPMoffset.x, readStructtype_vec);
-    rfmHelper.readStruct("BPMoffsetY", m_BPMoffset.y, readStructtype_vec);
-    rfmHelper.readStruct("scaleDigitsH", m_scaleDigits.x, readStructtype_vec);
-    rfmHelper.readStruct("scaleDigitsV", m_scaleDigits.y, readStructtype_vec);
+    rfmHelper.readStruct("GainX", m_gain.x, RFMHelper::readStructtype_vec);
+    rfmHelper.readStruct("GainY", m_gain.y, RFMHelper::readStructtype_vec);
+    rfmHelper.readStruct("BPMoffsetX", m_BPMoffset.x, RFMHelper::readStructtype_vec);
+    rfmHelper.readStruct("BPMoffsetY", m_BPMoffset.y, RFMHelper::readStructtype_vec);
+    rfmHelper.readStruct("scaleDigitsH", m_scaleDigits.x, RFMHelper::readStructtype_vec);
+    rfmHelper.readStruct("scaleDigitsV", m_scaleDigits.y, RFMHelper::readStructtype_vec);
     // Correctors
-    rfmHelper.readStruct("P", P, readStructtype_double);
-    rfmHelper.readStruct("I", I, readStructtype_double);
-    rfmHelper.readStruct("D", D, readStructtype_double);
-    rfmHelper.readStruct("plane", m_plane, readStructtype_double);
-    rfmHelper.readStruct("Frequency", Frequency, readStructtype_double);
+    rfmHelper.readStruct("P", P, RFMHelper::readStructtype_double);
+    rfmHelper.readStruct("I", I, RFMHelper::readStructtype_double);
+    rfmHelper.readStruct("D", D, RFMHelper::readStructtype_double);
+    rfmHelper.readStruct("plane", m_plane, RFMHelper::readStructtype_double);
+    rfmHelper.readStruct("Frequency", Frequency, RFMHelper::readStructtype_double);
     // Singular Values
-    rfmHelper.readStruct( "SingularValueX", IvecX, readStructtype_double);
-    rfmHelper.readStruct( "SingularValueY", IvecY, readStructtype_double);
+    rfmHelper.readStruct( "SingularValueX", IvecX, RFMHelper::readStructtype_double);
+    rfmHelper.readStruct( "SingularValueY", IvecY, RFMHelper::readStructtype_double);
     // CM
-    rfmHelper.readStruct("CMx", CMx, readStructtype_vec);
-    rfmHelper.readStruct("CMy", CMy, readStructtype_vec);
+    rfmHelper.readStruct("CMx", CMx, RFMHelper::readStructtype_vec);
+    rfmHelper.readStruct("CMy", CMy, RFMHelper::readStructtype_vec);
 
  //   rfmHelper.readStruct("DACout", m_DACout, readStructtype_pchar);
     m_numBPM.x = SmatX.n_rows;
@@ -211,7 +211,7 @@ int Handler::getNewData(arma::vec &diffX, arma::vec &diffY, bool &newInjection)
     arma::vec rADCdataX(m_numBPM.x), rADCdataY(m_numBPM.y);
     if (m_adc->read()) {
         Logger::error(_ME_) << "Read Error";
-        return FOFB_ERROR_ADC;
+        return Error::ADC;
     }
 
     for (unsigned int i = 0; i < m_numBPM.x; i++) {
@@ -271,7 +271,7 @@ void Handler::prepareCorrectionValues(const arma::vec& CMx, const arma::vec& CMy
 int Handler::writeCorrection()
 {
     if (m_dac->write(m_plane, m_loopDir, m_DACout) > 0) {
-         return FOFB_ERROR_DAC;
+         return Error::DAC;
     }
     unsigned long pos = STATUS_MEMPOS;
 

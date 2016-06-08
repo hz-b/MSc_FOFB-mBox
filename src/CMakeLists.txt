@@ -3,6 +3,7 @@ set(SOURCES main.cpp
             dac.cpp
             dma.cpp
             mbox.cpp
+            error.cpp
             rfm_helper.cpp
             handlers/handler.cpp
             handlers/correction/correctionhandler.cpp

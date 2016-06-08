@@ -64,7 +64,7 @@ void mBox::startLoop()
 
         if (m_mBoxStatus == Status::RestartedThing) {
             std::cout << "  !!! MDIZ4T4R was restarted !!! ... Wait for initialization \n";
-            Logger::postError(FOFB_ERROR_ADCReset);
+            Logger::postError(Error::ADCReset);
 
             while (m_mBoxStatus != Status::Idle) {
                 m_driver->read(CTRL_MEMPOS , &m_mBoxStatus, 1);
@@ -97,8 +97,7 @@ void mBox::startLoop()
             if (m_dma->status()->errornr = m_handler->make()) {
                 m_currentState = State::Error;
                 Logger::postError(m_dma->status()->errornr);
-                Logger::error(_ME_) << Logger::errorMessage(m_dma->status()->errornr).first << " : "
-                                    << Logger::errorMessage(m_dma->status()->errornr).second;
+                Logger::error(_ME_) << Logger::errorMessage(m_dma->status()->errornr);
             }
 
             if (!READONLY) {

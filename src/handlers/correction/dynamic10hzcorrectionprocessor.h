@@ -5,7 +5,7 @@
 
 #include "handlers/structures.h"
 
-const int NTAPS = 15;
+const int NTAPS = 15; /**< @brief Tap number for the FIR filter */
 
 /**
  * @brief Do a correction for the 10Hz harmonic perturbation.
