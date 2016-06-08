@@ -7,6 +7,7 @@ set(SOURCES main.cpp
             handlers/handler.cpp
             handlers/correction/correctionhandler.cpp
             handlers/correction/correctionprocessor.cpp
+            handlers/correction/dynamic10hzcorrectionprocessor.cpp
             handlers/measures/measurehandler.cpp
             modules/timers.cpp
             modules/zmq/logger.cpp

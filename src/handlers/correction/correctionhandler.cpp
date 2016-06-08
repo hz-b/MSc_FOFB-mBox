@@ -26,7 +26,16 @@ int CorrectionHandler::typeCorrection()
 int CorrectionHandler::callProcessorRoutine(const CorrectionInput_t& input,
                                             arma::vec& CMx, arma::vec& CMy)
 {
-    return m_correctionProcessor.correct(input, CMx, CMy);
+    int correctionError = m_correctionProcessor.process(input, CMx, CMy);
+    if (correctionError) {
+        return correctionError;
+    }
+
+    // If this has an error, we don't care: it's not deadly and we have no way
+    // to  handle it.
+    m_dyn10HzCorrectionProcessor.process(input, CMx, CMy);
+
+    return 0;
 }
 
 void CorrectionHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
@@ -41,6 +50,8 @@ void CorrectionHandler::setProcessor(arma::mat SmatX, arma::mat SmatY,
     m_correctionProcessor.initInjectionCnt(Frequency);
     m_correctionProcessor.initPID(P,I,D);
     m_correctionProcessor.finishInitialization();
+
+    m_dyn10HzCorrectionProcessor.initialize();
 }
 
 

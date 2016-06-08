@@ -3,6 +3,7 @@
 
 #include "handlers/handler.h"
 #include "handlers/correction/correctionprocessor.h"
+#include "handlers/correction/dynamic10hzcorrectionprocessor.h"
 
 /**
  * @class CorrectionHandler
@@ -49,6 +50,7 @@ private:
      * @brief Processor, i.e. what does the maths.
      */
     CorrectionProcessor m_correctionProcessor;
+    Dynamic10HzCorrectionProcessor m_dyn10HzCorrectionProcessor;
 
 };
 

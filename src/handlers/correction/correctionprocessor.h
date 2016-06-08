@@ -51,7 +51,7 @@ public:
      *                  * Correction::Vertical (= `0b10`)
      *                  * Correction::All (= `0b11`)
      */
-    int correct(const CorrectionInput_t& input,
+    int process(const CorrectionInput_t& input,
                 arma::vec& Data_CMx, arma::vec& Data_CMy);
 
     /**
@@ -101,10 +101,6 @@ private:
     bool isInjectionTime(const bool newInjection);
     int checkRMS(const arma::vec& diffX, const arma::vec& diffY);
     arma::vec PIDcorr(const arma::vec& dCM, PID_t& pid);
-    arma::vec dynamicCorrection10(const std::string& axis, const int size, const double value10Hz);
-
-    bool m_dynamicCorrStarted;
-    arma::vec m_values10Hz;
 
     Injection_t m_injection; /**< @brief Injection count values */
     int m_rmsErrorCnt; /**< @brief Number of RMS error counted */
