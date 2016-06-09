@@ -10,13 +10,10 @@
 
 // -------- PID implementation --------- //
 PID::PID(const double P, const double I, const double D, const int sizeBuffer)
+    : m_P(P), m_I(I), m_D(D), m_currentP(0)
+    , m_lastCorrection(arma::zeros<arma::vec>(sizeBuffer))
+    , m_correctionSum(arma::zeros<arma::vec>(sizeBuffer))
 {
-    m_P = P;
-    m_P = I;
-    m_P = D;
-    m_currentP = 0;
-    m_lastCorrection = arma::zeros<arma::vec>(sizeBuffer);
-    m_correctionSum = arma::zeros<arma::vec>(sizeBuffer);
 }
 
 arma::vec PID::apply(const arma::vec& dCM)
