@@ -21,9 +21,10 @@ arma::vec PID::apply(const arma::vec& dCM)
     if (m_currentP < m_P) {
         m_currentP += 0.01;
     }
+
+    m_correctionSum += dCM;
     arma::vec pidCorrection = (dCM * m_currentP) + (m_I*m_correctionSum) + (m_D*(dCM - m_lastCorrection));
     m_lastCorrection = dCM;
-    m_correctionSum += dCM;
 
     return pidCorrection;
 }

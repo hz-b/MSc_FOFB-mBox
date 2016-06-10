@@ -117,6 +117,8 @@ void Handler::init()
     Messenger::updateMap("NB-BPM-Y", m_numBPM.y);
     Messenger::updateMap("NB-CM-X", m_numCM.x);
     Messenger::updateMap("NB-CM-Y", m_numCM.y);
+    Messenger::updateMap("CM-X", CMx);
+    Messenger::updateMap("CM-Y", CMy);
 
     if (!READONLY) {
         m_adc->init();
