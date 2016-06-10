@@ -62,8 +62,8 @@ void CorrectionProcessor::initPID(double P, double I, double D)
 void CorrectionProcessor::initInjectionCnt(double frequency)
 {
     m_injection.count = 0;
-    m_injection.countStart = (int) frequency/1000;
-    m_injection.countStop  = (int) frequency*60/1000;
+    m_injection.countStart = (int) frequency*60/1000;
+    m_injection.countStop  = (int) frequency/1000;
 }
 
 int CorrectionProcessor::process(const CorrectionInput_t& input,
@@ -189,7 +189,7 @@ void CorrectionProcessor::calcSmat(const arma::mat &Smat,
 bool CorrectionProcessor::isInjectionTime(const bool newInjection)
 {
     if ( newInjection ) {
-        m_injection.count += 1;
+        m_injection.count++;
         if ((m_injection.count >= m_injection.countStop) && (m_injection.count <= m_injection.countStart)) {
             return true;
         }
