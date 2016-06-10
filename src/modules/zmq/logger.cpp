@@ -36,8 +36,9 @@ void Logger::Logger::parseAndSend()
         break;
     case LogType::Error:
         header = "ERROR";
-        std::cerr << "\x1b[1;31m[" << header << "]\x1b[0m "
-                  << m_logStream->message.str() << "\t\x1b[31m[" << m_logStream->other << "]\x1b[0m\n";
+    std::cerr << "\x1b[1;31m[" << header << ' '
+              << m_logStream->message.str() 
+              << "\t\x1b[31m[" << m_logStream->other << "]\x1b[0m\n";
     }
     if (m_zmqSocket != NULL) {
        this->sendZmq(header, m_logStream->message.str(), m_logStream->other);

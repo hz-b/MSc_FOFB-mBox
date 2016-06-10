@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import division
+from __future__ import division, print_function, unicode_literals
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -33,10 +33,13 @@ def show():
     plt.ion()
     plt.show()
     t = 0
+
     while True:
         # Only to be sure not to lose anything
-        [valuesX, valuesY], loopPos = s.receive(1)
+        (valuesX, valuesY), loopPos = s.receive(1)
 
+        print(len(posBPMx))
+        print(valuesX.size)
         if t < EVERYX:
             t += 1
             continue
