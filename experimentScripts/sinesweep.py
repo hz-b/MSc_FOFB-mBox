@@ -94,14 +94,14 @@ def corr_value(BPMx, BPMy):
         t_id = 0
 
         if axis == 'x':
-            if CM_id < gCMx_nb-1:
+            if CM_id < 0: #gCMx_nb-1:
                 CM_id += 1
             else:
                 axis = 'y'
                 CM_id = 0
         else:
             # it means that we are done with CMx
-            if CM_id < gCMy_nb-1:
+            if CM_id < 0: #gCMy_nb-1:
                 CM_id += 1
             else:
                 # everything done

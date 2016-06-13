@@ -63,8 +63,10 @@ void CorrectionProcessor::initPID(double P, double I, double D)
 void CorrectionProcessor::initInjectionCnt(double frequency)
 {
     m_injection.count = 0;
+    // resume FOFB 60ms after Inj.Tripper
     m_injection.countStart = (int) frequency*60/1000;
-    m_injection.countStop  = (int) frequency/1000;
+    // pause FOFB 0,18ms after Inj.Trigger
+    m_injection.countStop  = (int) frequency/1000; 
 }
 
 int CorrectionProcessor::process(const CorrectionInput_t& input,
