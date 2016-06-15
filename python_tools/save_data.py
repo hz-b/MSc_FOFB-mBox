@@ -47,7 +47,7 @@ if __name__=='__main__':
             [valuesX, valuesY], loopPos = sCM.receive(1)
             cx.append(valuesX[:,0].tolist())
             cy.append(valuesY[:,0].tolist())
-        except:
+        except KeyboardInterrupt:
             d = dict()
             d['BPM'] = {'x': np.array(bx).T, 'y': np.array(by).T}
             d['CM'] = {'x': np.array(cx).T, 'y': np.array(cy).T}
@@ -55,4 +55,5 @@ if __name__=='__main__':
             print('--------------------------------------')
             print('--------------DATA SAVED--------------')
             print('--------------------------------------')
+        except Exception:
             raise
