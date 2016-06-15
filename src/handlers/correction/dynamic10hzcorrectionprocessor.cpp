@@ -58,12 +58,6 @@ int Dynamic10HzCorrectionProcessor::processAxis(const std::string& axisName,
         return 0;  // It's not an error.
     }
 
-    // Amplitude is ok
-    if ((arma::max(arma::abs(amp)) > 0.1) || (arma::max(arma::abs(amp)) > 0.1) || ampref < 1e-6) {
-        Logger::error(_ME_) << "Dynamic amplitude to high, don't use";
-        return 1;
-    }
-
     // Size is ok
     if ((amp.n_elem != vectorSize) || (phase.n_elem != vectorSize)) {
         Logger::error(_ME_) << "Dynamic correction: size not correct.";
@@ -79,7 +73,7 @@ int Dynamic10HzCorrectionProcessor::processAxis(const std::string& axisName,
     arma::mat t_mat = arma::repmat(time.t(), vectorSize, 1)/SAMPLING_FREQ;
 
     arma::mat phase_mat = arma::repmat(phase, 1, NTAPS) - phref;
-    arma::mat fir = arma::cos(2*M_PI*FREQ*t_mat - phase_mat) * 2/SAMPLING_FREQ; // - or + the phase ???
+    arma::mat fir = arma::cos(2*M_PI*FREQ*t_mat - phase_mat) * 2*SAMPLING_FREQ; // - or + the phase ???
 
 
     arma::vec dynamicCorr = arma::zeros<arma::vec>(vectorSize);
@@ -89,6 +83,12 @@ int Dynamic10HzCorrectionProcessor::processAxis(const std::string& axisName,
     }
 
     dynamicCorr %= amp/ampref;
+
+    // Check amplitude before applying
+    if ((arma::max(arma::abs(dynamicCorr)) > 0.1)) {
+        Logger::error(_ME_) << "Dynamic amplitude to high, don't use";
+        return 1;
+    }
     std::cout << arma::max(arma::abs(dynamicCorr)) << '\n'<<'\n';
     outputData += dynamicCorr;
 
