@@ -24,10 +24,10 @@ if __name__=='__main__':
         strtime = '-'.join(strtime.split(':'))
         filename = 'dump-save-' + strtime
     print("Save in {}".format(filename))
-    pml = PyML()
-    pml.setao(pml.loadFromExtern('PyML/bessyIIinit.py','ao'))
 
-#    pml.ao[Family]['Status'][
+    pml = PyML()
+    pml.setao(pml.loadFromExtern('PyML/bessyIIinit.py', 'ao'))
+
     posBPMx = pml.getfamilydata('BPMx', 'Pos')[pml.getActiveIdx('BPMx')]
     posBPMy = pml.getfamilydata('BPMy', 'Pos')[pml.getActiveIdx('BPMy')]
     posCMx = pml.getfamilydata('HCM', 'Pos')[pml.getActiveIdx('HCM')]
@@ -35,12 +35,12 @@ if __name__=='__main__':
 
     sCM = ValuesSubscriber()
     sCM.connect("tcp://localhost:3333")
-    sCM.subscribe(['FOFB-CM-DATA' ])
-    # Only to be sure not to lose anything
+    sCM.subscribe(['FOFB-CM-DATA'])
+
     sBPM = ValuesSubscriber()
     sBPM.connect("tcp://localhost:3333")
-    sBPM.subscribe(['FOFB-BPM-DATA' ])
-    # Only to be sure not to lose anything
+    sBPM.subscribe(['FOFB-BPM-DATA'])
+
     bx = []
     by = []
     cx = []
@@ -49,14 +49,14 @@ if __name__=='__main__':
     while 1:
         try:
             i += 1
-            if i % (150*5) == 0:  # Every 5s 
+            if i % (150*5) == 0:  # Every 5s
                 print("Elapsed time = {}s".format(i/150))
             [valuesX, valuesY], loopPos = sBPM.receive(1)
-            bx.append(valuesX[:,0].tolist())
-            by.append(valuesY[:,0].tolist())
+            bx.append(valuesX[:, 0].tolist())
+            by.append(valuesY[:, 0].tolist())
             [valuesX, valuesY], loopPos = sCM.receive(1)
-            cx.append(valuesX[:,0].tolist())
-            cy.append(valuesY[:,0].tolist())
+            cx.append(valuesX[:, 0].tolist())
+            cy.append(valuesY[:, 0].tolist())
         except KeyboardInterrupt:
             orbit = sktools.io.OrbitData(BPMx=np.array(bx).T,
                                          BPMy=np.array(by).T,
