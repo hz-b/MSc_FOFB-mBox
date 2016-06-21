@@ -2,6 +2,7 @@ from __future__ import division, print_function, unicode_literals
 
 import sys
 import math
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy import optimize
 sys.path.append('search_kicks')
@@ -31,7 +32,6 @@ def fit_coefs(values, asin, acos, fs, f):
         return amps, ampc
 
 def init():
-    SAMPLE_NB = 100
     #HOST = 'tcp://gofbz12c:3333'
     #HOST_REQ = 'tcp://gofbz12c:3334'
     HOST = 'tcp://localhost:3333'
@@ -63,10 +63,12 @@ def init():
 
     sreq = zc.ZmqReq()
     sreq.connect(HOST_REQ)
-    
+
     return s_bpm, s_cm, s_adc, sreq
 
 if __name__=="__main__":
+    SAMPLE_NB = 100
+
     s_bpm, s_cm, s_adc, sreq = init()
     # Get values
     (buff_adc), _ = s_adc.receive(SAMPLE_NB)
@@ -74,8 +76,8 @@ if __name__=="__main__":
     (BPMx, BPMy), _ = s_bpm.receive(SAMPLE_NB)
     (CMx, CMy), _ = s_cm.receive(SAMPLE_NB)
 
-    asin, acos = sktools.maths.extract_sin_cos(sin10.reshape(1, SAMPLE_NB), fs=150., f=10.)
-    amps, ampc = fit_coefs(sin10.reshape(1, SAMPLE_NB), acos, asin, fs=150, f=10)
+    acos, asin = sktools.maths.extract_sin_cos(sin10.reshape(1, SAMPLE_NB), fs=150., f=10.)
+    ampc, amps = fit_coefs(sin10.reshape(1, SAMPLE_NB), acos, asin, fs=150, f=10)
     amp10 = np.linalg.norm([amps[0], ampc[0]])
     ph10 = math.atan2(amps[0], ampc[0])
 
@@ -111,6 +113,11 @@ if __name__=="__main__":
     ampY = np.abs(CorrY)
     phY = np.angle(CorrY)
 
+    plt.figure()
+    t = np.arange(SAMPLE_NB)/150
+    plt.plot(t, sin10)
+    plt.plot(t, np.cos(2*np.pi*10*t+ph10))
+    plt.show()
 
     ans = pack.unpack_string(sreq.tell('SET AMPLITUDE-REF-10',
                                        pack.pack_double(amp10)))
