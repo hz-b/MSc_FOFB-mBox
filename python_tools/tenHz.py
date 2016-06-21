@@ -11,7 +11,7 @@ import zmq_client as zc
 import search_kicks.tools as sktools
 
 
-def fit_coefs(values, asin, acos, fs, f):
+def fit_coefs(values, acos, asin, fs, f):
     def func(t, a, b, c, f):
         return a + b*np.cos(2*np.pi*f*t)+c*np.sin(2*np.pi*f*t)
 
@@ -29,7 +29,7 @@ def fit_coefs(values, asin, acos, fs, f):
 
         [offs[idx], ampc[idx], amps[idx], freq[idx]] = res
 
-        return amps, ampc
+        return ampc, amps
 
 def init():
     #HOST = 'tcp://gofbz12c:3333'
@@ -79,7 +79,7 @@ if __name__=="__main__":
     acos, asin = sktools.maths.extract_sin_cos(sin10.reshape(1, SAMPLE_NB), fs=150., f=10.)
     ampc, amps = fit_coefs(sin10.reshape(1, SAMPLE_NB), acos, asin, fs=150, f=10)
     amp10 = np.linalg.norm([amps[0], ampc[0]])
-    ph10 = math.atan2(amps[0], ampc[0])
+    ph10 = -math.atan2(amps[0], ampc[0])
 
     # Get all parameters for calculations
     pack = zc.Packer()
@@ -116,7 +116,9 @@ if __name__=="__main__":
     plt.figure()
     t = np.arange(SAMPLE_NB)/150
     plt.plot(t, sin10)
-    plt.plot(t, np.cos(2*np.pi*10*t+ph10))
+    plt.plot(t, amp10*np.cos(2*np.pi*10*t+ph10))
+    plt.plot(t, ampc*np.cos(2*np.pi*10*t)+amps*np.sin(2*np.pi*10*t))
+    plt.plot(t, acos*np.cos(2*np.pi*10*t)+asin*np.sin(2*np.pi*10*t))
     plt.show()
 
     ans = pack.unpack_string(sreq.tell('SET AMPLITUDE-REF-10',
