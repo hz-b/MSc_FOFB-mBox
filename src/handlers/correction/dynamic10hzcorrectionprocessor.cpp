@@ -73,7 +73,7 @@ int Dynamic10HzCorrectionProcessor::processAxis(const std::string& axisName,
     arma::mat t_mat = arma::repmat(time.t(), vectorSize, 1)/SAMPLING_FREQ;
 
     arma::mat phase_mat = arma::repmat(phase, 1, NTAPS) - phref;
-    arma::mat fir = arma::cos(2*M_PI*FREQ*t_mat - phase_mat) * 2*SAMPLING_FREQ; // - or + the phase ???
+    arma::mat fir = arma::cos(2*M_PI*FREQ*t_mat - phase_mat)*2/NTAPS; // - or + the phase ???
 
 
     arma::vec dynamicCorr = arma::zeros<arma::vec>(vectorSize);
