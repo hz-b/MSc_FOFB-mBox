@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 from __future__ import division, print_function, unicode_literals
 
 import sys
@@ -5,8 +6,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import optimize
-sys.path.append('search_kicks')
-sys.path.append('../../../search_kicks')
+sys.path.insert(0,'../../../search_kicks')
 import zmq_client as zc
 import search_kicks.tools as sktools
 
@@ -67,7 +67,7 @@ def init():
     return s_bpm, s_cm, s_adc, sreq
 
 if __name__=="__main__":
-    SAMPLE_NB = 100
+    SAMPLE_NB = 510
 
     s_bpm, s_cm, s_adc, sreq = init()
     # Get values
@@ -76,8 +76,8 @@ if __name__=="__main__":
     (BPMx, BPMy), _ = s_bpm.receive(SAMPLE_NB)
     (CMx, CMy), _ = s_cm.receive(SAMPLE_NB)
 
-    acos, asin = sktools.maths.extract_sin_cos(sin10.reshape(1, SAMPLE_NB), fs=150., f=10.)
-    ampc, amps = fit_coefs(sin10.reshape(1, SAMPLE_NB), acos, asin, fs=150, f=10)
+    ampc, amps = sktools.maths.extract_sin_cos(sin10.reshape(1, SAMPLE_NB), fs=150., f=10.)
+ #   ampc, amps = fit_coefs(sin10.reshape(1, SAMPLE_NB), acos, asin, fs=150, f=10)
     amp10 = np.linalg.norm([amps[0], ampc[0]])
     ph10 = -math.atan2(amps[0], ampc[0])
 
@@ -96,13 +96,11 @@ if __name__=="__main__":
     Syy_inv = sktools.maths.inverse_with_svd(Syy, ivecY)
 
     # Do calculations
-    asinX, acosX = sktools.maths.extract_sin_cos(BPMx, fs=150., f=10.)
-    asinX, acosX = fit_coefs(BPMx, acosX, asinX, fs=150, f=10)
-    asinY, acosY = sktools.maths.extract_sin_cos(BPMy, fs=150., f=10.)
-    asinY, acosY = fit_coefs(BPMy, acosY, asinY, fs=150, f=10)
+    acosX, asinX = sktools.maths.extract_sin_cos(BPMx, fs=150., f=10.)
+    acosY, asinY = sktools.maths.extract_sin_cos(BPMy, fs=150., f=10.)
 
-    valuesX = acosX + 1j*asinX
-    valuesY = acosY + 1j*asinY
+    valuesX = acosX - 1j*asinX
+    valuesY = acosY - 1j*asinY
 
     CorrX = np.dot(Sxx_inv, valuesX)
     CorrY = np.dot(Syy_inv, valuesY)
@@ -113,13 +111,13 @@ if __name__=="__main__":
     ampY = np.abs(CorrY)
     phY = np.angle(CorrY)
 
-    plt.figure()
+#    plt.figure()
     t = np.arange(SAMPLE_NB)/150
-    plt.plot(t, sin10)
-    plt.plot(t, amp10*np.cos(2*np.pi*10*t+ph10))
-    plt.plot(t, ampc*np.cos(2*np.pi*10*t)+amps*np.sin(2*np.pi*10*t))
-    plt.plot(t, acos*np.cos(2*np.pi*10*t)+asin*np.sin(2*np.pi*10*t))
-    plt.show()
+    #plt.plot(t, sin10)
+    #plt.plot(t, amp10*np.cos(2*np.pi*10*t+ph10))
+    #plt.plot(t, ampc*np.cos(2*np.pi*10*t)+amps*np.sin(2*np.pi*10*t))
+    #plt.plot(t, acos*np.cos(2*np.pi*10*t)+asin*np.sin(2*np.pi*10*t))
+    #plt.show()
 
     ans = pack.unpack_string(sreq.tell('SET AMPLITUDE-REF-10',
                                        pack.pack_double(amp10)))
@@ -146,11 +144,23 @@ if __name__=="__main__":
     if ans != "ACK":
         print("error on PHASES-Y-10: {}".format(ans))
 
-    print('ampX')
-    print(ampX)
+   # print('ampX')
+   # print(ampX)
     print('ampY')
     print(ampY)
-    print('phX')
-    print(phX)
+   # print('phX')
+   # print(phX)
     print('phY')
     print(phY)
+    print('amp10')
+    print(amp10)
+    print('ph10')
+    print(ph10)
+  #  plt.figure()
+  #  plt.plot(ampX*np.cos(phX))
+  #  plt.plot(ampX*np.sin(phX))
+  #  plt.figure()
+  #  plt.plot(acosX)
+  #  plt.plot(asinX)
+  #  plt.show()
+
