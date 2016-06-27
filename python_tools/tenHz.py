@@ -76,10 +76,8 @@ if __name__=="__main__":
     (BPMx, BPMy), _ = s_bpm.receive(SAMPLE_NB)
     (CMx, CMy), _ = s_cm.receive(SAMPLE_NB)
 
-    ampc, amps = sktools.maths.extract_sin_cos(sin10.reshape(1, SAMPLE_NB), fs=150., f=10.)
+    amp10, ph10 = sktools.maths.extract_sin_cos(sin10.reshape(1, SAMPLE_NB), 150., 10., 'polar')
  #   ampc, amps = fit_coefs(sin10.reshape(1, SAMPLE_NB), acos, asin, fs=150, f=10)
-    amp10 = np.linalg.norm([amps[0], ampc[0]])
-    ph10 = -math.atan2(amps[0], ampc[0])
 
     # Get all parameters for calculations
     pack = zc.Packer()
@@ -96,11 +94,11 @@ if __name__=="__main__":
     Syy_inv = sktools.maths.inverse_with_svd(Syy, ivecY)
 
     # Do calculations
-    acosX, asinX = sktools.maths.extract_sin_cos(BPMx, fs=150., f=10.)
-    acosY, asinY = sktools.maths.extract_sin_cos(BPMy, fs=150., f=10.)
+    aX, pX = sktools.maths.extract_sin_cos(BPMx, 150., 10., 'polar')
+    aY, pY = sktools.maths.extract_sin_cos(BPMy, 150., 10., 'polar')
 
-    valuesX = acosX - 1j*asinX
-    valuesY = acosY - 1j*asinY
+    valuesX = aX*np.exp(1j*pX)
+    valuesY = aY*np.exp(1j*pY)
 
     CorrX = np.dot(Sxx_inv, valuesX)
     CorrY = np.dot(Syy_inv, valuesY)
@@ -128,7 +126,7 @@ if __name__=="__main__":
     if ans != "ACK":
         print("error on SET PHASE-REF-10: {}".format(ans))
 
-    ans = pack.unpack_string(sreq.tell('SET AMPLITUDES-X-10', pack.pack_vec(ampX)))
+    ans = pack.unpack_string(sreq.tell('SET AMPLITUDES-X-10', pack.pack_vec(0.01*ampX)))
     if ans != "ACK":
         print("error on AMPLITUDES-X-10: {}".format(ans))
 
@@ -136,7 +134,7 @@ if __name__=="__main__":
     if ans != "ACK":
         print("error on PHASES-X-10: {}".format(ans))
 
-    ans = pack.unpack_string(sreq.tell('SET AMPLITUDES-Y-10', pack.pack_vec(ampY)))
+    ans = pack.unpack_string(sreq.tell('SET AMPLITUDES-Y-10', pack.pack_vec(0.01*ampY)))
     if ans != "ACK":
         print("error on AMPLITUDES-Y-10: {}".format(ans))
 
