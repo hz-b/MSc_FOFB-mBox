@@ -4,6 +4,7 @@
  * [How to run](#run-howto)
  * [Dependencies](#deps)
  * [How to compile](#compile-howto)
+ * [How to generate the documentation] (#docu)
  * [Class organization](#diagram)
 
 ## <a name="run-howto"></a> How to run
@@ -75,6 +76,17 @@ To install for the user only (no root needed), add to the cmake command the
 following argument (or anything relevant):
 
     -DCMAKE_INSTALL_PREFIX=$HOME/.local
+
+## <a name="docu"></a> How to generate the documentation
+
+Go to the root of the project and generate the documentation
+
+    cd path/to/mBox++
+    doxygen doxygen.conf
+
+The documentation is generated in `doc/html/index.html`
+
+To genereate the LaTeX documentation, go to `doc/latex` and run `make`.
 
 ## <a name="diagram"></a> Class organization
 

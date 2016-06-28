@@ -35,7 +35,41 @@ enum class LogValue {
     ADC
 };
 /**
- * \addtogroup
+ * @brief Logging Namespace.
+ *
+ * The subscribers can subscribe to
+ *  * FOFB-ADC-DATA, FOFB-BPM-DATA, FOFB-CM-DATA
+ *  * LOG
+ *  * ERROR
+ *
+ * The 3 first (type values) are composed of:
+ *  0. the header (FOFB-XXX-DATA)
+ *  1. the loop position (int between 0 and 512)
+ *  2. the type of data ('short' if ADC, else 'double')
+ *  3. Array of data (x-axis if BPM or CM)
+ *  4. Array of data (only if BPM or CM: y-axis)
+ *
+ * LOG and ERROR are composed of:
+ *  0. the header ('LOG' or 'ERROR')
+ *  1. the time of emission
+ *  2. The message
+ *  3. Sometimes a secondary message (in ERROR: function where it happened)
+ *
+ * To log an info:
+ * \code{.cpp}
+ *      Logger::Logger() << "This is a log line";
+ * \endcode
+ *
+ * To log an error:
+ * \code{.cpp}
+ *      Logger::error(_ME_) << "This is an error description";
+ * \endcode
+ *
+ * To output data (here CM):
+ * \code{.cpp}
+ *      Logger::values(LogValue::CM, m_dma->status()->loopPos, std::vector<arma::vec>({CMx, CMy}));
+ * \endcode
+ *
  */
 namespace Logger {
 
@@ -47,14 +81,17 @@ struct log_stream_t {
 };
 
 /**
- * @class Logger
+ * @brief Class to deal with logs and errors
+ *
+ * Can be called directly as
+ * ~~~~{.cpp}
+ * Logger::Logger() << "This is a log line
+ * ~~~~
+ * The log is output at destruction of the object.
  *
  * Relies on some static variables (m_debug, m_port, m_socket, m_driver).
  *
- * @note Use it as:
- * \code{.cpp}
- *      Logger::Logger() << "This is an log line";
- * \endcode
+ * @see See \ref #Logger to see  more detailled information.
  */
 class Logger
 {
@@ -230,7 +267,7 @@ void values(LogValue name, const int loopPos, const std::vector<T> values)
  * @param fctname Name of the function in which is the error.
  * @return Stream Logger::m_logStream.message;
  *
- * @note Use it as:
+ * Use it as:
  * \code{.cpp}
  *      Logger::error(_ME_) << "This is an error;
  * \endcode

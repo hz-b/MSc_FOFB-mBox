@@ -110,12 +110,12 @@ if __name__=="__main__":
     phY = np.angle(CorrY)
 
 #    plt.figure()
-    t = np.arange(SAMPLE_NB)/150
-    #plt.plot(t, sin10)
-    #plt.plot(t, amp10*np.cos(2*np.pi*10*t+ph10))
-    #plt.plot(t, ampc*np.cos(2*np.pi*10*t)+amps*np.sin(2*np.pi*10*t))
-    #plt.plot(t, acos*np.cos(2*np.pi*10*t)+asin*np.sin(2*np.pi*10*t))
-    #plt.show()
+#    t = np.arange(SAMPLE_NB)/150
+#    plt.plot(t, sin10)
+#    plt.plot(t, amp10*np.cos(2*np.pi*10*t+ph10))
+#    plt.plot(t, ampc*np.cos(2*np.pi*10*t)+amps*np.sin(2*np.pi*10*t))
+#    plt.plot(t, acos*np.cos(2*np.pi*10*t)+asin*np.sin(2*np.pi*10*t))
+#    plt.show()
 
     ans = pack.unpack_string(sreq.tell('SET AMPLITUDE-REF-10',
                                        pack.pack_double(amp10)))

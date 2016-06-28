@@ -8,6 +8,8 @@
 
 /**
  * @brief Timer that holds various arithmetic values to profile functions.
+ *
+ * @see See TimingModule for a more comprehensive use
  */
 class Timer
 {
@@ -135,14 +137,31 @@ private:
 };
 
 /**
- * @brief Namespace for Timing static functions
+ * @brief Namespace for Timing static functions.
+ *
+ * To start a timer call
+ * ~~~~.cpp
+ * TimingModule::addTimer("name_of_timer");
+ * ~~~~
+ * To stop it:
+ * ~~~~.cpp
+ * TimingModule::timer("name_of_timer").stop();
+ * ~~~~
+ * To print its values in ms:
+ * ~~~~.cpp
+ * TimingModule::timer("name_of_timer").print(Timer::Unit::ms);
+ * ~~~~
+ * To print all Timer values in ms every 1000 loops:
+ * ~~~~.cpp
+ * TimingModule::printAll(Timer::Unit::ms, 1000);
+ * ~~~~
  */
 namespace TimingModule {
     extern TimerList tm;
 
     /**
      * @brief Global wrapper to TimeList::addTimer() function
-     * @param name Name of the new Timer to create.
+     * @param name Name of the new Timer to create or to restart
      */
     inline void addTimer(const std::string& name) {
         if (tm.count(name) > 0) {
