@@ -1,8 +1,23 @@
+#    Copyright (C) 2016 Olivier Churlaud <olivier@churlaud.com>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 # - Try to find RFM2g headers and libraries
 #
 # It defines the followng variables
-#  RFM2G_INCLUDE_DIRS - include directories for Armadillo
-#  RFM2G_LIBRARY_DIRS - library directories for Armadillo (normally not used!)
+#  RFM2G_INCLUDE_DIRS - include directories for RFM2G
+#  RFM2G_LIBRARY_DIRS - library directories for RFM2G (normally not used!)
 #  RFM2G_LIBRARIES    - libraries to link against
 
 # Tell the user project where to find our headers and libraries
