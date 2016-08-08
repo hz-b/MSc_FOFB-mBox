@@ -1,4 +1,6 @@
 /*
+    Copyright (C) 2015 Andreas Schälicke <andreas.schaelicke@helmholtz-berlin.de>
+    Copyright (C) 2015 Dennis Engel <dennis.brian.engel@googlemail.com>
     Copyright (C) 2016 Olivier Churlaud <olivier@churlaud.com>
 
     This program is free software: you can redistribute it and/or modify
